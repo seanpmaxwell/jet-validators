@@ -1,7 +1,6 @@
 // Export Basic Stuff
 export {
   // Types
-  TEnum,
   TNonEmptyStr,
   TRecord,
   // Nullables
@@ -32,7 +31,7 @@ export {
   isNullableNumber,
   isNullishNumber,
   isNumberArray,
-  isOptionalNumArray,
+  isOptionalNumberArray,
   isNullableNumberArray,
   isNullishNumberArray,
   // BigInt
@@ -125,15 +124,16 @@ export {
   isOptionalFunctionArray,
   isNullableFunctionArray,
   isNullishFunctionArray,
-  // Enum
-  isEnum,
-  isOptionalEnum,
-  isNullableEnum,
-  isNullishEnum,
 } from './basic'
 
 // Regexes
 export {
+  // Types
+  TEmail,
+  TColor,
+  TURL,
+  TAlphaNumericStr,
+  TAlphabeticStr,
   // Color
   isColor,
   isOptionalColor,
@@ -154,6 +154,11 @@ export {
   isOptionalAlphaNumericString,
   isNullableAlphaNumericString,
   isNullishAlphaNumericString,
+  // Alphabetic String
+  isAlphabeticString,
+  isOptionalAlphabeticString,
+  isNullableAlphabeticString,
+  isNullishAlphabeticString,
 } from './regexes';
 
 // Complex-validators
@@ -181,6 +186,12 @@ export {
   isOptionalKeyOfArray,
   isNullableKeyOfArray,
   isNullishKeyOfArray,
+  // Enum
+  TEnum,
+  isEnum,
+  isOptionalEnum,
+  isNullableEnum,
+  isNullishEnum,
   // Is Enum Value
   isEnumVal,
   isOptionalEnumVal,

@@ -1,5 +1,5 @@
-import { isEnum, isNull, isNumber, isObject, isUndef, TRecord } from './basic';
-import { AddMods, AddNullables } from './common';
+import { isNull, isNumber, isObject, isRecord, isString, isUndef } from './basic';
+import { AddMods, AddNullables, orNullable, orOptional } from './common';
 
 
 // **** Is in Array **** //
@@ -155,6 +155,56 @@ function _isKeyOf<
     }
     return isInKeys(arg);
   };
+}
+
+
+// **** Is value an Enum **** //
+
+export type TEnum = Record<string, string | number>;
+export const isEnum = _isEnum;
+export const isOptionalEnum = orOptional(_isEnum);
+export const isNullableEnum = orNullable(_isEnum);
+export const isNullishEnum = orNullable(isOptionalEnum);
+
+/**
+ * Check if unknown is a valid enum object.
+ * NOTE: this does not work for mixed enums see: "eslint@typescript-eslint/no-mixed-enums"
+ */
+function _isEnum(arg: unknown): arg is TEnum {
+  // Check is non-array object
+  if (!isRecord(arg)) {
+    return false;
+  }
+  // Check if string or number enum
+  const keys = Object.keys(arg),
+    middle = Math.floor(keys.length / 2);
+  // ** String Enum ** //
+  if (!isNumber(arg[keys[middle]])) {
+    const entries = Object.entries(arg);
+    for (const entry of entries) {
+      if (!(isString(entry[0]) && isString(entry[1]))) {
+        return false;
+      }
+    }
+    return true;
+  }
+  // ** Number Enum ** //
+  // Enum key length will always be even
+  if (keys.length % 2 !== 0) {
+    return false;
+  }
+  // Check key/values
+  for (let i = 0; i < middle; i++) {
+    const thisKey = keys[i],
+      thisVal = arg[thisKey],
+      thatKey = keys[i + middle],
+      thatVal = arg[thatKey];
+    if (!(thisVal === thatKey && thisKey === String(thatVal))) {
+      return false;
+    }
+  }
+  // Return
+  return true;
 }
 
 

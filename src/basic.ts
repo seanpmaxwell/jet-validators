@@ -4,7 +4,6 @@ import { transform, parseBoolean } from './utils';
 
 // **** Types **** //
 
-export type TEnum = Record<string, string | number>;
 export type TNonEmptyStr = `${string}`;
 export type TRecord = Record<string, unknown>;
 
@@ -42,9 +41,9 @@ export const isOptionalNumber = orOptional(isNumber);
 export const isNullableNumber = orNullable(isNumber);
 export const isNullishNumber = orNullable(isOptionalNumber);
 export const isNumberArray = _toArray(isNumber);
-export const isOptionalNumArray = orOptional(isNumberArray);
+export const isOptionalNumberArray = orOptional(isNumberArray);
 export const isNullableNumberArray = orNullable(isNumberArray);
-export const isNullishNumberArray = orNullable(isOptionalNumArray);
+export const isNullishNumberArray = orNullable(isOptionalNumberArray);
 
 // BigInt
 export const isBigInt = _checkType<bigint>('bigint');
@@ -147,12 +146,6 @@ export const isOptionalFunctionArray = orOptional(isFunctionArray);
 export const isNullableFunctionArray = orNullable(isFunctionArray);
 export const isNullishFunctionArray = orNullable(isOptionalFunctionArray);
 
-// Enum
-export const isEnum = _isEnum;
-export const isOptionalEnum = orOptional(_isEnum);
-export const isNullableEnum = orNullable(_isEnum);
-export const isNullishEnum = orNullable(isOptionalEnum);
-
 
 // **** Helpers **** //
 
@@ -180,10 +173,12 @@ function _isObject(arg: unknown): arg is NonNullable<object> {
 }
 
 /**
- * Is the object Record<string, unknown>.
+ * Is the object Record<string, unknown>. Note we don't need to loop through
+ * the keys cause number keys are caste to strings and symbols are skipped when 
+ * doing for..in loops. Must use Reflect.ownKeys to include symbols.
  */
 function _isRecord(arg: unknown): arg is TRecord {
-  return (isObject(arg) && !Array.isArray(arg) && isStringArray(Object.keys(arg)));
+  return isObject(arg) && !Array.isArray(arg);
 }
 
 /**
@@ -210,43 +205,4 @@ function _isValidDate(): TValidateWithTransform<Date> {
  */
 function _isNonEmptyString(arg: unknown): arg is TNonEmptyStr {
   return (isString(arg) && arg.length > 0);
-}
-
-/**
- * Check if unknown is a valid enum object.
- * NOTE: this does not work for mixed enums see: "eslint@typescript-eslint/no-mixed-enums"
- */
-function _isEnum(arg: unknown): arg is TEnum {
-  // Check is non-array object
-  if (!isRecord(arg)) {
-    return false;
-  }
-  // Check if string or number enum
-  const keys = Object.keys(arg),
-    middle = Math.floor(keys.length / 2);
-  // ** String Enum ** //
-  if (!isNumber(arg[keys[middle]])) {
-    for (const entry of Object.entries(arg)) {
-      if (isString(entry[0]) && isString(entry[1])) {
-        return false;
-      }
-    }
-  }
-  // ** Number Enum ** //
-  // Enum key length will always be even
-  if (keys.length % 2 !== 0) {
-    return false;
-  }
-  // Check key/values
-  for (let i = 0; i < middle; i++) {
-    const thisKey = keys[i],
-      thisVal = arg[thisKey],
-      thatKey = keys[i + middle],
-      thatVal = arg[thatKey];
-    if (!(thisVal === thatKey && thisKey === String(thatVal))) {
-      return false;
-    }
-  }
-  // Return
-  return true;
 }

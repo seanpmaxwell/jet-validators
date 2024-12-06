@@ -1,7 +1,105 @@
 import { expect, test } from 'vitest';
 
 import {
-
+  isUndef,
+  isNull,
+  isNullOrUndef,
+  isBoolean,
+  isOptionalBoolean,
+  isNullableBoolean,
+  isNullishBoolean,
+  isValidBoolean,
+  isBooleanArray,
+  isOptionalBooleanArray,
+  isNullableBooleanArray,
+  isNullishBooleanArray,
+  isNumber,
+  isOptionalNumber,
+  isNullableNumber,
+  isNullishNumber,
+  isValidNumber,
+  isNumberArray,
+  isOptionalNumberArray,
+  isNullableNumberArray,
+  isNullishNumberArray,
+  isBigInt,
+  isOptionalBigInt,
+  isString,
+  isOptionalString,
+  isNullableString,
+  isNullishString,
+  isNonEmptyString,
+  isOptionalNonEmptyString,
+  isNullableNonEmptyString,
+  isNullishNonEmptyString,
+  isStringArray,
+  isOptionalStringArray,
+  isNullableStringArray,
+  isNullishStringArray,
+  isSymbol,
+  isOptionalSymbol,
+  isNullableSymbol,
+  isNullishSymbol,
+  isDate,
+  isOptionalDate,
+  isNullableDate,
+  isNullishDate,
+  isValidDate,
+  isDateArray,
+  isOptionalDateArray,
+  isNullableDateArray,
+  isNullishDateArray,
+  isObject,
+  isOptionalObject,
+  isNullableObject,
+  isNullishObject,
+  isObjectArray,
+  isOptionalObjectArray,
+  isNullableObjectArray,
+  isNullishObjectArray,
+  isFunction,
+  isOptionalFunction,
+  isNullableFunction,
+  isNullishFunction,
+  isFunctionArray,
+  isOptionalFunctionArray,
+  isNullableFunctionArray,
+  isNullishFunctionArray,
+  isColor,
+  isOptionalColor,
+  isNullableColor,
+  isNullishColor,
+  isEmail,
+  isOptionalEmail,
+  isNullableEmail,
+  isNullishEmail,
+  isAlphaNumericString,
+  isOptionalAlphaNumericString,
+  isNullableAlphaNumericString,
+  isNullishAlphaNumericString,
+  isAlphabeticString,
+  isUrl,
+  isEnum,
+  isOptionalEnum,
+  isNullableEnum,
+  isNullishEnum,
+  isRecord,
+  isOptionalRecord,
+  isNullableRecord,
+  isNullishRecord,
+  isInArray,
+  isOptionalInArray,
+  isNullishInArray,
+  isInRange,
+  isNullishInRange,
+  isOptionalInRange,
+  isNullishInRangeArray,
+  isKeyOf,
+  isNullableKeyOfArray,
+  isEnumVal,
+  isOptionalEnumVal,
+  isNullableEnumVal,
+  isNullishEnumVal,
 } from '../src';
 
 
@@ -13,133 +111,133 @@ test('test basic validators', () => {
   // Nullables
   expect(isUndef(undefined)).toStrictEqual(true);
   expect(isNull(null)).toStrictEqual(true);
-  expect(isNoU(null)).toStrictEqual(true);
-  expect(isNoU(undefined)).toStrictEqual(true);
+  expect(isNullOrUndef(null)).toStrictEqual(true);
+  expect(isNullOrUndef(undefined)).toStrictEqual(true);
 
   // Booleans
-  expect(isBool(false)).toStrictEqual(true);
-  expect(isBool('asdf')).toStrictEqual(false);
-  expect(isOptBool(false)).toStrictEqual(true);
-  expect(isOptBool(undefined)).toStrictEqual(true);
-  expect(isNulBool(false)).toStrictEqual(true);
-  expect(isNulBool(null)).toStrictEqual(true);
-  expect(isNishBool(false)).toStrictEqual(true);
-  expect(isNishBool(null)).toStrictEqual(true);
-  expect(isNishBool(undefined)).toStrictEqual(true);
+  expect(isBoolean(false)).toStrictEqual(true);
+  expect(isBoolean('asdf')).toStrictEqual(false);
+  expect(isOptionalBoolean(false)).toStrictEqual(true);
+  expect(isOptionalBoolean(undefined)).toStrictEqual(true);
+  expect(isNullableBoolean(false)).toStrictEqual(true);
+  expect(isNullableBoolean(null)).toStrictEqual(true);
+  expect(isNullishBoolean(false)).toStrictEqual(true);
+  expect(isNullishBoolean(null)).toStrictEqual(true);
+  expect(isNullishBoolean(undefined)).toStrictEqual(true);
 
   // Is valid boolean
-  expect(isValidBool(false)).toStrictEqual(true);
-  expect(isValidBool(true)).toStrictEqual(true);
-  expect(isValidBool('Yes')).toStrictEqual(true);
-  expect(isValidBool('no')).toStrictEqual(true);
-  expect(isValidBool('1')).toStrictEqual(true);
-  expect(isValidBool('0')).toStrictEqual(true);
-  expect(isValidBool(1)).toStrictEqual(true);
-  expect(isValidBool(0)).toStrictEqual(true);
-  expect(isValidBool('False')).toStrictEqual(true);
-  expect(isValidBool('tRuE')).toStrictEqual(true);
-  expect(isValidBool(1234)).toStrictEqual(false);
-  expect(isValidBool(undefined)).toStrictEqual(false);
+  expect(isValidBoolean(false)).toStrictEqual(true);
+  expect(isValidBoolean(true)).toStrictEqual(true);
+  expect(isValidBoolean('Yes')).toStrictEqual(true);
+  expect(isValidBoolean('no')).toStrictEqual(true);
+  expect(isValidBoolean('1')).toStrictEqual(true);
+  expect(isValidBoolean('0')).toStrictEqual(true);
+  expect(isValidBoolean(1)).toStrictEqual(true);
+  expect(isValidBoolean(0)).toStrictEqual(true);
+  expect(isValidBoolean('False')).toStrictEqual(true);
+  expect(isValidBoolean('tRuE')).toStrictEqual(true);
+  expect(isValidBoolean(1234)).toStrictEqual(false);
+  expect(isValidBoolean(undefined)).toStrictEqual(false);
 
   // Boolean Arrays
-  expect(isBoolArr([false, true, false])).toStrictEqual(true);
-  expect(isBoolArr([false, true, 'asdf'])).toStrictEqual(false);
-  expect(isBoolArr(true)).toStrictEqual(false);
-  expect(isOptBoolArr([false, true, false])).toStrictEqual(true);
-  expect(isOptBoolArr(undefined)).toStrictEqual(true);
-  expect(isNulBoolArr([false, true, false])).toStrictEqual(true);
-  expect(isNulBoolArr(null)).toStrictEqual(true);
-  expect(isNishBoolArr([false, true, false])).toStrictEqual(true);
-  expect(isNishBoolArr(null)).toStrictEqual(true);
-  expect(isNishBoolArr(undefined)).toStrictEqual(true);
+  expect(isBooleanArray([false, true, false])).toStrictEqual(true);
+  expect(isBooleanArray([false, true, 'asdf'])).toStrictEqual(false);
+  expect(isBooleanArray(true)).toStrictEqual(false);
+  expect(isOptionalBooleanArray([false, true, false])).toStrictEqual(true);
+  expect(isOptionalBooleanArray(undefined)).toStrictEqual(true);
+  expect(isNullableBooleanArray([false, true, false])).toStrictEqual(true);
+  expect(isNullableBooleanArray(null)).toStrictEqual(true);
+  expect(isNullishBooleanArray([false, true, false])).toStrictEqual(true);
+  expect(isNullishBooleanArray(null)).toStrictEqual(true);
+  expect(isNullishBooleanArray(undefined)).toStrictEqual(true);
 
   // Numbers
-  expect(isNum(123)).toStrictEqual(true);
-  expect(isNum(false)).toStrictEqual(false);
-  expect(isOptNum(123)).toStrictEqual(true);
-  expect(isOptNum(undefined)).toStrictEqual(true);
-  expect(isNulNum(123)).toStrictEqual(true);
-  expect(isNulNum(null)).toStrictEqual(true);
-  expect(isNishNum(123)).toStrictEqual(true);
-  expect(isNishNum(null)).toStrictEqual(true);
-  expect(isNishNum(undefined)).toStrictEqual(true);
+  expect(isNumber(123)).toStrictEqual(true);
+  expect(isNumber(false)).toStrictEqual(false);
+  expect(isOptionalNumber(123)).toStrictEqual(true);
+  expect(isOptionalNumber(undefined)).toStrictEqual(true);
+  expect(isNullableNumber(123)).toStrictEqual(true);
+  expect(isNullableNumber(null)).toStrictEqual(true);
+  expect(isNullishNumber(123)).toStrictEqual(true);
+  expect(isNullishNumber(null)).toStrictEqual(true);
+  expect(isNullishNumber(undefined)).toStrictEqual(true);
 
   // Valid numbers
-  expect(isValidNum('123')).toStrictEqual(true);
+  expect(isValidNumber('123')).toStrictEqual(true);
 
   // Number Arrays
-  expect(isNumArr([1, 2, 3])).toStrictEqual(true);
-  expect(isNumArr([false, true, '123'])).toStrictEqual(false);
-  expect(isNumArr(123)).toStrictEqual(false);
-  expect(isOptNumArr([1, 2 ,3])).toStrictEqual(true);
-  expect(isOptNumArr(undefined)).toStrictEqual(true);
-  expect(isNulNumArr([1, 2, 3])).toStrictEqual(true);
-  expect(isNulNumArr(null)).toStrictEqual(true);
-  expect(isNishNumArr([1, 2, 3])).toStrictEqual(true);
-  expect(isNishNumArr(null)).toStrictEqual(true);
-  expect(isNishNumArr(undefined)).toStrictEqual(true);
+  expect(isNumberArray([1, 2, 3])).toStrictEqual(true);
+  expect(isNumberArray([false, true, '123'])).toStrictEqual(false);
+  expect(isNumberArray(123)).toStrictEqual(false);
+  expect(isOptionalNumberArray([1, 2 ,3])).toStrictEqual(true);
+  expect(isOptionalNumber(undefined)).toStrictEqual(true);
+  expect(isNullableNumberArray([1, 2, 3])).toStrictEqual(true);
+  expect(isNullableNumberArray(null)).toStrictEqual(true);
+  expect(isNullishNumberArray([1, 2, 3])).toStrictEqual(true);
+  expect(isNullishNumberArray(null)).toStrictEqual(true);
+  expect(isNullishNumberArray(undefined)).toStrictEqual(true);
 
   // BigInt
   expect(isBigInt(1234567890123456789012345n)).toStrictEqual(true);
-  expect(isOptBigInt(undefined)).toStrictEqual(true);
+  expect(isOptionalBigInt(undefined)).toStrictEqual(true);
 
   // Strings
-  expect(isStr('123')).toStrictEqual(true);
-  expect(isStr(false)).toStrictEqual(false);
-  expect(isOptStr('123')).toStrictEqual(true);
-  expect(isOptStr(undefined)).toStrictEqual(true);
-  expect(isNulStr('123')).toStrictEqual(true);
-  expect(isNulStr(null)).toStrictEqual(true);
-  expect(isNishStr('123')).toStrictEqual(true);
-  expect(isNishStr(null)).toStrictEqual(true);
-  expect(isNishStr(undefined)).toStrictEqual(true);
+  expect(isString('123')).toStrictEqual(true);
+  expect(isString(false)).toStrictEqual(false);
+  expect(isOptionalString('123')).toStrictEqual(true);
+  expect(isOptionalString(undefined)).toStrictEqual(true);
+  expect(isNullableString('123')).toStrictEqual(true);
+  expect(isNullableString(null)).toStrictEqual(true);
+  expect(isNullishString('123')).toStrictEqual(true);
+  expect(isNullishString(null)).toStrictEqual(true);
+  expect(isNullishString(undefined)).toStrictEqual(true);
 
   // Non-Empty Strings
-  expect(isNeStr('123')).toStrictEqual(true);
-  expect(isNeStr('')).toStrictEqual(false);
-  expect(isOptNeStr('123')).toStrictEqual(true);
-  expect(isOptNeStr(undefined)).toStrictEqual(true);
-  expect(isNulNeStr('123')).toStrictEqual(true);
-  expect(isNulNeStr(null)).toStrictEqual(true);
-  expect(isNishNeStr('123')).toStrictEqual(true);
-  expect(isNishNeStr('')).toStrictEqual(false);
-  expect(isNishNeStr(null)).toStrictEqual(true);
-  expect(isNishNeStr(undefined)).toStrictEqual(true);
+  expect(isNonEmptyString('123')).toStrictEqual(true);
+  expect(isNonEmptyString('')).toStrictEqual(false);
+  expect(isOptionalNonEmptyString('123')).toStrictEqual(true);
+  expect(isOptionalNonEmptyString(undefined)).toStrictEqual(true);
+  expect(isNullableNonEmptyString('123')).toStrictEqual(true);
+  expect(isNullableNonEmptyString(null)).toStrictEqual(true);
+  expect(isNullishNonEmptyString('123')).toStrictEqual(true);
+  expect(isNullishNonEmptyString('')).toStrictEqual(false);
+  expect(isNullishNonEmptyString(null)).toStrictEqual(true);
+  expect(isNullishNonEmptyString(undefined)).toStrictEqual(true);
 
   // String Arrays
-  expect(isStrArr(['1', '2', '3'])).toStrictEqual(true);
-  expect(isStrArr(['false', '123', true])).toStrictEqual(false);
-  expect(isStrArr('123')).toStrictEqual(false);
-  expect(isOptStrArr(['1', '2', '3'])).toStrictEqual(true);
-  expect(isOptStrArr(undefined)).toStrictEqual(true);
-  expect(isNulStrArr(['1', '2', '3'])).toStrictEqual(true);
-  expect(isNulStrArr(null)).toStrictEqual(true);
-  expect(isNishStrArr(['1', '2', '3'])).toStrictEqual(true);
-  expect(isNishStrArr(null)).toStrictEqual(true);
-  expect(isNishStrArr(undefined)).toStrictEqual(true);
+  expect(isStringArray(['1', '2', '3'])).toStrictEqual(true);
+  expect(isStringArray(['false', '123', true])).toStrictEqual(false);
+  expect(isStringArray('123')).toStrictEqual(false);
+  expect(isOptionalStringArray(['1', '2', '3'])).toStrictEqual(true);
+  expect(isOptionalStringArray(undefined)).toStrictEqual(true);
+  expect(isNullableStringArray(['1', '2', '3'])).toStrictEqual(true);
+  expect(isNullableStringArray(null)).toStrictEqual(true);
+  expect(isNullishStringArray(['1', '2', '3'])).toStrictEqual(true);
+  expect(isNullishStringArray(null)).toStrictEqual(true);
+  expect(isNullishStringArray(undefined)).toStrictEqual(true);
 
   // Symbol
   expect(isSymbol(Symbol('foo'))).toStrictEqual(true);
   expect(isSymbol(false)).toStrictEqual(false);
-  expect(isOptSymbol(Symbol('foo'))).toStrictEqual(true);
-  expect(isOptSymbol(undefined)).toStrictEqual(true);
-  expect(isNulSymbol(Symbol('foo'))).toStrictEqual(true);
-  expect(isNulSymbol(null)).toStrictEqual(true);
-  expect(isNishSymbol(Symbol('foo'))).toStrictEqual(true);
-  expect(isNishSymbol(null)).toStrictEqual(true);
-  expect(isNishSymbol(undefined)).toStrictEqual(true);
+  expect(isOptionalSymbol(Symbol('foo'))).toStrictEqual(true);
+  expect(isOptionalSymbol(undefined)).toStrictEqual(true);
+  expect(isNullableSymbol(Symbol('foo'))).toStrictEqual(true);
+  expect(isNullableSymbol(null)).toStrictEqual(true);
+  expect(isNullishSymbol(Symbol('foo'))).toStrictEqual(true);
+  expect(isNullishSymbol(null)).toStrictEqual(true);
+  expect(isNullishSymbol(undefined)).toStrictEqual(true);
 
   // Date
   const D1 = new Date();
   expect(isDate(D1)).toStrictEqual(true);
   expect(isDate(false)).toStrictEqual(false);
-  expect(isOptDate(D1)).toStrictEqual(true);
-  expect(isOptDate(undefined)).toStrictEqual(true);
-  expect(isNulDate(D1)).toStrictEqual(true);
-  expect(isNulDate(null)).toStrictEqual(true);
-  expect(isNishDate(D1)).toStrictEqual(true);
-  expect(isNishDate(null)).toStrictEqual(true);
-  expect(isNishDate(undefined)).toStrictEqual(true);
+  expect(isOptionalDate(D1)).toStrictEqual(true);
+  expect(isOptionalDate(undefined)).toStrictEqual(true);
+  expect(isNullableDate(D1)).toStrictEqual(true);
+  expect(isNullableDate(null)).toStrictEqual(true);
+  expect(isNullishDate(D1)).toStrictEqual(true);
+  expect(isNullishDate(null)).toStrictEqual(true);
+  expect(isNullishDate(undefined)).toStrictEqual(true);
 
   // Valid Dates
   expect(isValidDate(1731195800809)).toStrictEqual(true);
@@ -149,65 +247,224 @@ test('test basic validators', () => {
 
   // Date Arrays
   const D2 = new Date(), D3 = new Date();
-  expect(isDateArr([D1, D2, D3])).toStrictEqual(true);
-  expect(isDateArr([D1, D2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
-  expect(isDateArr(D1)).toStrictEqual(false);
-  expect(isOptDateArr([D1, D2, D3])).toStrictEqual(true);
-  expect(isOptDateArr(undefined)).toStrictEqual(true);
-  expect(isNulDateArr([D1, D2, D3])).toStrictEqual(true);
-  expect(isNulDateArr(null)).toStrictEqual(true);
-  expect(isNishDateArr([D1, D2, D3])).toStrictEqual(true);
-  expect(isNishDateArr(null)).toStrictEqual(true);
-  expect(isNishDateArr(undefined)).toStrictEqual(true);
+  expect(isDateArray([D1, D2, D3])).toStrictEqual(true);
+  expect(isDateArray([D1, D2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
+  expect(isDateArray(D1)).toStrictEqual(false);
+  expect(isOptionalDateArray([D1, D2, D3])).toStrictEqual(true);
+  expect(isOptionalDateArray(undefined)).toStrictEqual(true);
+  expect(isNullableDateArray([D1, D2, D3])).toStrictEqual(true);
+  expect(isNullableDateArray(null)).toStrictEqual(true);
+  expect(isNullishDateArray([D1, D2, D3])).toStrictEqual(true);
+  expect(isNullishDateArray(null)).toStrictEqual(true);
+  expect(isNullishDateArray(undefined)).toStrictEqual(true);
 
   // Is Object
   const O1 = { val: 1 };
-  expect(isObj(O1)).toStrictEqual(true);
-  expect(isObj(false)).toStrictEqual(false);
-  expect(isOptObj(O1)).toStrictEqual(true);
-  expect(isOptObj(undefined)).toStrictEqual(true);
-  expect(isNulObj(O1)).toStrictEqual(true);
-  expect(isNulObj(null)).toStrictEqual(true);
-  expect(isNishObj(O1)).toStrictEqual(true);
-  expect(isNishObj(null)).toStrictEqual(true);
-  expect(isNishObj(undefined)).toStrictEqual(true);
+  expect(isObject(O1)).toStrictEqual(true);
+  expect(isObject(false)).toStrictEqual(false);
+  expect(isOptionalObject(O1)).toStrictEqual(true);
+  expect(isOptionalObject(undefined)).toStrictEqual(true);
+  expect(isNullableObject(O1)).toStrictEqual(true);
+  expect(isNullableObject(null)).toStrictEqual(true);
+  expect(isNullishObject(O1)).toStrictEqual(true);
+  expect(isNullishObject(null)).toStrictEqual(true);
+  expect(isNullishObject(undefined)).toStrictEqual(true);
 
   // Object Arrays
   const O2 = { val: 2 }, O3 = { val: 3 };
-  expect(isObjArr([O1, O2, O3])).toStrictEqual(true);
-  expect(isObjArr([O1, O2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
-  expect(isObjArr(O1)).toStrictEqual(false);
-  expect(isOptObjArr([O1, O2, O3])).toStrictEqual(true);
-  expect(isOptObjArr(undefined)).toStrictEqual(true);
-  expect(isNulObjArr([O1, O2, O3])).toStrictEqual(true);
-  expect(isNulObjArr(null)).toStrictEqual(true);
-  expect(isNishObjArr([O1, O2, O3])).toStrictEqual(true);
-  expect(isNishObjArr(null)).toStrictEqual(true);
-  expect(isNishObjArr(undefined)).toStrictEqual(true);
+  expect(isObjectArray([O1, O2, O3])).toStrictEqual(true);
+  expect(isObjectArray([O1, O2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
+  expect(isObjectArray(O1)).toStrictEqual(false);
+  expect(isOptionalObjectArray([O1, O2, O3])).toStrictEqual(true);
+  expect(isOptionalObjectArray(undefined)).toStrictEqual(true);
+  expect(isNullableObjectArray([O1, O2, O3])).toStrictEqual(true);
+  expect(isNullableObjectArray(null)).toStrictEqual(true);
+  expect(isNullishObjectArray([O1, O2, O3])).toStrictEqual(true);
+  expect(isNullishObjectArray(null)).toStrictEqual(true);
+  expect(isNullishObjectArray(undefined)).toStrictEqual(true);
 
   // Functions
   const F1 = () => 1;
-  expect(isFunc(F1)).toStrictEqual(true);
-  expect(isFunc(false)).toStrictEqual(false);
-  expect(isOptFunc(F1)).toStrictEqual(true);
-  expect(isOptFunc(undefined)).toStrictEqual(true);
-  expect(isNulFunc(F1)).toStrictEqual(true);
-  expect(isNulFunc(null)).toStrictEqual(true);
-  expect(isNishFunc(F1)).toStrictEqual(true);
-  expect(isNishFunc(null)).toStrictEqual(true);
-  expect(isNishFunc(undefined)).toStrictEqual(true);
+  expect(isFunction(F1)).toStrictEqual(true);
+  expect(isFunction(false)).toStrictEqual(false);
+  expect(isOptionalFunction(F1)).toStrictEqual(true);
+  expect(isOptionalFunction(undefined)).toStrictEqual(true);
+  expect(isNullableFunction(F1)).toStrictEqual(true);
+  expect(isNullableFunction(null)).toStrictEqual(true);
+  expect(isNullishFunction(F1)).toStrictEqual(true);
+  expect(isNullishFunction(null)).toStrictEqual(true);
+  expect(isNullishFunction(undefined)).toStrictEqual(true);
 
   // Function Arrays
   const F2 = () => 2, F3 = () => 3;
-  expect(isFuncArr([F1, F2, F3])).toStrictEqual(true);
-  expect(isFuncArr([F1, F2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
-  expect(isFuncArr(F1)).toStrictEqual(false);
-  expect(isOptFuncArr([F1, F2, F3])).toStrictEqual(true);
-  expect(isOptFuncArr(undefined)).toStrictEqual(true);
-  expect(isNulFuncArr([F1, F2, F3])).toStrictEqual(true);
-  expect(isNulFuncArr(null)).toStrictEqual(true);
-  expect(isNishFuncArr([F1, F2, F3])).toStrictEqual(true);
-  expect(isNishFuncArr(null)).toStrictEqual(true);
-  expect(isNishFuncArr(undefined)).toStrictEqual(true);
+  expect(isFunctionArray([F1, F2, F3])).toStrictEqual(true);
+  expect(isFunctionArray([F1, F2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
+  expect(isFunctionArray(F1)).toStrictEqual(false);
+  expect(isOptionalFunctionArray([F1, F2, F3])).toStrictEqual(true);
+  expect(isOptionalFunctionArray(undefined)).toStrictEqual(true);
+  expect(isNullableFunctionArray([F1, F2, F3])).toStrictEqual(true);
+  expect(isNullableFunctionArray(null)).toStrictEqual(true);
+  expect(isNullishFunctionArray([F1, F2, F3])).toStrictEqual(true);
+  expect(isNullishFunctionArray(null)).toStrictEqual(true);
+  expect(isNullishFunctionArray(undefined)).toStrictEqual(true);
 
+  // Test Record (TRecord => Record<string, unknown>)
+  // NOTE: number keys are caste to strings and symbols are skipped when 
+  // doing for..in loops.
+  const R1 = { foo: 1, bar: 'bar' },
+    R2 = { foo: 1, [1234]: 'bar' }, // numbers are converted to strings
+    R3 = { foo: 1, [Symbol(777)]: 'bar' };
+  expect(isRecord(R1)).toStrictEqual(true);
+  expect(isRecord(R2)).toStrictEqual(true);
+  expect(isRecord(R3)).toStrictEqual(true);
+  expect(R2['1234']).toStrictEqual('bar');
+  expect(R2[1234]).toStrictEqual('bar');
+  expect(isOptionalRecord(O1)).toStrictEqual(true);
+  expect(isOptionalRecord(undefined)).toStrictEqual(true);
+  expect(isNullableRecord(O1)).toStrictEqual(true);
+  expect(isNullableRecord(null)).toStrictEqual(true);
+  expect(isNullishRecord(O1)).toStrictEqual(true);
+  expect(isNullishRecord(null)).toStrictEqual(true);
+  expect(isNullishRecord(undefined)).toStrictEqual(true);
 });
+
+
+/**
+ * Test regular expression validators.
+ */
+test('test regexes', () => {
+
+  // Color
+  expect(isColor('#ffffff')).toStrictEqual(true);
+  expect(isColor('asdf')).toStrictEqual(false);
+  expect(isOptionalColor('#ffffff')).toStrictEqual(true);
+  expect(isOptionalColor(undefined)).toStrictEqual(true);
+  expect(isNullableColor('#ffffff')).toStrictEqual(true);
+  expect(isNullableColor(null)).toStrictEqual(true);
+  expect(isOptionalColor('#ffffff')).toStrictEqual(true);
+  expect(isNullishColor(undefined)).toStrictEqual(true);
+  expect(isNullishColor(null)).toStrictEqual(true);
+  expect(isNullishColor(undefined)).toStrictEqual(true);
+
+  // Email
+  expect(isEmail('a@a.com')).toStrictEqual(true);
+  expect(isEmail('asdf')).toStrictEqual(false);
+  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
+  expect(isOptionalEmail(undefined)).toStrictEqual(true);
+  expect(isNullableEmail('a@a.com')).toStrictEqual(true);
+  expect(isNullableEmail(null)).toStrictEqual(true);
+  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
+  expect(isNullishEmail(undefined)).toStrictEqual(true);
+  expect(isNullishEmail(null)).toStrictEqual(true);
+  expect(isNullishEmail(undefined)).toStrictEqual(true);
+
+  // Is Alpha-Numeric String
+  expect(isAlphaNumericString('asdf1234')).toStrictEqual(true);
+  expect(isAlphaNumericString('#ffffff')).toStrictEqual(false);
+  expect(isOptionalAlphaNumericString('asdf1234')).toStrictEqual(true);
+  expect(isOptionalAlphaNumericString(undefined)).toStrictEqual(true);
+  expect(isNullableAlphaNumericString('asdf1234')).toStrictEqual(true);
+  expect(isNullableAlphaNumericString(null)).toStrictEqual(true);
+  expect(isOptionalAlphaNumericString('asdf1234')).toStrictEqual(true);
+  expect(isNullishAlphaNumericString(undefined)).toStrictEqual(true);
+  expect(isNullishAlphaNumericString(null)).toStrictEqual(true);
+  expect(isNullishAlphaNumericString(undefined)).toStrictEqual(true);
+
+  // Alphabetic string
+  expect(isAlphabeticString('faAdfASzcioPD')).toStrictEqual(true);
+  expect(isAlphabeticString('faAdfAS8cioPD')).toStrictEqual(false);
+
+  // URL
+  expect(isUrl('http://www.google.com')).toStrictEqual(true);
+  expect(isUrl('www.google.com')).toStrictEqual(true);
+  expect(isUrl('google.com')).toStrictEqual(true);
+  expect(isUrl('google.net')).toStrictEqual(true);
+  expect(isUrl('google')).toStrictEqual(false);
+});
+
+
+/**
+ * Test complex-validators.
+ */
+test('test complex validators', () => {
+
+  // This will make the type '1' | '2' | '3' instead of just string[]
+  const arr = ['1', '2', '3'] as const,
+    isInArrTest = isInArray(arr);
+  expect(isInArrTest('1')).toStrictEqual(true);
+  expect(isInArrTest(1)).toStrictEqual(false);
+  expect(isOptionalInArray(arr)('1')).toStrictEqual(true);
+  expect(isOptionalInArray(arr)(undefined)).toStrictEqual(true);
+  expect(isNullishInArray(arr)(undefined)).toStrictEqual(true);
+
+  // Ranges
+  const isValidAge = isInRange(18, 130);
+  expect(isValidAge(123)).toStrictEqual(true);
+  expect(isValidAge(5)).toStrictEqual(false);
+  expect(isValidAge(150)).toStrictEqual(false);
+  const isPos = isNullishInRange(0, null);
+  expect(isPos(1_000_000)).toStrictEqual(true);
+  expect(isPos(-1)).toStrictEqual(false);
+  expect(isPos(undefined)).toStrictEqual(true);
+  expect(isPos(null)).toStrictEqual(true);
+  const isNeg = isOptionalInRange(null, -.000001);
+  expect(isNeg(-1_000_000)).toStrictEqual(true);
+  expect(isNeg(.01)).toStrictEqual(false);
+  expect(isNeg(undefined)).toStrictEqual(true);
+  expect(isNeg(null)).toStrictEqual(false);
+  const isValidNums = isNullishInRangeArray(-1, 10);
+  expect(isValidNums([-1, 2, 3])).toStrictEqual(true);
+  expect(isValidNums([-1, 11, 3])).toStrictEqual(false);
+  expect(isValidNums([-1, null, 3])).toStrictEqual(false);
+  expect(isValidNums(2)).toStrictEqual(false);
+  expect(isValidNums(null)).toStrictEqual(true);
+
+  // Check is key of Object
+  const someObject = {
+    foo: 'bar',
+    bada: 'bing',
+  } as const;
+  const isKeyofSomeObject = isKeyOf(someObject);
+  expect(isKeyofSomeObject('foo')).toStrictEqual(true);
+  expect(isKeyofSomeObject('bada')).toStrictEqual(true);
+  expect(isKeyofSomeObject('bing')).toStrictEqual(false);
+  const isKeyofSomeObjectArr = isNullableKeyOfArray(someObject);
+  expect(isKeyofSomeObjectArr(['bada', 'foo'])).toStrictEqual(true);
+  expect(isKeyofSomeObjectArr(null)).toStrictEqual(true);
+  expect(isKeyofSomeObjectArr(['bar', 'foo', 'bing'])).toStrictEqual(false);
+
+  // Enums (NOTE: We cannot used mixed Enum types)
+  // See: "eslint@typescript-eslint/no-mixed-enums"
+  enum StringEnum {
+    Foo = 'foo',
+    Bar = 'bar',
+  }
+  enum NumberEnum {
+    Foo,
+    Bar,
+  }
+  const NotAnEnum = {
+    Foo: 1,
+    Bar: 2,
+  }
+  expect(isEnum(StringEnum)).toStrictEqual(true);
+  expect(isEnum(NotAnEnum)).toStrictEqual(false);
+  expect(isOptionalEnum(NumberEnum)).toStrictEqual(true);
+  expect(isOptionalEnum(undefined)).toStrictEqual(true);
+  expect(isNullableEnum(StringEnum)).toStrictEqual(true);
+  expect(isNullableEnum(null)).toStrictEqual(true);
+  expect(isNullishEnum(StringEnum)).toStrictEqual(true);
+  expect(isNullishEnum(null)).toStrictEqual(true);
+  expect(isNullishEnum(undefined)).toStrictEqual(true);
+
+  // Is enums value
+  const testIsStringEnumVal = isEnumVal(StringEnum),
+    testIsNumberEnumVal = isEnumVal(NumberEnum);
+  expect(testIsStringEnumVal('foo')).toStrictEqual(true);
+  expect(testIsNumberEnumVal(1)).toStrictEqual(true);
+  expect(testIsNumberEnumVal(3)).toStrictEqual(false);
+  expect(isOptionalEnumVal(NumberEnum)(undefined)).toStrictEqual(true);
+  expect(isNullableEnumVal(NumberEnum)(null)).toStrictEqual(true);
+  expect(isNullishEnumVal(NumberEnum)(null)).toStrictEqual(true);
+  expect(isNullishEnumVal(NumberEnum)(1)).toStrictEqual(true);
+})
