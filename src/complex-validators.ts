@@ -1,4 +1,4 @@
-import { isEnum, isNull, isNumber, isObject, isUndef } from './basic';
+import { isEnum, isNull, isNumber, isObject, isUndef, TRecord } from './basic';
 import { AddMods, AddNullables } from './common';
 
 
@@ -107,36 +107,34 @@ function _isInRangeHelper(arg: unknown, min: number | null, max: number | null):
 
 // **** Is string a key of an object **** //
 
-type TBasicObj = Record<string, unknown>;
-
-export const isKeyOf = <T extends TBasicObj>(arg: T) => 
+export const isKeyOf = <T extends object>(arg: T) => 
   _isKeyOf<T, false, false, false>(arg, false, false, false);
-export const isOptionalKeyOf = <T extends TBasicObj>(arg: T) => 
+export const isOptionalKeyOf = <T extends object>(arg: T) => 
   _isKeyOf<T, true, false, false>(arg, true, false, false);
-export const isNullableKeyOf = <T extends TBasicObj>(arg: T) => 
+export const isNullableKeyOf = <T extends object>(arg: T) => 
   _isKeyOf<T, false, true, false>(arg, false, true, false);
-export const isNullishKeyOf = <T extends TBasicObj>(arg: T) => 
+export const isNullishKeyOf = <T extends object>(arg: T) => 
   _isKeyOf<T, true, true, false>(arg, true, true, false);
-export const isKeyOfArray = <T extends TBasicObj>(arg: T) => 
+export const isKeyOfArray = <T extends object>(arg: T) => 
   _isKeyOf<T, false, false, true>(arg, false, false, true);
-export const isOptionalKeyOfArray = <T extends TBasicObj>(arg: T) => 
+export const isOptionalKeyOfArray = <T extends object>(arg: T) => 
   _isKeyOf<T, true, false, true>(arg, true, false, true);
-export const isNullableKeyOfArray = <T extends TBasicObj>(arg: T) => 
+export const isNullableKeyOfArray = <T extends object>(arg: T) => 
   _isKeyOf<T, false, true, true>(arg, false, true, true);
-export const isNullishKeyOfArray = <T extends TBasicObj>(arg: T) => 
+export const isNullishKeyOfArray = <T extends object>(arg: T) => 
   _isKeyOf<T, true, true, true>(arg, true, true, true);
 
 /**
  * See if something is a key of an object.
  */
 function _isKeyOf<
-  T extends Record<string, unknown>,
+  T extends object,
   O extends boolean,
   N extends boolean,
   A extends boolean,
   Ret = AddMods<keyof T, O, N, A>,
 >(
-  obj: Record<string, unknown>,
+  obj: object,
   optional: boolean,
   nullable: boolean,
   isArr: boolean,

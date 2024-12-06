@@ -4,7 +4,10 @@
   "description": "A list common typescript validator functions and some useful utilities.",
   "main": "index.js",
   "scripts": {
-    "test": "npm run test"
+    "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
+    "test": "NODE_ENV=test vitest",
+    "build": "rm -rf ./dist && tsc -p tsconfig.build.json && npm run bundle",
+    "lint": "eslint --flag unstable_ts_config"
   },
   "repository": {
     "type": "git",
@@ -34,6 +37,18 @@
   },
   "homepage": "https://github.com/seanpmaxwell/jet-validators#readme",
   "devDependencies": {
-    "@types/node": "^22.10.1"
+    "@eslint/js": "^9.11.1",
+    "@stylistic/eslint-plugin-ts": "^2.8.0",
+    "@types/eslint__js": "^8.42.3",
+    "@types/node": "^22.8.1",
+    "eslint": "^9.11.1",
+    "eslint-plugin-n": "^17.10.3",
+    "i": "^0.3.7",
+    "jiti": "^2.3.3",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.8.0",
+    "vitest": "^2.1.4"
   }
 }

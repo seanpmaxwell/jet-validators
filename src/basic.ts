@@ -57,11 +57,11 @@ export const isNullableBigIntArray = orNullable(isBigIntArray);
 export const isNullishBigIntArr = orNullable(isOptionalBigIntArray);
 
 // Valid number (is it still a number after doing Number(arg))
-export const isValidNum = transform(Number, isNumber);
-export const isOptionalValidNumber = orOptional(isValidNum);
-export const isNullableValidNumber = orNullable(isValidNum);
+export const isValidNumber = transform(Number, isNumber);
+export const isOptionalValidNumber = orOptional(isValidNumber);
+export const isNullableValidNumber = orNullable(isValidNumber);
 export const isNullishValidNumber = orNullable(isOptionalValidNumber);
-export const isValidNumberArray = _toArray(isValidNum);
+export const isValidNumberArray = _toArray(isValidNumber);
 export const isOptionalValidNumberArray = orOptional(isValidNumberArray);
 export const isNullableValidNumberArray = orNullable(isValidNumberArray);
 export const isNishValidNumArr = orNullable(isOptionalValidNumberArray);
@@ -131,10 +131,10 @@ export const isRecord = _isRecord;
 export const isOptionalRecord = orOptional(isRecord);
 export const isNullableRecord = orNullable(isRecord);
 export const isNullishRecord = orNullable(isOptionalRecord);
-export const isRecordArr = _toArray(_isRecord);
-export const isOptionalRecordArr = orOptional(isRecordArr);
-export const isNullableRecordArr = orNullable(isRecordArr);
-export const isNullishRecordArr = orNullable(isOptionalRecordArr);
+export const isRecordArray = _toArray(_isRecord);
+export const isOptionalRecordArray = orOptional(isRecordArray);
+export const isNullableRecordArray = orNullable(isRecordArray);
+export const isNullishRecordArray = orNullable(isOptionalRecordArray);
 
 // Function
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

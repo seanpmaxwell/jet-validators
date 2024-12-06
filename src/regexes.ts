@@ -2,14 +2,6 @@ import { isString } from "./basic";
 import { orNullable, orOptional } from "./common";
 
 
-// **** Types **** //
-
-export type TEmail = `${string}@${string}`;
-export type TColor = `#${string}`;
-export type TURL = `${string}`;
-export type TAlphaNumber = `${string}`;
-
-
 // **** Variables **** //
 
 const DEFAULTS = {
@@ -45,13 +37,23 @@ export const isNullableAlphaNumericString = orNullable(isAlphaNumericString);
 export const isNullishAlphaNumericString = orNullable(isOptionalAlphaNumericString);
 
 
+// **** Types **** //
+
+type TRgxKey = keyof typeof DEFAULTS;
+
+export type TEmail = `${string}@${string}`;
+export type TColor = `#${string}`;
+export type TURL = `${string}`;
+export type TAlphaNumber = `${string}`;
+
+
 // **** Functions **** //
 
 /**
  * See if a string satisfies the regex. NOTE: this lets an empty string be a 
  * valid value.
  */
-function _matchesRegex<T>(name: string) {
+function _matchesRegex<T>(name: TRgxKey) {
   const envVar = process.env['JET_VALIDATORS_REGEX_' + name],
     rgx = !!envVar ? new RegExp(envVar) : DEFAULTS[name];
   return (arg: unknown): arg is T => {
