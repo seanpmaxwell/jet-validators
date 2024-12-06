@@ -1,0 +1,39 @@
+{
+  "name": "jet-validators",
+  "version": "1.0.0",
+  "description": "A list common typescript validator functions and some useful utilities.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanpmaxwell/jet-validators.git"
+  },
+  "exports": {
+    "require": "./dist/cjs/index.cjs",
+    "import": "./dist/esm/index.js",
+    "default": "./dist/cjs/index.cjs"
+  },
+  "keywords": [
+    "jet",
+    "jet-schema",
+    "validator",
+    "validators",
+    "jet-validators",
+    "validation",
+    "function",
+    "functions",
+    "zod",
+    "schema"
+  ],
+  "author": "sean maxwell",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seanpmaxwell/jet-validators/issues"
+  },
+  "homepage": "https://github.com/seanpmaxwell/jet-validators#readme",
+  "devDependencies": {
+    "@types/node": "^22.10.1"
+  }
+}
