@@ -4,6 +4,7 @@ import {
 
 } from '../src';
 
+
 /**
  * Test all the basic validators
  */
@@ -159,7 +160,7 @@ test('test basic validators', () => {
   expect(isNishDateArr(null)).toStrictEqual(true);
   expect(isNishDateArr(undefined)).toStrictEqual(true);
 
-  // Obj
+  // Is Object
   const O1 = { val: 1 };
   expect(isObj(O1)).toStrictEqual(true);
   expect(isObj(false)).toStrictEqual(false);
@@ -171,7 +172,7 @@ test('test basic validators', () => {
   expect(isNishObj(null)).toStrictEqual(true);
   expect(isNishObj(undefined)).toStrictEqual(true);
 
-  // Obj Arrays
+  // Object Arrays
   const O2 = { val: 2 }, O3 = { val: 3 };
   expect(isObjArr([O1, O2, O3])).toStrictEqual(true);
   expect(isObjArr([O1, O2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
@@ -208,10 +209,5 @@ test('test basic validators', () => {
   expect(isNishFuncArr([F1, F2, F3])).toStrictEqual(true);
   expect(isNishFuncArr(null)).toStrictEqual(true);
   expect(isNishFuncArr(undefined)).toStrictEqual(true);
-
-
-
-
-
 
 });

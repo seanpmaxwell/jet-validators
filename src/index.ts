@@ -132,6 +132,30 @@ export {
   isNullishEnum,
 } from './basic'
 
+// Regexes
+export {
+  // Color
+  isColor,
+  isOptionalColor,
+  isNullableColor,
+  isNullishColor,
+  // Email
+  isEmail,
+  isOptionalEmail,
+  isNullableEmail,
+  isNullishEmail,
+  // URL
+  isUrl,
+  isOptionalUrl,
+  isNullableUrl,
+  isNullishUrl,
+  // Alpha-Numeric String
+  isAlphaNumericString,
+  isOptionalAlphaNumericString,
+  isNullableAlphaNumericString,
+  isNullishAlphaNumericString,
+} from './regexes';
+
 // Complex-validators
 export {
   // Is in array
