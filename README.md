@@ -6,6 +6,7 @@
 ## Table of Contents
 - [Introduction](#introduction)
 - [Basic Validators](#basic-validators)
+- [Regular Expressions](#regular-expressions)
 <br/>
 
 
@@ -169,56 +170,53 @@ Checks if the argument is a non-null non-array object. Type predicate is `Record
 <br/><br/>
 
 
-## Regular Expressions
+## Regular Expressions <a name="regular-expressions"></a>
 Verifies the argument matches the regular-expression. Note than an empty string will validate to `true` for each function.
-- Overloading using environment variables
-- isColor
-- isEmail
-- isUrl
-- isAlphaNumericString
-- Types
+- [Overloading using environment variables](#overloading)
+- [isColor](#isColor)
+- [isEmail](#isEmail)
+- [isUrl](#isUrl)
+- [isAlphaNumericString](#isAlphaNumericString)
 
 
-### Overloading using environment variables
+### Overloading using environment variables <a name="overloading"></a>
 The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
 - JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
 
-### `isColor`
+### `isColor` 
 - isColor
 - isOptionalColor
 - isNullableColor
 - isNullishColor
+- TColor (type)
 
 ### `isEmail`
 - isEmail
 - isOptionalEmail
 - isNullableEmail
 - isNullishEmail
+- TEmail (type)
 
 ### `isUrl`
 - isUrl
 - isOptionalUrl
 - isNullableUrl
 - isNullishUrl
+- TURL (type)
 
 ### `isAlphaNumericString`
 - isAlphaNumericString
 - isOptionalAlphaNumericString
 - isNullableAlphaNumericString
 - isNullishAlphaNumericString
+- TAlphabeticStr (type)
 
 ### `isAlphabeticString`
 - isAlphabeticString
 - isOptionalAlphabeticString
 - isNullableAlphabeticString
 - isNullishAlphabeticString
-
-### Types
-- TEmail
-- TColor
-- TURL
-- TAlphaNumericStr
-- TAlphabeticStr
+- TAlphaNumericStr (type)
 <br/><br/>
 
 
