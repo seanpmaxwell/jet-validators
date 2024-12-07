@@ -1,5 +1,12 @@
 # jet-validators ✈️
 > A list common typescript validator-functions and some useful utilities to go with them.
+<br/>
+
+
+## Table of Contents
+- [Introduction](#introduction)
+- [Comparison to other schema validation libraries](#comparison-to-others)
+<br/>
 
 
 ## Basic Validators
@@ -20,20 +27,20 @@ These can be imported and used directly and don't require any configuration.
 - isRecord
 - isFunction
 
-### Nullables
-- `isUndef`
-- `isNull`
-- `isNullOrUndef`
+### `Nullables`
+- isUndef
+- isNull
+- isNullOrUndef
 
-### isBoolean
-- `isBoolean`
-- `isOptionalBoolean`
-- `isNullableBoolean`
-- `isNullishBoolean`
-- `isBooleanArray`
-- `isOptionalBooleanArray`
-- `isNullableBooleanArray`
-- `isNullishBooleanArray`
+### `isBoolean`
+- isBoolean
+- isOptionalBoolean
+- isNullableBoolean
+- isNullishBoolean
+- isBooleanArray
+- isOptionalBooleanArray
+- isNullableBooleanArray
+- isNullishBooleanArray
 
 ### isValidBoolean
 Is it a valid boolean after calling the `parseBoolean` utility function.
