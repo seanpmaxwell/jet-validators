@@ -1,4 +1,4 @@
-import { isNullOrUndef, isObject, isString } from '../basic';
+import { isFunction, isNullOrUndef, isObject, isRecord, isString, TRecord } from '../basic';
 import { AddMods, TValidateWithTransform } from '../common';
 
 
@@ -156,15 +156,9 @@ function _parseObject<
   nullable: N,
   isArr: A,
   onError?: TParseOnError<A>,
-) {
-  return (arg: unknown) => _parseObjectHelper<A>(
-    !!optional,
-    !!nullable,
-    isArr,
-    schema,
-    arg,
-    onError,
-  ) as TInferParseRes<U, O, N, A>;
+): (arg: unknown) => TInferParseRes<U, O, N, A> {
+  return (arg: unknown) => _parseObjectHelper<A>(!!optional, !!nullable, isArr, 
+    schema, arg, onError) as TInferParseRes<U, O, N, A>;
 }
 
 /**
@@ -181,14 +175,14 @@ function _parseObjectHelper<A>(
   // Check "undefined"
   if (arg === undefined) {
     if (!optional) {
-      onError?.('object value was undefined but not optional', arg);
+      onError?.('Value was undefined but not optional', arg);
       return undefined;
     }
   }
   // Check "null"
   if (arg === null) {
     if (!nullable) {
-      onError?.('object value was null but not nullable', arg);
+      onError?.('Value was null but not nullable.', arg);
       return undefined;
     }
     return null;
@@ -196,26 +190,22 @@ function _parseObjectHelper<A>(
   // Check "array"
   if (isArr) {
     if (!Array.isArray(arg)) {
-      onError?.('object not an array', arg);
-      return null;
+      onError?.('Value is not an array.', arg);
+      return undefined;
     }
     // Iterate array
-    const resp: unknown[] = [];
     for (let i = 0; i < arg.length; i++) {
-      const item: unknown = arg[i];
-      const parsedItem = _parseObjHelperCore(schema, item, (prop, val, caughtErr) => {
+      const parsedItem = _parseObjectHelper2(schema, arg[i], (prop, val, caughtErr) => {
         onError?.(prop, val, i, caughtErr);
       });
       if (parsedItem === undefined) {
-        return undefined;
-      } else {
-        resp.push(parsedItem);
+        arg[i] = undefined
       }
     }
-    return resp;
+    return arg;
   // Default
   } else {
-    return _parseObjHelperCore(schema, arg, onError as TParseOnError<false>);
+    return _parseObjectHelper2(schema, arg, onError as TParseOnError<false>);
   }
 }
 
@@ -223,29 +213,28 @@ function _parseObjectHelper<A>(
  * Iterate an object, apply a validator function to to each property in an 
  * object using the schema.
  */
-function _parseObjHelperCore(
-  schema: TSchema,
-  arg: unknown,
+function _parseObjectHelper2(
+  schemaParentObj: TSchema,
+  argParentObj: unknown,
   onError?: TParseOnError<false>,
 ): unknown {
-  if (!isObject(arg)) {
+  if (!isRecord(argParentObj)) {
     return;
   }
-  const retVal = (arg as Record<string, unknown>);
-  for (const key in schema) {
-    const schemaProp = schema[key],
-      val = retVal[key];
+  for (const key in schemaParentObj) {
+    const schemaProp = schemaParentObj[key],
+      val = argParentObj[key];
     // Nested object
-    if (typeof schemaProp === 'object') {
-      const childVal = _parseObjHelperCore(schemaProp, val, onError);
+    if (isRecord(schemaProp)) {
+      const childVal = _parseObjectHelper2(schemaProp, val, onError);
       if (childVal === undefined) {
         return undefined;
       }
     // Run validator
-    } else if (typeof schemaProp === 'function') {
+    } else if (isFunction(schemaProp)) {
       try {
         if (!schemaProp(val, (tval: unknown) => {
-          retVal[key] = tval;
+          argParentObj[key] = tval;
         })) {
           return onError?.(key, val);
         }
@@ -259,13 +248,13 @@ function _parseObjHelperCore(
     }
   }
   // Purse keys not in schema
-  for (const key in retVal) {
-    if (!(key in schema)) {
-      Reflect.deleteProperty(arg, key);
+  for (const key in argParentObj) {
+    if (!(key in schemaParentObj)) {
+      Reflect.deleteProperty(argParentObj, key);
     }
   }
   // Return
-  return retVal;
+  return argParentObj;
 }
 
 
@@ -273,26 +262,26 @@ function _parseObjHelperCore(
 
 // Test Object (like "parseObj" but returns a type predicate instead)
 export const testObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
-  _testObj<U, false, false, false>(arg, false, false, false, onError);
+  _testObject<U, false, false, false>(arg, false, false, false, onError);
 export const testOptionalObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
-  _testObj<U, true, false, false>(arg, true, false, false, onError);
+  _testObject<U, true, false, false>(arg, true, false, false, onError);
 export const testNullableObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
-  _testObj<U, false, true, false>(arg, false, true, false, onError);
+  _testObject<U, false, true, false>(arg, false, true, false, onError);
 export const testNullishObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
-  _testObj<U, true, true, false>(arg, true, true, false, onError);
+  _testObject<U, true, true, false>(arg, true, true, false, onError);
 export const testObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
-  _testObj<U, false, false, true>(arg, false, false, true, onError);
+  _testObject<U, false, false, true>(arg, false, false, true, onError);
 export const testOptionalObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
-  _testObj<U, true, false, true>(arg, true, false, true, onError);
+  _testObject<U, true, false, true>(arg, true, false, true, onError);
 export const testNullableObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
-  _testObj<U, false, true, true>(arg, false, true, true, onError);
+  _testObject<U, false, true, true>(arg, false, true, true, onError);
 export const testNullishObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
-  _testObj<U, true, true, true>(arg, true, true, true, onError);
+  _testObject<U, true, true, true>(arg, true, true, true, onError);
 
 /**
  * Like "parseObj" but returns a type-predicate instead of the object.
  */
-function _testObj<
+function _testObject<
   U extends TSchema,
   O extends boolean,
   N extends boolean,
@@ -313,4 +302,105 @@ function _testObj<
       return true;
     }
   };
+}
+
+
+// **** Traverse Object **** //
+
+type TTraverseCb = (key: string, val: unknown, parentObj: TRecord) => void;
+
+// Test Object (like "parseObj" but returns a type predicate instead)
+export const traverseObject = (cb: TTraverseCb) => 
+  _traverseObject<false, false, false>(false, false, false, cb);
+export const traverseOptionalObject = (cb: TTraverseCb) => 
+  _traverseObject<true, false, false>(true, false, false, cb);
+export const traverseNullableObject = (cb: TTraverseCb) => 
+  _traverseObject<false, true, false>(false, true, false, cb);
+export const traverseNullishObject = (cb: TTraverseCb) => 
+  _traverseObject<true, true, false>(true, true, false, cb);
+export const traverseObjectArray = (cb: TTraverseCb) => 
+  _traverseObject<false, false, true>(false, false, true, cb);
+export const traverseOptionalObjectArray = (cb: TTraverseCb) => 
+  _traverseObject<true, false, true>(true, false, true, cb);
+export const traverseNullableObjectArray = (cb: TTraverseCb) => 
+  _traverseObject<false, true, true>(false, true, true, cb);
+export const traverseNullishObjectArray = (cb: TTraverseCb) => 
+  _traverseObject<true, true, true>(true, true, true, cb);
+
+
+/**
+ * Validates an object schema, calls an error function is supplied one, returns 
+ * "undefined" if the parse fails, and works recursively too. NOTE: this will 
+ * purge all keys not part of the schema.
+ */
+function _traverseObject<
+  O extends boolean,
+  N extends boolean,
+  A extends boolean,
+>(
+  optional: O,
+  nullable: N,
+  isArray: A,
+  cb: TTraverseCb,
+) {
+  return <T>(arg: T): T => {
+    _traverseObjectHelper<A>(!!optional, !!nullable, isArray, arg, cb);
+    return arg;
+  }
+}
+
+/**
+ * Validate the schema. 
+ */
+function _traverseObjectHelper<A>(
+  optional: boolean,
+  nullable: boolean,
+  isArray: A,
+  arg: unknown,
+  cb: TTraverseCb,
+): void {
+  // Check "undefined"
+  if (arg === undefined && !optional) {
+    throw new Error('Value was undefined but not optional.');
+  }
+  // Check "null"
+  if (arg === null && !nullable) {
+    throw new Error('Value was null but not nullable.');
+  }
+  // Check "array"
+  if (isArray) {
+    if (!Array.isArray(arg)) {
+      throw new Error('Value is not an array.');
+    }
+    // Iterate array
+    for (const item of arg) {
+      _traverseObjectHelperCore(item, cb);
+    }
+  // Default
+  } else {
+    _traverseObjectHelperCore(arg, cb);
+  }
+}
+
+/**
+ * Iterate an object, apply a validator function to to each property in an 
+ * object using the schema.
+ */
+function _traverseObjectHelperCore(
+  parentObj: unknown,
+  cb: TTraverseCb,
+): void {
+  // Must be an object
+  if (!isRecord(parentObj)) {
+    return;
+  }
+  // Iterate schema
+  const entries = Object.entries(parentObj);
+  for (const [key, value] of entries) {
+    if (isRecord(value)) {
+      _traverseObjectHelperCore(value, cb);
+    } else {
+      cb(key, value, parentObj);
+    }
+  }
 }

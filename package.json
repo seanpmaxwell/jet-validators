@@ -41,6 +41,7 @@
     "@stylistic/eslint-plugin-ts": "^2.8.0",
     "@types/eslint__js": "^8.42.3",
     "@types/node": "^22.8.1",
+    "dotenv": "^16.4.7",
     "eslint": "^9.11.1",
     "eslint-plugin-n": "^17.10.3",
     "i": "^0.3.7",

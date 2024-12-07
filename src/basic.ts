@@ -106,7 +106,7 @@ export const isNullableDateArray = orNullable(isDateArray);
 export const isNullishDateArray = orNullable(isOptionalDateArray);
 
 // Valid date (is it a valid date after calling "new Date()", could be a string or number)
-export const isValidDate = _isValidDate();
+export const isValidDate = _isValidDate;
 export const isOptionalValidDate = orOptional(isValidDate);
 export const isNullableValidDate = orNullable(isValidDate);
 export const isNullishValidDate = orNullable(isOptionalValidDate);
@@ -193,11 +193,12 @@ function _checkType<T>(type: string) {
 /**
  * Is valid date.
  */
-function _isValidDate(): TValidateWithTransform<Date> {
-  return transform(
-    (arg: unknown) => new Date(arg as Date),
-    (arg: unknown): arg is Date => arg instanceof Date && !isNaN(arg.getTime()),
-  );
+function _isValidDate(arg: unknown): arg is Date | string | number {
+  if (!(isString(arg) || isNumber(arg) || arg instanceof Date)) {
+    return false;
+  }
+  const argf = new Date(arg);
+  return !isNaN(argf.getTime());
 }
 
 /**

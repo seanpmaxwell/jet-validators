@@ -1,4 +1,6 @@
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
+import dotenv from 'dotenv';
+import path from 'path';
 
 import {
   isUndef,
@@ -100,7 +102,22 @@ import {
   isOptionalEnumVal,
   isNullableEnumVal,
   isNullishEnumVal,
+  TRecord,
 } from '../src';
+
+import {
+  iterateObjEntries,
+  nonNullable,
+  parseBoolean,
+  parseNullishObjectArray,
+  parseObject,
+  parseObjectArray,
+  parseOptionalObject,
+  safeJsonParse,
+  testObject,
+  transform,
+} from '../src/utils';
+import { traverseObject } from '../src/utils/util-functions';
 
 
 /**
@@ -311,9 +328,13 @@ test('test basic validators', () => {
   // Test Record (TRecord => Record<string, unknown>)
   // NOTE: number keys are caste to strings and symbols are skipped when 
   // doing for..in loops.
-  const R1 = { foo: 1, bar: 'bar' },
-    R2 = { foo: 1, [1234]: 'bar' }, // numbers are converted to strings
-    R3 = { foo: 1, [Symbol(777)]: 'bar' };
+  const R1: TRecord = { foo: 1, bar: 'bar' },
+    R2: TRecord = { foo: 1, [1234]: 'bar' }, // numbers are converted to strings
+    R3: TRecord = { foo: 1, [Symbol(777)]: 'bar' };
+  const blah: TRecord = {};
+  if (isRecord(blah)) {
+    blah[1234]
+  }
   expect(isRecord(R1)).toStrictEqual(true);
   expect(isRecord(R2)).toStrictEqual(true);
   expect(isRecord(R3)).toStrictEqual(true);
@@ -380,6 +401,40 @@ test('test regexes', () => {
   expect(isUrl('google.com')).toStrictEqual(true);
   expect(isUrl('google.net')).toStrictEqual(true);
   expect(isUrl('google')).toStrictEqual(false);
+
+  // Email
+  expect(isEmail('a@a.com')).toStrictEqual(true);
+  expect(isEmail('asdf')).toStrictEqual(false);
+  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
+  expect(isOptionalEmail(undefined)).toStrictEqual(true);
+  expect(isNullableEmail('a@a.com')).toStrictEqual(true);
+  expect(isNullableEmail(null)).toStrictEqual(true);
+  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
+  expect(isNullishEmail(undefined)).toStrictEqual(true);
+  expect(isNullishEmail(null)).toStrictEqual(true);
+  expect(isNullishEmail(undefined)).toStrictEqual(true);
+});
+
+
+/**
+ * Test overloading regexes from environment variables.
+ */
+test('test overloading regexes from environment variables', async () => {
+  vi.resetModules();
+
+  // Load environment file
+  const result = dotenv.config({
+    path: path.join(__dirname, '.env.vitest'),
+  });
+  if (result.error) {
+    console.error(result)
+  }
+  const src = await import('../src');
+
+  // Email
+  expect(process.env.JET_VALIDATORS_REGEX_COLOR).toStrictEqual('^([A-Fa-f0-9]{6})$');
+  expect(src.isColor('ffffff')).toStrictEqual(true);
+  expect(src.isColor('#ffffff')).toStrictEqual(false);
 });
 
 
@@ -468,3 +523,300 @@ test('test complex validators', () => {
   expect(isNullishEnumVal(NumberEnum)(null)).toStrictEqual(true);
   expect(isNullishEnumVal(NumberEnum)(1)).toStrictEqual(true);
 })
+
+
+/**
+ * Test simple utilities.
+ */
+test('test simple utilities', () => {
+
+  // Non-Nullable
+  expect(nonNullable(isNullableString)('asdf')).toStrictEqual(true);
+  expect(nonNullable(isNullableString)(null)).toStrictEqual(false);
+  expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
+
+  // Check Object entries
+  const isStrNumObj = iterateObjEntries<Record<string, number>>((key, val) => 
+    isString(key) && isNumber(val));
+  expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
+  expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);
+
+  // Check "transform" and "safeJsonParse" functions
+  const isNumArrWithParse = transform(safeJsonParse, isNumberArray);
+  expect(isNumArrWithParse('[1,2,3]', val => {
+    expect(isNumberArray(val)).toStrictEqual(true);
+  })).toStrictEqual(true);
+
+  // Check parse boolean function
+  expect(parseBoolean(false)).toStrictEqual(false);
+  expect(parseBoolean(true)).toStrictEqual(true);
+  expect(parseBoolean('fAlSe')).toStrictEqual(false);
+  expect(parseBoolean('fAlSee')).toStrictEqual(undefined);
+  expect(parseBoolean('tRUe')).toStrictEqual(true);
+  expect(parseBoolean(1)).toStrictEqual(true);
+  expect(parseBoolean(0)).toStrictEqual(false);
+  expect(parseBoolean('1')).toStrictEqual(true);
+  expect(parseBoolean('0')).toStrictEqual(false);
+});
+
+
+/**
+ * Test "parseObject".
+ */
+test('test "parseObject" function', () => {
+
+  // Non-Nullable
+  expect(nonNullable(isNullableString)('asdf')).toStrictEqual(true);
+  expect(nonNullable(isNullableString)(null)).toStrictEqual(false);
+  expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
+
+  // Check Object entries
+  const isStrNumObj = iterateObjEntries<Record<string, number>>((key, val) => 
+    isString(key) && isNumber(val));
+  expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
+  expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);
+
+  // Check "transform" and "safeJsonParse" functions
+  const isNumArrWithParse = transform(safeJsonParse, isNumberArray);
+  expect(isNumArrWithParse('[1,2,3]', val => {
+    expect(isNumberArray(val)).toStrictEqual(true);
+  })).toStrictEqual(true);
+
+  // Check parse boolean function
+  expect(parseBoolean(false)).toStrictEqual(false);
+  expect(parseBoolean(true)).toStrictEqual(true);
+  expect(parseBoolean('fAlSe')).toStrictEqual(false);
+  expect(parseBoolean('fAlSee')).toStrictEqual(undefined);
+  expect(parseBoolean('tRUe')).toStrictEqual(true);
+  expect(parseBoolean(1)).toStrictEqual(true);
+  expect(parseBoolean(0)).toStrictEqual(false);
+  expect(parseBoolean('1')).toStrictEqual(true);
+  expect(parseBoolean('0')).toStrictEqual(false);
+});
+
+
+/**
+ * Test "parseObject" function
+ */
+test('test "parseObj" function', () => {
+
+  // Basic Test
+  const parseUser = parseObject({
+    id: transform(Number, isNumber),
+    name: isString,
+  });
+  const user = parseUser({
+    id: '5',
+    name: 'john',
+    email: '--',
+  });
+  expect(user).toStrictEqual({ id: 5, name: 'john' });
+
+  // Parse optional object
+  const parseOptUser = parseOptionalObject({
+    id: isNumber,
+    name: isString,
+  });
+  const optUser = parseOptUser({
+    id: 15,
+    name: 'joe',
+    email: '--',
+  });
+  const optUser2 = parseOptUser(undefined);
+  expect(optUser).toStrictEqual({ id: 15, name: 'joe' });
+  expect(optUser2).toStrictEqual(undefined);
+
+  // ** Array Test ** //
+  const userArr = [user, { id: 1, name: 'a' }, { id: 2, name: 'b' }],
+    userArrBad = [user, { id: 1, name: 'a' }, { idd: 2, name: 'b' }];
+  // Normal array test
+  const parseUserArr = parseObjectArray({
+    id: isNumber,
+    name: isString,
+  });
+  const parsedUserArr = parseUserArr(userArr),
+    parsedUserArrBad = parseOptUser(userArrBad);
+  expect(userArr).toStrictEqual(parsedUserArr);
+  expect(parsedUserArrBad).toStrictEqual(undefined);
+  // Nullish or array
+  const parseNishUserArr = parseNullishObjectArray({
+    id: isNumber,
+    name: isString,
+  });
+  const parsedNishUserArr = parseNishUserArr(null);
+  expect(parsedNishUserArr).toStrictEqual(null);
+  const parsedNishUserArr2 = parseNishUserArr(userArr);
+  expect(parsedNishUserArr2).toStrictEqual(userArr);
+
+  // ** Nested Object Test (Good) ** //
+  const parseUserWithAddr = parseObject({
+    id: isNumber,
+    name: isString,
+    address: {
+      city: isString,
+      zip: isNumber,
+    },
+  });
+  const userWithAddr = parseUserWithAddr({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'seattle',
+      zip: 98111,
+    },
+  });
+  expect(userWithAddr).toStrictEqual({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'seattle',
+      zip: 98111,
+    },
+  });
+  expect(userWithAddr.address.zip).toBe(98111);
+
+  // ** Nested Object Test (Bad) ** //
+  const userWithAddrBad = parseUserWithAddr({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'seattle',
+      zip: '98111',
+    },
+  });
+  expect(userWithAddrBad).toBe(undefined);
+
+  // ** Test parse "onError" function ** //
+  const parseUserWithError = parseObject({
+    id: isNumber,
+    name: isString,
+  }, (prop, value) => {
+    expect(prop).toStrictEqual('id');
+    expect(value).toStrictEqual('5');
+  });
+  parseUserWithError({
+    id: '5',
+    name: 'john',
+  });
+
+  // ** Test parseObj "onError" function for array argument ** //
+  const parseUserArrWithError = parseObjectArray({
+    id: isNumber,
+    name: isString,
+  }, (prop, value, index) => {
+    expect(prop).toStrictEqual('id');
+    expect(value).toStrictEqual('3');
+    expect(index).toStrictEqual(2);
+  });
+  parseUserArrWithError([
+    { id: 1, name: '1' },
+    { id: 2, name: '2' },
+    { id: '3', name: '3' },
+    { id: 3, name: '3' },
+  ]);
+
+  // ** Test "parseObj" when validator throws error ** //
+  const isStrWithErr = (val: unknown): val is string => {
+    if (isString(val)) {
+      return true;
+    } else {
+      throw new Error('Value was not a valid string.');
+    }
+  };
+  const parseUserHandleErr = parseObject({
+    id: isNumber,
+    name: isStrWithErr,
+  }, (prop, value, caughtErr) => {
+    expect(prop).toStrictEqual('name');
+    expect(value).toStrictEqual(null);
+    expect(caughtErr).toStrictEqual('Value was not a valid string.');
+  });
+  parseUserHandleErr({
+    id: 5,
+    name: null,
+  });
+});
+
+
+/**
+ * Test "testObject" function
+ */
+test('test "testObj" function', () => {
+
+  // Do basic test
+  const testUser = testObject({
+    id: isNumber,
+    name: isString,
+    address: {
+      city: isString,
+      zip: transform(Number, isNumber),
+    },
+  });
+  const result = testUser({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'Seattle',
+      zip: '98109',
+    },
+  });
+  expect(result).toStrictEqual(true);
+  
+  // Test combination of "parseObj" and "testObj"
+  const testCombo = parseObject({
+    id: isNumber,
+    name: isString,
+    address: testObject({
+      city: isString,
+      zip: transform(Number, isNumber),
+    }),
+  });
+  const user = testCombo({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'Seattle',
+      zip: '98109',
+    },
+  });
+  expect(user).toStrictEqual({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'Seattle',
+      zip: 98109,
+    },
+  });
+});
+
+
+/**
+ * Test "traverseObject" function
+ */
+test('test "traverseObject" function', () => {
+
+  // Do basic test
+  const convertValidToDateObjects = traverseObject((key, value, parentObj) => {
+    if (isValidDate(value)) {
+      parentObj[key] = new Date(value);
+    } else {
+      parentObj[key] = 'Invalid Date';
+    }
+  });
+  const result = convertValidToDateObjects({
+    today: '2024-12-06T23:43:37.012Z',
+    lastYear: '2023-12-06T22:14:20.012Z',
+    nested: {
+      milli: 1733528684737,
+      invalid: '2024-12-06TVB23:43:37.012Z',
+    },
+  });
+  expect(result).toStrictEqual({
+    today: new Date('2024-12-06T23:43:37.012Z'),
+    lastYear: new Date('2023-12-06T22:14:20.012Z'),
+    nested: {
+      milli: new Date(1733528684737),
+      invalid: 'Invalid Date',
+    },
+  });
+});
