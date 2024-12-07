@@ -12,27 +12,27 @@
 ## Basic Validators <a name="basic-validators"></a>
 These can be imported and used directly and don't require any configuration.
 
-- Nullables
-- isBoolean
-- isValidBoolean
-- isNumber
-- isBigInt
-- isValidNumber
-- isString
-- isNonEmptyString
-- isSymbol
-- isDate
-- isValidDate
-- isObject
-- isRecord
-- isFunction
+- [Nullables](#nullables)
+- [isBoolean](#isBoolean)
+- [isValidBoolean](#isValidBoolean)
+- [isNumber](#isNumber)
+- [isBigInt](#isBigInt)
+- [isValidNumber](#isValidNumber)
+- [isString](#isString)
+- [isNonEmptyString](#isNonEmptyString)
+- [isSymbol](#isSymbol)
+- [isDate](#isDate)
+- [isValidDate](#isValidDate)
+- [isObject](#isObject)
+- [isRecord](#isRecord)
+- [isFunction](#isFunction)
 
-### Nullables
+### Nullables <a name="nullables"></a>
 - isUndef
 - isNull
 - isNullOrUndef
 
-### `isBoolean`
+### `isBoolean` <a name="isBoolean"></a>
 - isBoolean
 - isOptionalBoolean
 - isNullableBoolean
@@ -42,7 +42,7 @@ These can be imported and used directly and don't require any configuration.
 - isNullableBooleanArray
 - isNullishBooleanArray
 
-### `isValidBoolean`
+### `isValidBoolean` <a name="isValidBoolean"></a>
 Is it a valid boolean after calling the `parseBoolean` utility function.
 - isValidBoolean
 - isOptionalValidBoolean
@@ -53,7 +53,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableValidBooleanArray
 - isNullishValidBooleanArray
 
-### `isNumber`
+### `isNumber` <a name="isNumber"></a>
 - isNumber
 - isOptionalNumber
 - isNullableNumber
@@ -63,7 +63,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableNumberArray
 - isNullishNumberArray
 
-### `isBigInt`
+### `isBigInt` <a name="isBigInt"></a>
 - isBigInt
 - isOptionalBigInt
 - isNullableBigInt
@@ -73,7 +73,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableBigIntArray
 - isNullishBigIntArr
 
-### `isValidNumber`
+### `isValidNumber` <a name="isValidNumber"></a>
 - isValidNumber
 - isOptionalValidNumber
 - isNullableValidNumber
@@ -83,7 +83,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableValidNumberArray
 - isNishValidNumArr
 
-### `isString`
+### `isString` <a name="isString"></a>
 - isString
 - isOptionalString
 - isNullableString
@@ -93,7 +93,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableStringArray
 - isNullishStringArray
 
-### `isNonEmptyString`
+### `isNonEmptyString` <a name="isNonEmptyString"></a>
 - isNonEmptyString
 - isOptionalNonEmptyString
 - isNullableNonEmptyString
@@ -102,8 +102,9 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isOptionalNonEmptyStringArray
 - isNullableNonEmptyStringArray
 - isNullishNonEmptyStringArray
+- TNonEmptyStr
 
-### `isSymbol`
+### `isSymbol` <a name="isSymbol"></a>
 - isSymbol
 - isOptionalSymbol
 - isNullableSymbol
@@ -113,7 +114,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableSymbolArray
 - isNullishSymbolArray
 
-### `isDate`
+### `isDate` <a name="isDate"></a>
 - isDate
 - isOptionalDate
 - isNullableDate
@@ -123,7 +124,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableDateArray
 - isNullishDateArray
 
-### `isValidDate`
+### `isValidDate` <a name="isValidDate"></a>
 Is it a valid date after wrapping with `new Date()`
 - isValidDate
 - isOptionalValidDate
@@ -134,7 +135,7 @@ Is it a valid date after wrapping with `new Date()`
 - isNullableValidDateArray
 - isNullishValidDateArray
 
-### `isObject`
+### `isObject` <a name="isObject"></a>
 - isObject
 - isOptionalObject
 - isNullableObject
@@ -144,7 +145,8 @@ Is it a valid date after wrapping with `new Date()`
 - isNullableObjectArray
 - isNullishObjectArray
 
-### `isRecord`
+### `isRecord` <a name="isRecord"></a>
+Checks if the argument is a non-null non-array object. Type predicate is `Record<string, unknown>`.
 - isRecord
 - isOptionalRecord
 - isNullableRecord
@@ -153,8 +155,9 @@ Is it a valid date after wrapping with `new Date()`
 - isOptionalRecordArray
 - isNullableRecordArray
 - isNullishRecordArray
+- TRecord (type)
 
-### `isFunction`
+### `isFunction` <a name="isFunction"></a>
 - isFunction
 - isOptionalFunction
 - isNullableFunction
@@ -163,16 +166,11 @@ Is it a valid date after wrapping with `new Date()`
 - isOptionalFunctionArray
 - isNullableFunctionArray
 - isNullishFunctionArray
-
-### Types
-- TNonEmptyStr
-- TRecord
 <br/><br/>
 
 
 ## Regular Expressions
 Verifies the argument matches the regular-expression. Note than an empty string will validate to `true` for each function.
-
 - Overloading using environment variables
 - isColor
 - isEmail
@@ -226,7 +224,6 @@ The regular expressions for each function below can be overwritten using the env
 
 ## Complex Validators
 These require an initialization step which will return a validator function.
-
 - isInArray
 - isInRange
 - isKeyOf
@@ -269,7 +266,6 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
   isFrom0to100(100); // true
   isFrom0to100(0); // true
 ```
- 
 - isInRange
 - isOptionalInRange
 - isNullableInRange
@@ -293,7 +289,6 @@ Checks if the argument is a key of the object. Note that this will not work for 
   const isKeyofSomeObjectArr = isNullableKeyOfArray(someObject);
   isKeyofSomeObjectArr(['bada', 'foo']); // true
 ```
-
 - isKeyOf
 - isOptionalKeyOf
 - isNullableKeyOf
@@ -312,7 +307,6 @@ Check if the argument is a valid enum object. Unlike other complex validators th
   }
   isEnum(StringEnum) // true
 ```
-
 - isEnum
 - isOptionalEnum
 - isNullableEnum
@@ -330,7 +324,6 @@ Check if the argument is a value of the enum. You must initialize this with a va
   const isNumberEnumVal = isEnumVal(NumberEnum);
 
 ```
-
 - isEnumVal
 - isOptionalEnumVal
 - isNullableEnumVal
@@ -340,6 +333,12 @@ Check if the argument is a value of the enum. You must initialize this with a va
 
 ## Utilities
 These complement the validator functions and are useful if you need to modify a value before checking it or validate an object's schema. 
-
 - Simple Utilities
-- 
+  - nonNullable
+  - iterateObjEntries
+  - transform
+  - parseBoolean
+  - safeJsonParse
+- parseObject
+- testObject
+- traverseObject

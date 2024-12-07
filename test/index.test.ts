@@ -116,8 +116,8 @@ import {
   safeJsonParse,
   testObject,
   transform,
+  traverseObject,
 } from '../src/utils';
-import { traverseObject } from '../src/utils/util-functions';
 
 
 /**
