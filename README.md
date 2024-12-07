@@ -4,12 +4,12 @@
 
 ## Basic Validators
 
-### `Nullables`
+### Nullables
 - `isUndef`
 - `isNull`
 - `isNullOrUndef`
 
-### `isBoolean`
+### isBoolean
 - `isBoolean`
 - `isOptionalBoolean`
 - `isNullableBoolean`
@@ -19,7 +19,7 @@
 - `isNullableBooleanArray`
 - `isNullishBooleanArray`
 
-### `isValidBoolean`
+### isValidBoolean
 Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isValidBoolean`
 - `isOptionalValidBoolean`
@@ -30,7 +30,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableValidBooleanArray`
 - `isNullishValidBooleanArray`
 
-### `isNumber`
+### isNumber
 - `isNumber`
 - `isOptionalNumber`
 - `isNullableNumber`
@@ -40,7 +40,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableNumberArray`
 - `isNullishNumberArray`
 
-### `isBigInt`
+### isBigInt
 - `isBigInt`
 - `isOptionalBigInt`
 - `isNullableBigInt`
@@ -50,7 +50,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableBigIntArray`
 - `isNullishBigIntArr`
 
-### `isValidNumber`
+### isValidNumber
 - `isValidNumber`
 - `isOptionalValidNumber`
 - `isNullableValidNumber`
@@ -60,7 +60,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableValidNumberArray`
 - `isNishValidNumArr`
 
-### `isString`
+### isString
 - `isString`
 - `isOptionalString`
 - `isNullableString`
@@ -70,7 +70,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableStringArray`
 - `isNullishStringArray`
 
-### `isNonEmptyString`
+### isNonEmptyString
 - `isNonEmptyString`
 - `isOptionalNonEmptyString`
 - `isNullableNonEmptyString`
@@ -80,7 +80,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableNonEmptyStringArray`
 - `isNullishNonEmptyStringArray`
 
-### `isSymbol`
+### isSymbol
 - `isSymbol`
 - `isOptionalSymbol`
 - `isNullableSymbol`
@@ -90,7 +90,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableSymbolArray`
 - `isNullishSymbolArray`
 
-### `isDate`
+### isDate
 - `isDate`
 - `isOptionalDate`
 - `isNullableDate`
@@ -100,7 +100,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - `isNullableDateArray`
 - `isNullishDateArray`
 
-### `isValidDate`
+### isValidDate
 Is it a valid date after wrapping with `new Date()`
 - `isValidDate`
 - `isOptionalValidDate`
@@ -111,7 +111,7 @@ Is it a valid date after wrapping with `new Date()`
 - `isNullableValidDateArray`
 - `isNullishValidDateArray`
 
-### `isObject`
+### isObject
 - `isObject`
 - `isOptionalObject`
 - `isNullableObject`
@@ -121,7 +121,7 @@ Is it a valid date after wrapping with `new Date()`
 - `isNullableObjectArray`
 - `isNullishObjectArray`
 
-### `isRecord`
+### isRecord
 - `isRecord`
 - `isOptionalRecord`
 - `isNullableRecord`
@@ -131,7 +131,7 @@ Is it a valid date after wrapping with `new Date()`
 - `isNullableRecordArray`
 - `isNullishRecordArray`
 
-### `isFunction`
+### isFunction
 - `isFunction`
 - `isOptionalFunction`
 - `isNullableFunction`
@@ -152,31 +152,31 @@ The regular expressions for each function below can be overwritten using the env
 - `JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
 
 
-### `isColor`
+### isColor
 - `isColor`
 - `isOptionalColor`
 - `isNullableColor`
 - `isNullishColor`
 
-### `isEmail`
+### isEmail
 - `isEmail`
 - `isOptionalEmail`
 - `isNullableEmail`
 - `isNullishEmail`
 
-### `isUrl`
+### isUrl
 - `isUrl`
 - `isOptionalUrl`
 - `isNullableUrl`
 - `isNullishUrl`
 
-### `isAlphaNumericString`
+### isAlphaNumericString
 - `isAlphaNumericString`
 - `isOptionalAlphaNumericString`
 - `isNullableAlphaNumericString`
 - `isNullishAlphaNumericString`
 
-### `isAlphabeticString`
+### isAlphabeticString
 - `isAlphabeticString`
 - `isOptionalAlphabeticString`
 - `isNullableAlphabeticString`
@@ -193,7 +193,7 @@ The regular expressions for each function below can be overwritten using the env
 ## Complex Validators
 These require an initialization step which will return a validator function.
 
-### `isInArray`
+### isInArray
 Does the argument strictly equal any item in the array:
 ```typescript
   const isInArrTest = isInArray(['1', '2', '3']);
@@ -204,7 +204,7 @@ Does the argument strictly equal any item in the array:
 - `isNullableInArray`
 - `isNullishInArray`
 
-### `isInRange`
+### isInRange
 Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`:
 ```typescript
 
@@ -239,7 +239,7 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 - `isNullableInRangeArray`
 - `isNullishInRangeArray`
 
-### `isKeyOf`
+### isKeyOf
 Checks if the argument is a key of the object. Note that this will not work for symbols.
 ```typescript
   const someObject = {
@@ -263,7 +263,7 @@ Checks if the argument is a key of the object. Note that this will not work for 
 - `isNullableKeyOfArray`
 - `isNullishKeyOfArray`
 
-### `isEnum`
+### isEnum
 Check if the argument is a valid enum object. Unlike other complex validators this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
 ```typescript
   enum StringEnum {
@@ -280,7 +280,7 @@ Check if the argument is a valid enum object. Unlike other complex validators th
 - `TEnum` (type)
 
 
-### `isEnumVal`
+### isEnumVal
 Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`. 
 ```typescript
   enum NumberEnum {
