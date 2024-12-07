@@ -3,6 +3,22 @@
 
 
 ## Basic Validators
+These can be imported and used directly and don't require any configuration.
+
+- Nullables
+- isBoolean
+- isValidBoolean
+- isNumber
+- isBigInt
+- isValidNumber
+- isString
+- isNonEmptyString
+- isSymbol
+- isDate
+- isValidDate
+- isObject
+- isRecord
+- isFunction
 
 ### Nullables
 - `isUndef`
@@ -148,9 +164,19 @@ Is it a valid date after wrapping with `new Date()`
 
 
 ## Regular Expressions
-The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression` create an environment variables with the format: <br/>
-- `JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
+Verifies the argument matches the regular-expression. Note than an empty string will validate to `true` for each function.
 
+- Overloading using environment variables
+- isColor
+- isEmail
+- isUrl
+- isAlphaNumericString
+- Types
+
+
+### Overloading using environment variables
+The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
+- `JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
 
 ### isColor
 - `isColor`
@@ -188,6 +214,7 @@ The regular expressions for each function below can be overwritten using the env
 - `TURL`
 - `TAlphaNumericStr`
 - `TAlphabeticStr`
+<br/><br/>
 
 
 ## Complex Validators
@@ -301,3 +328,11 @@ Check if the argument is a value of the enum. You must initialize this with a va
 - `isOptionalEnumVal`
 - `isNullableEnumVal`
 - `isNullishEnumVal`
+<br/><br/>
+
+
+## Utilities
+These complement the validator functions and are useful if you need to modify a value before checking it or validate an object's schema. 
+
+- Simple Utilities
+- 
