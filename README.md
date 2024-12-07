@@ -27,7 +27,7 @@ These can be imported and used directly and don't require any configuration.
 - isRecord
 - isFunction
 
-### `Nullables`
+### Nullables
 - isUndef
 - isNull
 - isNullOrUndef
@@ -164,7 +164,7 @@ Is it a valid date after wrapping with `new Date()`
 - isNullableFunctionArray
 - isNullishFunctionArray
 
-### `Types`
+### Types
 - TNonEmptyStr
 - TRecord
 <br/><br/>
@@ -181,7 +181,7 @@ Verifies the argument matches the regular-expression. Note than an empty string 
 - Types
 
 
-### `Overloading using environment variables`
+### Overloading using environment variables
 The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
 - JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
 
@@ -215,7 +215,7 @@ The regular expressions for each function below can be overwritten using the env
 - isNullableAlphabeticString
 - isNullishAlphabeticString
 
-### `Types`
+### Types
 - TEmail
 - TColor
 - TURL
