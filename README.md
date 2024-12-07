@@ -193,7 +193,7 @@ The regular expressions for each function below can be overwritten using the env
 ## Complex Validators
 These require and initialization step which will return a validator function.
 
-### Is in array
+### Is in Array
 Does the argument `===` any item in the array:
 ```typescript
   const isInArrTest = isInArray(['1', '2', '3']);
@@ -204,23 +204,28 @@ Does the argument `===` any item in the array:
 - `isNullableInArray`
 - `isNullishInArray`
 
-### Is in range
+### Is in Range
 Will check if the argument (can be a `string` or a `number`) is in the provided range. The function will always check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in sqaure brackets. If you wish to leave off a min or max pass an empty array `[]`:
 ```typescript
 
   // Between 0 and 100
   const isBetween0And100 = isInRange(0, 100);
   isBetween0And100(50); // false
-  isBetween0And100(100); // false
+  isBetween0And100('100'); // false
   isBetween0And100(0); // true
 
-  // Positives and negatives
+  // Is negative
   const isNegative = isInRange([], 0);
-  const isPositive = isInRange(0, []);
+  isNegative(0); // false
+  isNegative(-.0001); // true
+
+  const isOptPositive = isOptionalInRange(0, []);
+  isOptPositive(undefined); // true
+  isOptPositive(1_000_000_000); // true
 
   // 0 to 100
   const isFrom0to100 = isInRange([0], [100]);
-  isFrom0to100(50); // true
+  isFrom0to100('50'); // true
   isFrom0to100(100); // true
   isFrom0to100(0); // true
 ```
@@ -235,6 +240,8 @@ Will check if the argument (can be a `string` or a `number`) is in the provided 
 - `isNullishInRangeArray`
 
 ### Is Key Of
+Checks if the argument is a key of the object. Note that this will not work for symbols.
+
 - `isKeyOf`
 - `isOptionalKeyOf`
 - `isNullableKeyOf`

@@ -453,24 +453,25 @@ test('test complex validators', () => {
   expect(isNullishInArray(arr)(undefined)).toStrictEqual(true);
 
   // Ranges
-  const isValidAge = isInRange(18, 130);
+  const isValidAge = isInRange([18], [130]);
   expect(isValidAge(123)).toStrictEqual(true);
-  expect(isValidAge(5)).toStrictEqual(false);
+  expect(isValidAge('5')).toStrictEqual(false);
   expect(isValidAge(150)).toStrictEqual(false);
-  const isPos = isNullishInRange(0, null);
-  expect(isPos(1_000_000)).toStrictEqual(true);
-  expect(isPos(-1)).toStrictEqual(false);
-  expect(isPos(undefined)).toStrictEqual(true);
-  expect(isPos(null)).toStrictEqual(true);
-  const isNeg = isOptionalInRange(null, -.000001);
-  expect(isNeg(-1_000_000)).toStrictEqual(true);
-  expect(isNeg(.01)).toStrictEqual(false);
-  expect(isNeg(undefined)).toStrictEqual(true);
-  expect(isNeg(null)).toStrictEqual(false);
-  const isValidNums = isNullishInRangeArray(-1, 10);
+  const isNullishPos = isNullishInRange(0, []);
+  expect(isNullishPos(1_000_000)).toStrictEqual(true);
+  expect(isNullishPos(-1)).toStrictEqual(false);
+  expect(isNullishPos(undefined)).toStrictEqual(true);
+  expect(isNullishPos(null)).toStrictEqual(true);
+  const isOptionalNeg = isOptionalInRange([], 0);
+  expect(isOptionalNeg(-1_000_000)).toStrictEqual(true);
+  expect(isOptionalNeg(.01)).toStrictEqual(false);
+  expect(isOptionalNeg(undefined)).toStrictEqual(true);
+  expect(isOptionalNeg(null)).toStrictEqual(false);
+  const isValidNums = isNullishInRangeArray([-1], 10);
   expect(isValidNums([-1, 2, 3])).toStrictEqual(true);
-  expect(isValidNums([-1, 11, 3])).toStrictEqual(false);
+  expect(isValidNums([-1, '11', 3])).toStrictEqual(false);
   expect(isValidNums([-1, null, 3])).toStrictEqual(false);
+  expect(isValidNums([-1, 'horse', 3])).toStrictEqual(false);
   expect(isValidNums(2)).toStrictEqual(false);
   expect(isValidNums(null)).toStrictEqual(true);
 

@@ -44,6 +44,9 @@ export function _isInArray<
 
 // **** In Range **** //
 
+type TRangeParam = number | [number] | [];
+type TRangeFn = (arg: number) => boolean;
+
 export const isInRange = _isInRange<false, false, false>(false, false, false);
 export const isOptionalInRange = _isInRange<true, false, false>(true, false, false);
 export const isNullableInRange = _isInRange<false, true, false>(false, true, false);
@@ -71,8 +74,9 @@ function _isInRange<
   optional: boolean,
   nullable: boolean,
   isArr: boolean,
-): (min: number | null, max: number | null) => ((arg: unknown) => arg is Ret) {
-  return (min: number | null, max: number | null): ((arg: unknown) => arg is Ret) => {
+): (min: TRangeParam, max: TRangeParam) => ((arg: unknown) => arg is Ret) {
+  return (min: TRangeParam, max: TRangeParam): ((arg: unknown) => arg is Ret) => {
+    const rangeFn = _initRangeFn(min, max);
     return (arg: unknown): arg is Ret => {
       if (arg === undefined) {
         return optional;
@@ -81,9 +85,9 @@ function _isInRange<
         return nullable;
       }
       if (isArr) {
-        return Array.isArray(arg) && !arg.some(item => !_isInRangeHelper(item, min, max));
+        return Array.isArray(arg) && !arg.some(item => !_isInRangeHelper(item, rangeFn));
       }
-      return _isInRangeHelper(arg, min, max);
+      return _isInRangeHelper(arg, rangeFn);
     };
   };
 }
@@ -91,28 +95,52 @@ function _isInRange<
 /**
  * Core logic for is array function.
  */
-function _isInRangeHelper(arg: unknown, min: number | null, max: number | null): boolean {
-
-  // pick up here, update this logic
+function _isInRangeHelper(arg: unknown, rangeFn: TRangeFn): boolean {
   if (isString(arg)) {
     if (isValidNumber(arg)) {
       arg = Number(arg)
     } else {
-      throw new Error('Value was not a valid number.');
+      return false;
     }
   }
   if (!isNumber(arg)) {
     return false;
   }
-
-  if (min !== null && arg < min) {
-    return false;
-  }
-  if (max !== null && arg > max) {
-    return false;
-  }
-  return true;
+  return rangeFn(arg);
 }
+
+/**
+ * Initialize inRange function.
+ */
+function _initRangeFn(min: TRangeParam, max: TRangeParam): TRangeFn {
+  // arg >= min && arg <= max
+  if (Array.isArray(min) && min.length === 1 && Array.isArray(max) && max.length === 1) {
+    return ((arg: number) => arg >= min[0] && arg <= max[0]);
+  // arg >= min
+  } else if (Array.isArray(min) && min.length === 1 && Array.isArray(max) && max.length === 0) {
+    return ((arg: number) => arg >= min[0]);
+  // arg > min
+  } else if (!Array.isArray(min) && Array.isArray(max) && max.length === 0) {
+    return ((arg: number) => arg > min);
+  // arg >= min && arg < max
+  } else if (Array.isArray(min) && min.length === 1 && !Array.isArray(max)) {
+    return ((arg: number) => arg >= min[0] && arg < max);
+  // arg <= max
+  } else if (Array.isArray(min) && min.length === 0 && Array.isArray(max) && max.length === 1) {
+    return ((arg: number) => arg <= max[0]);
+  // arg < max
+  } else if (Array.isArray(min) && min.length === 0 && !Array.isArray(max)) {
+    return ((arg: number) => arg < max);
+  // arg > min && arg <= max
+  } else if (!Array.isArray(min) && Array.isArray(max) && max.length === 1) {
+    return ((arg: number) => arg > min && arg <= max[0]);
+  // arg > min && arg < max
+  } else if (!Array.isArray(min) && !Array.isArray(max)) {
+    return ((arg: number) => arg > min && arg < max);
+  }
+  // Shouldn't reach this point.
+  throw new Error('min and max must be number, [number], or []');
+}  
 
 
 // **** Is string a key of an object **** //
