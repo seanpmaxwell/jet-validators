@@ -1,4 +1,4 @@
-import { isNull, isNumber, isObject, isRecord, isString, isUndef } from './basic';
+import { isNull, isNumber, isObject, isRecord, isString, isUndef, isValidNumber } from './basic';
 import { AddMods, AddNullables, orNullable, orOptional } from './common';
 
 
@@ -66,7 +66,7 @@ function _isInRange<
   O extends boolean,
   N extends boolean,
   A extends boolean,
-  Ret = AddMods<number, O, N, A>,
+  Ret = AddMods<number | string, O, N, A>,
 >(
   optional: boolean,
   nullable: boolean,
@@ -92,9 +92,19 @@ function _isInRange<
  * Core logic for is array function.
  */
 function _isInRangeHelper(arg: unknown, min: number | null, max: number | null): boolean {
+
+  // pick up here, update this logic
+  if (isString(arg)) {
+    if (isValidNumber(arg)) {
+      arg = Number(arg)
+    } else {
+      throw new Error('Value was not a valid number.');
+    }
+  }
   if (!isNumber(arg)) {
     return false;
   }
+
   if (min !== null && arg < min) {
     return false;
   }

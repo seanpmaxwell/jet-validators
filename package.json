@@ -1,7 +1,7 @@
 {
   "name": "jet-validators",
   "version": "1.0.0",
-  "description": "A list common typescript validator functions and some useful utilities.",
+  "description": "A list common typescript validator-functions and some useful utilities to go with them.",
   "main": "index.js",
   "scripts": {
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
@@ -14,9 +14,9 @@
     "url": "git+https://github.com/seanpmaxwell/jet-validators.git"
   },
   "exports": {
-    "require": "./dist/cjs/index.cjs",
-    "import": "./dist/esm/index.js",
-    "default": "./dist/cjs/index.cjs"
+    "./util": {
+      "default": "./dist/util"
+    }
   },
   "keywords": [
     "jet",
