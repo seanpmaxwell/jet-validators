@@ -42,131 +42,131 @@ These can be imported and used directly and don't require any configuration.
 - isNullableBooleanArray
 - isNullishBooleanArray
 
-### isValidBoolean
+### `isValidBoolean`
 Is it a valid boolean after calling the `parseBoolean` utility function.
-- `isValidBoolean`
-- `isOptionalValidBoolean`
-- `isNullableValidBoolean`
-- `isNullishValidBoolean`
-- `isValidBooleanArray`
-- `isOptionalValidBooleanArray`
-- `isNullableValidBooleanArray`
-- `isNullishValidBooleanArray`
+- isValidBoolean
+- isOptionalValidBoolean
+- isNullableValidBoolean
+- isNullishValidBoolean
+- isValidBooleanArray
+- isOptionalValidBooleanArray
+- isNullableValidBooleanArray
+- isNullishValidBooleanArray
 
-### isNumber
-- `isNumber`
-- `isOptionalNumber`
-- `isNullableNumber`
-- `isNullishNumber`
-- `isNumberArray`
-- `isOptionalNumberArray`
-- `isNullableNumberArray`
-- `isNullishNumberArray`
+### `isNumber`
+- isNumber
+- isOptionalNumber
+- isNullableNumber
+- isNullishNumber
+- isNumberArray
+- isOptionalNumberArray
+- isNullableNumberArray
+- isNullishNumberArray
 
-### isBigInt
-- `isBigInt`
-- `isOptionalBigInt`
-- `isNullableBigInt`
-- `isNullishBigInt`
-- `isBigIntArray`
-- `isOptionalBigIntArray`
-- `isNullableBigIntArray`
-- `isNullishBigIntArr`
+### `isBigInt`
+- isBigInt
+- isOptionalBigInt
+- isNullableBigInt
+- isNullishBigInt
+- isBigIntArray
+- isOptionalBigIntArray
+- isNullableBigIntArray
+- isNullishBigIntArr
 
-### isValidNumber
-- `isValidNumber`
-- `isOptionalValidNumber`
-- `isNullableValidNumber`
-- `isNullishValidNumber`
-- `isValidNumberArray`
-- `isOptionalValidNumberArray`
-- `isNullableValidNumberArray`
-- `isNishValidNumArr`
+### `isValidNumber`
+- isValidNumber
+- isOptionalValidNumber
+- isNullableValidNumber
+- isNullishValidNumber
+- isValidNumberArray
+- isOptionalValidNumberArray
+- isNullableValidNumberArray
+- isNishValidNumArr
 
-### isString
-- `isString`
-- `isOptionalString`
-- `isNullableString`
-- `isNullishString`
-- `isStringArray`
-- `isOptionalStringArray`
-- `isNullableStringArray`
-- `isNullishStringArray`
+### `isString`
+- isString
+- isOptionalString
+- isNullableString
+- isNullishString
+- isStringArray
+- isOptionalStringArray
+- isNullableStringArray
+- isNullishStringArray
 
-### isNonEmptyString
-- `isNonEmptyString`
-- `isOptionalNonEmptyString`
-- `isNullableNonEmptyString`
-- `isNullishNonEmptyString`
-- `isNonEmptyStringArray`
-- `isOptionalNonEmptyStringArray`
-- `isNullableNonEmptyStringArray`
-- `isNullishNonEmptyStringArray`
+### `isNonEmptyString`
+- isNonEmptyString
+- isOptionalNonEmptyString
+- isNullableNonEmptyString
+- isNullishNonEmptyString
+- isNonEmptyStringArray
+- isOptionalNonEmptyStringArray
+- isNullableNonEmptyStringArray
+- isNullishNonEmptyStringArray
 
-### isSymbol
-- `isSymbol`
-- `isOptionalSymbol`
-- `isNullableSymbol`
-- `isNullishSymbol`
-- `isSymbolArray`
-- `isOptionalSymbolArray`
-- `isNullableSymbolArray`
-- `isNullishSymbolArray`
+### `isSymbol`
+- isSymbol
+- isOptionalSymbol
+- isNullableSymbol
+- isNullishSymbol
+- isSymbolArray
+- isOptionalSymbolArray
+- isNullableSymbolArray
+- isNullishSymbolArray
 
-### isDate
-- `isDate`
-- `isOptionalDate`
-- `isNullableDate`
-- `isNullishDate`
-- `isDateArray`
-- `isOptionalDateArray`
-- `isNullableDateArray`
-- `isNullishDateArray`
+### `isDate`
+- isDate
+- isOptionalDate
+- isNullableDate
+- isNullishDate
+- isDateArray
+- isOptionalDateArray
+- isNullableDateArray
+- isNullishDateArray
 
-### isValidDate
+### `isValidDate`
 Is it a valid date after wrapping with `new Date()`
-- `isValidDate`
-- `isOptionalValidDate`
-- `isNullableValidDate`
-- `isNullishValidDate`
-- `isValidDateArray`
-- `isOptionalValidDateArray`
-- `isNullableValidDateArray`
-- `isNullishValidDateArray`
+- isValidDate
+- isOptionalValidDate
+- isNullableValidDate
+- isNullishValidDate
+- isValidDateArray
+- isOptionalValidDateArray
+- isNullableValidDateArray
+- isNullishValidDateArray
 
-### isObject
-- `isObject`
-- `isOptionalObject`
-- `isNullableObject`
-- `isNullishObject`
-- `isObjectArray`
-- `isOptionalObjectArray`
-- `isNullableObjectArray`
-- `isNullishObjectArray`
+### `isObject`
+- isObject
+- isOptionalObject
+- isNullableObject
+- isNullishObject
+- isObjectArray
+- isOptionalObjectArray
+- isNullableObjectArray
+- isNullishObjectArray
 
-### isRecord
-- `isRecord`
-- `isOptionalRecord`
-- `isNullableRecord`
-- `isNullishRecord`
-- `isRecordArray`
-- `isOptionalRecordArray`
-- `isNullableRecordArray`
-- `isNullishRecordArray`
+### `isRecord`
+- isRecord
+- isOptionalRecord
+- isNullableRecord
+- isNullishRecord
+- isRecordArray
+- isOptionalRecordArray
+- isNullableRecordArray
+- isNullishRecordArray
 
-### isFunction
-- `isFunction`
-- `isOptionalFunction`
-- `isNullableFunction`
-- `isNullishFunction`
-- `isFunctionArray`
-- `isOptionalFunctionArray`
-- `isNullableFunctionArray`
-- `isNullishFunctionArray`
+### `isFunction`
+- isFunction
+- isOptionalFunction
+- isNullableFunction
+- isNullishFunction
+- isFunctionArray
+- isOptionalFunctionArray
+- isNullableFunctionArray
+- isNullishFunctionArray
 
-### Types
-- `TNonEmptyStr`
-- `TRecord`
+### `Types`
+- TNonEmptyStr
+- TRecord
 <br/><br/>
 
 
@@ -181,46 +181,46 @@ Verifies the argument matches the regular-expression. Note than an empty string 
 - Types
 
 
-### Overloading using environment variables
+### `Overloading using environment variables`
 The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
-- `JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
+- JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
 
-### isColor
-- `isColor`
-- `isOptionalColor`
-- `isNullableColor`
-- `isNullishColor`
+### `isColor`
+- isColor
+- isOptionalColor
+- isNullableColor
+- isNullishColor
 
-### isEmail
-- `isEmail`
-- `isOptionalEmail`
-- `isNullableEmail`
-- `isNullishEmail`
+### `isEmail`
+- isEmail
+- isOptionalEmail
+- isNullableEmail
+- isNullishEmail
 
-### isUrl
-- `isUrl`
-- `isOptionalUrl`
-- `isNullableUrl`
-- `isNullishUrl`
+### `isUrl`
+- isUrl
+- isOptionalUrl
+- isNullableUrl
+- isNullishUrl
 
-### isAlphaNumericString
-- `isAlphaNumericString`
-- `isOptionalAlphaNumericString`
-- `isNullableAlphaNumericString`
-- `isNullishAlphaNumericString`
+### `isAlphaNumericString`
+- isAlphaNumericString
+- isOptionalAlphaNumericString
+- isNullableAlphaNumericString
+- isNullishAlphaNumericString
 
-### isAlphabeticString
-- `isAlphabeticString`
-- `isOptionalAlphabeticString`
-- `isNullableAlphabeticString`
-- `isNullishAlphabeticString`
+### `isAlphabeticString`
+- isAlphabeticString
+- isOptionalAlphabeticString
+- isNullableAlphabeticString
+- isNullishAlphabeticString
 
-### Types
-- `TEmail`
-- `TColor`
-- `TURL`
-- `TAlphaNumericStr`
-- `TAlphabeticStr`
+### `Types`
+- TEmail
+- TColor
+- TURL
+- TAlphaNumericStr
+- TAlphabeticStr
 <br/><br/>
 
 
@@ -233,18 +233,18 @@ These require an initialization step which will return a validator function.
 - isEnum
 - isEnumVal
 
-### isInArray
+### `isInArray`
 Does the argument strictly equal any item in the array:
 ```typescript
   const isInArrTest = isInArray(['1', '2', '3']);
   isInArrTest('1'); // => true
 ```
-- `isInArray`
-- `isOptionalInArray`
-- `isNullableInArray`
-- `isNullishInArray`
+- isInArray
+- isOptionalInArray
+- isNullableInArray
+- isNullishInArray
 
-### isInRange
+### `isInRange`
 Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`:
 ```typescript
 
@@ -270,16 +270,16 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
   isFrom0to100(0); // true
 ```
  
-- `isInRange`
-- `isOptionalInRange`
-- `isNullableInRange`
-- `isNullishInRange`
-- `isInRangeArray`
-- `isOptionalInRangeArray`
-- `isNullableInRangeArray`
-- `isNullishInRangeArray`
+- isInRange
+- isOptionalInRange
+- isNullableInRange
+- isNullishInRange
+- isInRangeArray
+- isOptionalInRangeArray
+- isNullableInRangeArray
+- isNullishInRangeArray
 
-### isKeyOf
+### `isKeyOf`
 Checks if the argument is a key of the object. Note that this will not work for symbols.
 ```typescript
   const someObject = {
@@ -294,16 +294,16 @@ Checks if the argument is a key of the object. Note that this will not work for 
   isKeyofSomeObjectArr(['bada', 'foo']); // true
 ```
 
-- `isKeyOf`
-- `isOptionalKeyOf`
-- `isNullableKeyOf`
-- `isNullishKeyOf`
-- `isKeyOfArray`
-- `isOptionalKeyOfArray`
-- `isNullableKeyOfArray`
-- `isNullishKeyOfArray`
+- isKeyOf
+- isOptionalKeyOf
+- isNullableKeyOf
+- isNullishKeyOf
+- isKeyOfArray
+- isOptionalKeyOfArray
+- isNullableKeyOfArray
+- isNullishKeyOfArray
 
-### isEnum
+### `isEnum`
 Check if the argument is a valid enum object. Unlike other complex validators this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
 ```typescript
   enum StringEnum {
@@ -313,14 +313,14 @@ Check if the argument is a valid enum object. Unlike other complex validators th
   isEnum(StringEnum) // true
 ```
 
-- `isEnum`
-- `isOptionalEnum`
-- `isNullableEnum`
-- `isNullishEnum`
-- `TEnum` (type)
+- isEnum
+- isOptionalEnum
+- isNullableEnum
+- isNullishEnum
+- TEnum (type)
 
 
-### isEnumVal
+### `isEnumVal`
 Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`. 
 ```typescript
   enum NumberEnum {
@@ -331,10 +331,10 @@ Check if the argument is a value of the enum. You must initialize this with a va
 
 ```
 
-- `isEnumVal`
-- `isOptionalEnumVal`
-- `isNullableEnumVal`
-- `isNullishEnumVal`
+- isEnumVal
+- isOptionalEnumVal
+- isNullableEnumVal
+- isNullishEnumVal
 <br/><br/>
 
 
