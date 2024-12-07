@@ -5,11 +5,11 @@
 
 ## Table of Contents
 - [Introduction](#introduction)
-- [Comparison to other schema validation libraries](#comparison-to-others)
+- [Basic Validators](#basic-validators)
 <br/>
 
 
-## Basic Validators
+## Basic Validators <a name="basic-validators"></a>
 These can be imported and used directly and don't require any configuration.
 
 - Nullables
