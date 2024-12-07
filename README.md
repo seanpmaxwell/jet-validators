@@ -193,6 +193,12 @@ The regular expressions for each function below can be overwritten using the env
 ## Complex Validators
 These require an initialization step which will return a validator function.
 
+- isInArray
+- isInRange
+- isKeyOf
+- isEnum
+- isEnumVal
+
 ### isInArray
 Does the argument strictly equal any item in the array:
 ```typescript
