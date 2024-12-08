@@ -7,7 +7,9 @@
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "test": "NODE_ENV=test vitest",
     "build": "rm -rf ./dist && tsc -p tsconfig.build.json && npm run bundle",
-    "lint": "eslint --flag unstable_ts_config"
+    "lint": "eslint --flag unstable_ts_config",
+    "pre-publish": "mv README.md README-git && mv README-npm README.md",
+    "post-publish": "mv README.md README-npm && mv README-git README.md"
   },
   "repository": {
     "type": "git",

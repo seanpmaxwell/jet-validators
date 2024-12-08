@@ -48,7 +48,27 @@
 
 
 ## Introduction <a name="introduction"></a>
+A simple, but long, list of validator-functions commonly used when checking values in TypeScript. This is not meant to replace advanced schema validation libraries like `zod`, `valibot`, `jet-schema` etc. This is just a list of pre-defined validator-functions to save you time and boiler-plate code in TypeScript.
 
+### Quick Glance
+```typescript
+import { isOptionalString, isBooleanArray } from 'jet-validators';
+
+if (isOptionalString(val)) {
+  // val is string | undefined
+}
+
+if (isBooleanArray(val)) {
+  // val is boolean[]
+}
+```
+
+### Why jet-validators
+- Contains validator-functions for the vast majority of real world scenarios you will encounter.
+- For basic validators, there's no initialization step, you just important the validator-function and start using it.
+- Overload regular expressions using environment variables.
+- Use pre-defined (or your own) validator-functions to validate object properties.
+- Contains some useful utilities for modifying values before validation.
 
 
 ## Basic Validators <a name="basic-validators"></a>
@@ -404,7 +424,7 @@ Calls the `JSON.parse` function. If the argument is not a string an error will b
 ```
 
 ### Validating object schemas <a name="validating-object-schemas"></a>
-If you need to validate an object schema, you can pass a validator object with the key being an object property and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
+If you need to validate an object schema, you can pass a validator object with the key being a property of the object and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
 
 > These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as a simple object validating tool where using a separate schema validation library might be overkill. If you need some more powerful, I highly recommend `jet-validators` sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
 
