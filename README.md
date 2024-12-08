@@ -173,7 +173,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullishDateArray
 
 ### `isValidDate` <a name="isValidDate"></a>
-Is it a valid date after wrapping with `new Date()`
+Is it a valid date after wrapping with `new Date()` (could be `Date`, `string`, `number`)
 - isValidDate
 - isOptionalValidDate
 - isNullableValidDate
