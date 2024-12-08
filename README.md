@@ -9,7 +9,12 @@
 - [Regular Expressions](#regular-expressions)
 - [Complex Validators](#complex-validators)
 - [Utilities](#utilities)
+- [Custom Validators](#custom-validators)
 <br/>
+
+
+## Introduction <a name="introduction"></a>
+
 
 
 ## Basic Validators <a name="basic-validators"></a>
@@ -384,6 +389,11 @@ Converts the following values to a boolean. Note will also covert the string equ
 - `"false" or false`: `false` (case insensitive i.e. `"FaLsE" => false`)
 - `"1" or 1`: `true`
 - `"0" or 0`: `false`
+```typescript
+  parseBoolean('tRuE'); // true
+  parseBoolean(1) // true
+  parseBoolean('0') // false
+```
 
 #### `safeJsonParse` <a name="safeJsonParse"></a>
 Calls the `JSON.parse` function. If the argument is not a string an error will be thrown:
@@ -394,4 +404,156 @@ Calls the `JSON.parse` function. If the argument is not a string an error will b
 
 
 ### Validating object schemas <a name="validating-object-schemas"></a>
+If you need to validate an object schema, you can pass a validator object with the key being an object property and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a name="custom-validators">Custom Validators</a> section).<br>
 
+These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as a simple object validating tool where using a separate schema validation library might be overkill. If you need some more powerful, I highly recommend `jet-validators` sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
+
+
+#### `parseObject`
+This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a second error handler argument which will fire whenever a validator function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
+```typescript
+  interface IUser {
+    id: number;
+    name: string;
+    address: {
+      city: string;
+      zip: number;
+    }
+  }
+
+  const parseUser = parseObject({
+    id: transform(Number, isNumber),
+    name: isString,
+    address: {
+      city: isString,
+      zip: isNumber,
+    }
+  }, (property: string, value: unknown, caughtErr?: unknown) => {
+    throw Error(`Property "${property}" failed to pass validation.`)
+  });
+
+  const user: IUser = parseUser({
+    id: '5',
+    name: 'john',
+    email: '--',
+    address: {
+      city: 'seattle',
+      zip: 99999,
+    }
+  });
+
+  // 'user' variable above:
+  // {
+  //   id: 5,
+  //   name: 'john',
+  //   address: {
+  //    city: 'seattle',
+  //    zip: 99999,
+  //   }
+  // }
+```
+
+##### `parseObjectArray`
+If you use the `parseObjectArray` the error callback handler will also pass the index of the object calling the error function:
+```typescript
+  const parseUserArrWithError = parseObjectArray({
+    id: isNumber,
+    name: isString,
+  }, (prop, value, index) => {
+    // index "2" should call the error function. 
+  });
+
+  parseUserArrWithError([
+    { id: 1, name: '1' },
+    { id: 2, name: '2' },
+    { id: '3', name: '3' },
+  ]);
+```
+
+- parseObject
+- parseOptionalObject
+- parseNullableObject
+- parseNullishObject
+- parseObjectArray
+- parseOptionalObjectArray
+- parseNullableObjectArray
+- parseNullishObjectArray
+
+
+#### `testObject`
+Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen: 
+```typescript
+  const user: IUser = {
+    id: '5',
+    name: 'john',
+    email: '--',
+    address: {
+      city: 'seattle',
+      zip: 99999,
+    }
+  }
+  
+  const testUser = testObject(user);
+  if (testUser(user)) { // user is IUser
+    // 'user' variable above:
+    // {
+    //   id: 5,
+    //   name: 'john',
+    //   address: {
+    //    city: 'seattle',
+    //    zip: '99999',
+    //   }
+    // }
+  }
+```
+
+- testObject
+- testOptionalObject
+- testNullableObject
+- testNullishObject
+- testObjectArray
+- testOptionalObjectArray
+- testNullableObjectArray
+- testNullishObjectArray
+
+
+#### `traverseObject`
+// pick up here
+
+```typescript
+  const convertValidToDateObjects = traverseObject((key, value, parentObj) => {
+    if (isValidDate(value)) {
+      parentObj[key] = new Date(value);
+    } else {
+      parentObj[key] = 'Invalid Date';
+    }
+  });
+
+  const result = convertValidToDateObjects({
+    today: '2024-12-06T23:43:37.012Z',
+    lastYear: '2023-12-06T22:14:20.012Z',
+    nested: {
+      milli: 1733528684737,
+      invalid: '2024-12-06TVB23:43:37.012Z',
+    },
+  });
+
+  // 'result' variable above:
+  // {
+  //   today: new Date('2024-12-06T23:43:37.012Z'),
+  //   lastYear: new Date('2023-12-06T22:14:20.012Z'),
+  //   nested: {
+  //     milli: new Date(1733528684737),
+  //     invalid: 'Invalid Date',
+  //   },
+  // }
+```
+
+- traverseObject
+- traverseOptionalObject
+- traverseNullableObject
+- traverseNullishObject
+- traverseObjectArray
+- traverseOptionalObjectArray
+- traverseNullableObjectArray
+- traverseNullishObjectArray

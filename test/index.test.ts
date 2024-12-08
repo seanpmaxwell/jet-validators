@@ -562,51 +562,21 @@ test('test simple utilities', () => {
 
 
 /**
- * Test "parseObject".
+ * Test "parseObject" function
  */
 test('test "parseObject" function', () => {
 
-  // Non-Nullable
-  expect(nonNullable(isNullableString)('asdf')).toStrictEqual(true);
-  expect(nonNullable(isNullableString)(null)).toStrictEqual(false);
-  expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
-
-  // Check Object entries
-  const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
-    isString(key) && isNumber(val));
-  expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
-  expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);
-
-  // Check "transform" and "safeJsonParse" functions
-  const isNumArrWithParse = transform(safeJsonParse, isNumberArray);
-  expect(isNumArrWithParse('[1,2,3]', val => {
-    expect(isNumberArray(val)).toStrictEqual(true);
-  })).toStrictEqual(true);
-
-  // Check parse boolean function
-  expect(parseBoolean(false)).toStrictEqual(false);
-  expect(parseBoolean(true)).toStrictEqual(true);
-  expect(parseBoolean('fAlSe')).toStrictEqual(false);
-  expect(parseBoolean('fAlSee')).toStrictEqual(undefined);
-  expect(parseBoolean('tRUe')).toStrictEqual(true);
-  expect(parseBoolean(1)).toStrictEqual(true);
-  expect(parseBoolean(0)).toStrictEqual(false);
-  expect(parseBoolean('1')).toStrictEqual(true);
-  expect(parseBoolean('0')).toStrictEqual(false);
-});
-
-
-/**
- * Test "parseObject" function
- */
-test('test "parseObj" function', () => {
+  interface IUser {
+    id: number;
+    name: string;
+  }
 
   // Basic Test
   const parseUser = parseObject({
     id: transform(Number, isNumber),
     name: isString,
   });
-  const user = parseUser({
+  const user: IUser = parseUser({
     id: '5',
     name: 'john',
     email: '--',
