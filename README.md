@@ -21,7 +21,7 @@
   - [isRecord](#isRecord)
   - [isFunction](#isFunction)
 - [Regular Expressions](#regular-expressions)
-  - [Overloading using environment variables](#overloading)
+  - [Overloading with environment variables](#overloading)
   - [isColor](#isColor)
   - [isEmail](#isEmail)
   - [isUrl](#isUrl)
@@ -199,7 +199,7 @@ Checks if the argument is a non-null non-array object. Type predicate is `Record
 ## Regular Expressions <a name="regular-expressions"></a>
 Verifies the argument matches the regular-expression. Note than an empty string will validate to `true` for each function.
 
-### Overloading using environment variables <a name="overloading"></a>
+### Overloading with environment variables <a name="overloading"></a>
 The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
 - JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
 
