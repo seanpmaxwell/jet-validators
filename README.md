@@ -453,8 +453,7 @@ This function iterates an object (and any nested object) and runs the validator-
   // }
 ```
 
-- parseObjectArray
-If you use the `parseObjectArray` the error callback handler will also pass the index of the object calling the error function:
+- If you use the `parseObjectArray` the error callback handler will also pass the index of the object calling the error function:
 ```typescript
   const parseUserArrWithError = parseObjectArray({
     id: isNumber,
