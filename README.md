@@ -6,10 +6,44 @@
 ## Table of Contents
 - [Introduction](#introduction)
 - [Basic Validators](#basic-validators)
+  - [Nullables](#nullables)
+  - [isBoolean](#isBoolean)
+  - [isValidBoolean](#isValidBoolean)
+  - [isNumber](#isNumber)
+  - [isBigInt](#isBigInt)
+  - [isValidNumber](#isValidNumber)
+  - [isString](#isString)
+  - [isNonEmptyString](#isNonEmptyString)
+  - [isSymbol](#isSymbol)
+  - [isDate](#isDate)
+  - [isValidDate](#isValidDate)
+  - [isObject](#isObject)
+  - [isRecord](#isRecord)
+  - [isFunction](#isFunction)
 - [Regular Expressions](#regular-expressions)
+  - [Overloading using environment variables](#overloading)
+  - [isColor](#isColor)
+  - [isEmail](#isEmail)
+  - [isUrl](#isUrl)
+  - [isAlphaNumericString](#isAlphaNumericString)
 - [Complex Validators](#complex-validators)
+  - [isInArray](#isInArray)
+  - [isInRange](#isInRange)
+  - [isKeyOf](#isKeyOf)
+  - [isEnum](#isEnum)
+  - [isEnumVal](#isEnumVal)
 - [Utilities](#utilities)
-- [Custom Validators](#custom-validators)
+  - [Simple Utilities](#simple-utilities)
+    - [nonNullable](#nonNullable)
+    - [iterateObjectEntries](#iterateObjectEntries)
+    - [transform](#transform)
+    - [parseBoolean](#parseBoolean)
+    - [safeJsonParse](#safeJsonParse)
+  - [Validating object schemas](#validating-object-schemas)
+    - [parseObject](#parseObject)
+    - [testObject](#testObject)
+    - [Custom Validators](#custom-validators)
+    - [traverseObject](#traverseObject)
 <br/>
 
 
@@ -19,21 +53,6 @@
 
 ## Basic Validators <a name="basic-validators"></a>
 These can be imported and used directly and don't require any configuration.
-
-- [Nullables](#nullables)
-- [isBoolean](#isBoolean)
-- [isValidBoolean](#isValidBoolean)
-- [isNumber](#isNumber)
-- [isBigInt](#isBigInt)
-- [isValidNumber](#isValidNumber)
-- [isString](#isString)
-- [isNonEmptyString](#isNonEmptyString)
-- [isSymbol](#isSymbol)
-- [isDate](#isDate)
-- [isValidDate](#isValidDate)
-- [isObject](#isObject)
-- [isRecord](#isRecord)
-- [isFunction](#isFunction)
 
 ### Nullables <a name="nullables"></a>
 - isUndef
@@ -179,12 +198,6 @@ Checks if the argument is a non-null non-array object. Type predicate is `Record
 
 ## Regular Expressions <a name="regular-expressions"></a>
 Verifies the argument matches the regular-expression. Note than an empty string will validate to `true` for each function.
-- [Overloading using environment variables](#overloading)
-- [isColor](#isColor)
-- [isEmail](#isEmail)
-- [isUrl](#isUrl)
-- [isAlphaNumericString](#isAlphaNumericString)
-
 
 ### Overloading using environment variables <a name="overloading"></a>
 The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
@@ -229,11 +242,6 @@ The regular expressions for each function below can be overwritten using the env
 
 ## Complex Validators <a name="complex-validators"></a>
 These require an initialization step which will return a validator function.
-- [isInArray](#isInArray)
-- [isInRange](#isInRange)
-- [isKeyOf](#isKeyOf)
-- [isEnum](#isEnum)
-- [isEnumVal](#isEnumVal)
 
 ### `isInArray` <a name="isInArray"></a>
 Does the argument strictly equal any item in the array:
@@ -342,23 +350,16 @@ Check if the argument is a value of the enum. You must initialize this with a va
 
 
 ## Utilities <a name="utilities"></a>
-These complement the validator functions and are useful if you need to modify a value before checking it or validate an object's schema. 
-- [Simple Utilities](#simple-utilities)
-  - [nonNullable](#nonNullable)
-  - [iterateObjectEntries](#iterateObjectEntries)
-  - [transform](#transform)
-  - [parseBoolean](#parseBoolean)
-  - [safeJsonParse](#safeJsonParse)
-- [Validating object schemas](#validating-object-schemas)
-  - [parseObject](#parseObject)
-  - [testObject](#testObject)
-  - [traverseObject](#traverseObject)
+These complement the validator functions and are useful if you need to modify a value before checking it or validate an object's schema. Utilities need to be imported using `/utils` at the end of the library name:
+```typescript
+import { parseObject } from 'jet-validators/utils';
+```
 
 
 ### Simple Utilities <a name="simple-utilities"></a>
 
 #### `nonNullable` <a name="nonNullable"></a>
-Remove `null`/`undefined` from type-predicates:
+Remove `null`/`undefined` from type-predicates and runtime validation:
 ```typescript
   const isString = nonNullable(isNullishString);
   isString(null); // false
@@ -366,7 +367,7 @@ Remove `null`/`undefined` from type-predicates:
 ```
 
 #### `iterateObjectEntries` <a name="iterateObjectEntries"></a>
-Loop through and object's key/value pairs and fire a callback for each one. If any callback returns `false`, the whole function will return `false`. It will also caste the object to generic if passed one:
+Loop through and object's key/value pairs and fire a callback for each one. If any callback returns `false`, the whole function will return `false`. It will also caste the object to generic if passed one. Note that this does not work recursively. This function is useful for dynamic objects where you don't know what they keys will be:
 ```typescript
   const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
     isString(key) && isNumber(val));
@@ -375,7 +376,7 @@ Loop through and object's key/value pairs and fire a callback for each one. If a
 ```
 
 #### `transform` <a name="transform"></a>
-Accepts a transforming function for the first argument, a validator for the second, and returns a validator function which calls the transform function before validating. The returned validator-function provides a callback as the second argument if you need to access the transformed value. You should use transform if you need to modify a value when using `parseObject` or `testObject`.
+Accepts a transforming function for the first argument, a validator for the second, and returns a validator function which calls the transform function before validating. The returned validator-function provides a callback as the second argument if you need to access the transformed value. You should use `transform` if you need to modify a value when using `parseObject` or `testObject`.
 ```typescript
   const isNumArrWithParse = transform((arg: string) => JSON.parse(arg), isNumberArray);
   isNumArrWithParse('[1,2,3]', val => {
@@ -402,14 +403,13 @@ Calls the `JSON.parse` function. If the argument is not a string an error will b
   isNumberArray(val); // true
 ```
 
-
 ### Validating object schemas <a name="validating-object-schemas"></a>
 If you need to validate an object schema, you can pass a validator object with the key being an object property and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a name="custom-validators">Custom Validators</a> section).<br>
 
 These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as a simple object validating tool where using a separate schema validation library might be overkill. If you need some more powerful, I highly recommend `jet-validators` sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
 
 
-#### `parseObject`
+#### `parseObject` <a name="parseObject"></a>
 This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a second error handler argument which will fire whenever a validator function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
 ```typescript
   interface IUser {
@@ -453,7 +453,7 @@ This function iterates an object (and any nested object) and runs the validator-
   // }
 ```
 
-##### `parseObjectArray`
+##### `parseObjectArray` <a name="parseObjectArray"></a>
 If you use the `parseObjectArray` the error callback handler will also pass the index of the object calling the error function:
 ```typescript
   const parseUserArrWithError = parseObjectArray({
@@ -480,7 +480,7 @@ If you use the `parseObjectArray` the error callback handler will also pass the 
 - parseNullishObjectArray
 
 
-#### `testObject`
+#### `testObject` <a name="testObject"></a>
 Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen: 
 ```typescript
   const user: IUser = {
@@ -517,8 +517,35 @@ Test object is nearly identical to `parseObject` (it actually calls `parseObject
 - testNullishObjectArray
 
 
-#### `traverseObject`
-// pick up here
+#### `Custom Validators` <a name="custom-validators"></a>
+For `parseObject` and `testObject` you aren't restricted to the validator-functions in `jet-validators`. You can write your own validator-function, just make sure your argument is `unknown` and it returns a type predicate:
+```typescript
+  type TRelationalKey = number;
+
+  interface IUser {
+    id: TRelationalKey;
+    name: string;
+  }
+
+  // The custom validator-function
+  const isRelationalKey = (arg: unknown): arg is TRelationalKey => {
+    return isNumber(arg) && arg >= -1;
+  }
+
+  const parseUser = parseObject({
+    id: isRelationalKey,
+    name: isString,
+  });
+
+  const user: IUser = parseUser({
+    id: 5,
+    name: 'joe',
+  });
+```
+
+
+#### `traverseObject` <a name="traverseObject"></a>
+Iterate over each key in an object (works recursively too) and fire a callback function for each key/value pair that is reached. This is useful if you need to modify an object before doing something with it. Note that for `parseObject` and `testObject` you should wrap the validator-function with `transform` and not use `traverseObject`. `traverseObject` is useful when you need to modify an object for some other validator like `jasmine` or `vitest` (that's what I use it for).
 
 ```typescript
   const convertValidToDateObjects = traverseObject((key, value, parentObj) => {
