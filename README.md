@@ -404,7 +404,7 @@ Calls the `JSON.parse` function. If the argument is not a string an error will b
 ```
 
 ### Validating object schemas <a name="validating-object-schemas"></a>
-If you need to validate an object schema, you can pass a validator object with the key being an object property and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a name="custom-validators">Custom Validators</a> section).<br>
+If you need to validate an object schema, you can pass a validator object with the key being an object property and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
 
 These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as a simple object validating tool where using a separate schema validation library might be overkill. If you need some more powerful, I highly recommend `jet-validators` sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
 
