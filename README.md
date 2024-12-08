@@ -305,6 +305,8 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
   lessThan50OrGreaterThan100(75); // false
   lessThan50OrGreaterThan100(101); // true
 ```
+
+Variations:
 - isInRange
 - isOptionalInRange
 - isNullableInRange
@@ -328,6 +330,8 @@ Checks if the argument is a key of the object. Note that this will not work for 
   const isKeyofSomeObjectArr = isNullableKeyOfArray(someObject);
   isKeyofSomeObjectArr(['bada', 'foo']); // true
 ```
+
+Variations:
 - isKeyOf
 - isOptionalKeyOf
 - isNullableKeyOf
@@ -346,6 +350,8 @@ Check if the argument is a valid enum object. Unlike other complex validators th
   }
   isEnum(StringEnum) // true
 ```
+
+Variations:
 - isEnum
 - isOptionalEnum
 - isNullableEnum
@@ -363,6 +369,8 @@ Check if the argument is a value of the enum. You must initialize this with a va
   const isNumberEnumVal = isEnumVal(NumberEnum);
 
 ```
+
+Variations:
 - isEnumVal
 - isOptionalEnumVal
 - isNullableEnumVal
@@ -490,6 +498,7 @@ This function iterates an object (and any nested object) and runs the validator-
   ]);
 ```
 
+Variations:
 - parseObject
 - parseOptionalObject
 - parseNullableObject
@@ -527,6 +536,7 @@ Test object is nearly identical to `parseObject` (it actually calls `parseObject
   }
 ```
 
+Variations:
 - testObject
 - testOptionalObject
 - testNullableObject
@@ -596,6 +606,7 @@ Iterate over each key in an object (works recursively too) and fire a callback f
   // }
 ```
 
+Variations:
 - traverseObject
 - traverseOptionalObject
 - traverseNullableObject
