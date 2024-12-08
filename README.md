@@ -201,7 +201,7 @@ Verifies the argument matches the regular-expression. Note than an empty string 
 
 ### Overloading with environment variables <a name="overloading"></a>
 The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
-- JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
+- JET_VALIDATORS_REGEX_{name of the function in uppercase} (i.e. `JET_VALIDATORS_REGEX_EMAIL`)
 
 ### `isColor` <a name="isColor"></a>
 - isColor
