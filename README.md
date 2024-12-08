@@ -69,6 +69,7 @@ if (isBooleanArray(val)) {
 - Overload regular expressions using environment variables.
 - Use pre-defined (or your own) validator-functions to validate object properties.
 - Contains some useful utilities for modifying values before validation.
+- Zero dependency
 <br/>
 
 
