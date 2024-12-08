@@ -7,6 +7,8 @@
 - [Introduction](#introduction)
 - [Basic Validators](#basic-validators)
 - [Regular Expressions](#regular-expressions)
+- [Complex Validators](#complex-validators)
+- [Utilities](#utilities)
 <br/>
 
 
@@ -183,35 +185,35 @@ Verifies the argument matches the regular-expression. Note than an empty string 
 The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
 - JET_VALIDATORS_REGEX_{name of the function in uppercase}` i.e. `JET_VALIDATORS_REGEX_EMAIL`
 
-### `isColor` 
+### `isColor` <a name="isColor"></a>
 - isColor
 - isOptionalColor
 - isNullableColor
 - isNullishColor
 - TColor (type)
 
-### `isEmail`
+### `isEmail` <a name="isEmail"></a>
 - isEmail
 - isOptionalEmail
 - isNullableEmail
 - isNullishEmail
 - TEmail (type)
 
-### `isUrl`
+### `isUrl` <a name="isUrl"></a>
 - isUrl
 - isOptionalUrl
 - isNullableUrl
 - isNullishUrl
 - TURL (type)
 
-### `isAlphaNumericString`
+### `isAlphaNumericString` <a name="isAlphaNumericString"></a>
 - isAlphaNumericString
 - isOptionalAlphaNumericString
 - isNullableAlphaNumericString
 - isNullishAlphaNumericString
 - TAlphabeticStr (type)
 
-### `isAlphabeticString`
+### `isAlphabeticString` <a name="isAlphabeticString"></a>
 - isAlphabeticString
 - isOptionalAlphabeticString
 - isNullableAlphabeticString
@@ -220,15 +222,15 @@ The regular expressions for each function below can be overwritten using the env
 <br/><br/>
 
 
-## Complex Validators
+## Complex Validators <a name="complex-validators"></a>
 These require an initialization step which will return a validator function.
-- isInArray
-- isInRange
-- isKeyOf
-- isEnum
-- isEnumVal
+- [isInArray](#isInArray)
+- [isInRange](#isInRange)
+- [isKeyOf](#isKeyOf)
+- [isEnum](#isEnum)
+- [isEnumVal](#isEnumVal)
 
-### `isInArray`
+### `isInArray` <a name="isInArray"></a>
 Does the argument strictly equal any item in the array:
 ```typescript
   const isInArrTest = isInArray(['1', '2', '3']);
@@ -239,7 +241,7 @@ Does the argument strictly equal any item in the array:
 - isNullableInArray
 - isNullishInArray
 
-### `isInRange`
+### `isInRange` <a name="isInRange"></a>
 Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`:
 ```typescript
 
@@ -273,7 +275,7 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 - isNullableInRangeArray
 - isNullishInRangeArray
 
-### `isKeyOf`
+### `isKeyOf` <a name="isKeyOf"></a>
 Checks if the argument is a key of the object. Note that this will not work for symbols.
 ```typescript
   const someObject = {
@@ -296,7 +298,7 @@ Checks if the argument is a key of the object. Note that this will not work for 
 - isNullableKeyOfArray
 - isNullishKeyOfArray
 
-### `isEnum`
+### `isEnum` <a name="isEnum"></a>
 Check if the argument is a valid enum object. Unlike other complex validators this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
 ```typescript
   enum StringEnum {
@@ -312,7 +314,7 @@ Check if the argument is a valid enum object. Unlike other complex validators th
 - TEnum (type)
 
 
-### `isEnumVal`
+### `isEnumVal` <a name="isEnumVal"></a>
 Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`. 
 ```typescript
   enum NumberEnum {
@@ -329,7 +331,7 @@ Check if the argument is a value of the enum. You must initialize this with a va
 <br/><br/>
 
 
-## Utilities
+## Utilities <a name="utilities"></a>
 These complement the validator functions and are useful if you need to modify a value before checking it or validate an object's schema. 
 - Simple Utilities
   - nonNullable
