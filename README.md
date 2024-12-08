@@ -453,7 +453,7 @@ This function iterates an object (and any nested object) and runs the validator-
   // }
 ```
 
-##### `parseObjectArray` <a name="parseObjectArray"></a>
+- parseObjectArray
 If you use the `parseObjectArray` the error callback handler will also pass the index of the object calling the error function:
 ```typescript
   const parseUserArrWithError = parseObjectArray({
@@ -517,7 +517,7 @@ Test object is nearly identical to `parseObject` (it actually calls `parseObject
 - testNullishObjectArray
 
 
-#### `Custom Validators` <a name="custom-validators"></a>
+#### Custom Validators <a name="custom-validators"></a>
 For `parseObject` and `testObject` you aren't restricted to the validator-functions in `jet-validators`. You can write your own validator-function, just make sure your argument is `unknown` and it returns a type predicate:
 ```typescript
   type TRelationalKey = number;
