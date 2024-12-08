@@ -106,7 +106,7 @@ import {
 } from '../src';
 
 import {
-  iterateObjEntries,
+  iterateObjectEntries,
   nonNullable,
   parseBoolean,
   parseNullishObjectArray,
@@ -537,7 +537,7 @@ test('test simple utilities', () => {
   expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
 
   // Check Object entries
-  const isStrNumObj = iterateObjEntries<Record<string, number>>((key, val) => 
+  const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
     isString(key) && isNumber(val));
   expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
   expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);
@@ -572,7 +572,7 @@ test('test "parseObject" function', () => {
   expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
 
   // Check Object entries
-  const isStrNumObj = iterateObjEntries<Record<string, number>>((key, val) => 
+  const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
     isString(key) && isNumber(val));
   expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
   expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);

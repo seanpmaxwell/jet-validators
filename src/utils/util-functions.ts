@@ -20,7 +20,7 @@ export function nonNullable<T>(cb: ((arg: unknown) => arg is T)) {
 /**
  * Do a validator callback function for each object entry.
  */
-export function iterateObjEntries<T = NonNullable<object>>(
+export function iterateObjectEntries<T = NonNullable<object>>(
   cb: (key: string, val: unknown) => boolean,
 ): (arg: unknown) => arg is T {
   return (arg: unknown): arg is T => {
@@ -92,7 +92,7 @@ export function safeJsonParse<T>(arg: unknown): T {
   if (isString(arg)) {
     return JSON.parse(arg) as T;
   } else {
-    throw Error('JSON parse argument must be a string');
+    throw Error('JSON parse argument must be a string.');
   }
 }
 

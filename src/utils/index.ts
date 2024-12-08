@@ -2,7 +2,7 @@
 export {
   // Simple Utilities
   nonNullable,
-  iterateObjEntries,
+  iterateObjectEntries,
   transform,
   parseBoolean,
   safeJsonParse,

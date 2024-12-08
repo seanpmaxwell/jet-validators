@@ -242,7 +242,7 @@ Does the argument strictly equal any item in the array:
 - isNullishInArray
 
 ### `isInRange` <a name="isInRange"></a>
-Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`:
+Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`. If you want to check if the number is not between two numbers, use the bigger number for the first param and the lesser number for the second:
 ```typescript
 
   // Between 0 and 100
@@ -265,6 +265,11 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
   isFrom0to100('50'); // true
   isFrom0to100(100); // true
   isFrom0to100(0); // true
+
+  // less than 50 or greater than 100
+  const lessThan50OrGreaterThan100 = isInRange(100, 50);
+  lessThan50OrGreaterThan100(75); // false
+  lessThan50OrGreaterThan100(101); // true
 ```
 - isInRange
 - isOptionalInRange
@@ -333,12 +338,60 @@ Check if the argument is a value of the enum. You must initialize this with a va
 
 ## Utilities <a name="utilities"></a>
 These complement the validator functions and are useful if you need to modify a value before checking it or validate an object's schema. 
-- Simple Utilities
-  - nonNullable
-  - iterateObjEntries
-  - transform
-  - parseBoolean
-  - safeJsonParse
-- parseObject
-- testObject
-- traverseObject
+- [Simple Utilities](#simple-utilities)
+  - [nonNullable](#nonNullable)
+  - [iterateObjectEntries](#iterateObjectEntries)
+  - [transform](#transform)
+  - [parseBoolean](#parseBoolean)
+  - [safeJsonParse](#safeJsonParse)
+- [Validating object schemas](#validating-object-schemas)
+  - [parseObject](#parseObject)
+  - [testObject](#testObject)
+  - [traverseObject](#traverseObject)
+
+
+### Simple Utilities <a name="simple-utilities"></a>
+
+#### `nonNullable` <a name="nonNullable"></a>
+Remove `null`/`undefined` from type-predicates:
+```typescript
+  const isString = nonNullable(isNullishString);
+  isString(null); // false
+  isString(undefined); // false
+```
+
+#### `iterateObjectEntries` <a name="iterateObjectEntries"></a>
+Loop through and object's key/value pairs and fire a callback for each one. If any callback returns `false`, the whole function will return `false`. It will also caste the object to generic if passed one:
+```typescript
+  const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
+    isString(key) && isNumber(val));
+  isStrNumObj({ a: 1, b: 2, c: 3 }); // true
+  isStrNumObj({ a: 1, b: 2, c: 'asdf' }); // false
+```
+
+#### `transform` <a name="transform"></a>
+Accepts a transforming function for the first argument, a validator for the second, and returns a validator function which calls the transform function before validating. The returned validator-function provides a callback as the second argument if you need to access the transformed value. You should use transform if you need to modify a value when using `parseObject` or `testObject`.
+```typescript
+  const isNumArrWithParse = transform((arg: string) => JSON.parse(arg), isNumberArray);
+  isNumArrWithParse('[1,2,3]', val => {
+    isNumberArray(val); // true
+  }));
+```
+
+#### `parseBoolean` <a name="parseBoolean"></a>
+Converts the following values to a boolean. Note will also covert the string equivalents:
+- `"true" or true`: `true` (case insensitive i.e. `"TrUe" => true`)
+- `"false" or false`: `false` (case insensitive i.e. `"FaLsE" => false`)
+- `"1" or 1`: `true`
+- `"0" or 0`: `false`
+
+#### `safeJsonParse` <a name="safeJsonParse"></a>
+Calls the `JSON.parse` function. If the argument is not a string an error will be thrown:
+```typescript
+  const numberArr = safeJsonParse<number[]>('[1,2,3]');
+  isNumberArray(val); // true
+```
+
+
+### Validating object schemas <a name="validating-object-schemas"></a>
+
