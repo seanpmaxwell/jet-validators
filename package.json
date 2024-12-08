@@ -1,6 +1,6 @@
 {
   "name": "jet-validators",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A list common typescript validator-functions and some useful utilities to go with them.",
   "main": "index.js",
   "scripts": {
@@ -16,6 +16,10 @@
     "url": "git+https://github.com/seanpmaxwell/jet-validators.git"
   },
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./util": {
       "default": "./dist/util"
     }
