@@ -1,5 +1,8 @@
-import { orNullable, orOptional, TValidateWithTransform } from './common';
-import { transform, parseBoolean } from './utils';
+import { orNullable, orOptional } from './common';
+
+// When doing "import .. from './utils';"" there was a bug with 
+// "package.json exports:" so had to do the full path.
+import { transform, parseBoolean } from './utils/util-functions';
 
 
 // **** Types **** //

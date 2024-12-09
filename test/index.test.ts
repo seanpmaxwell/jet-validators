@@ -430,7 +430,7 @@ test('test overloading regexes from environment variables', async () => {
   if (result.error) {
     console.error(result)
   }
-  const src = await import('../src');
+  const src = await import('../src/regexes.js');
 
   // Email
   expect(process.env.JET_VALIDATORS_REGEX_COLOR).toStrictEqual('^([A-Fa-f0-9]{6})$');
@@ -714,8 +714,6 @@ test('test "parseObject" function', () => {
   }
   const parseUserAlt = customParse({ id: isNumber, name: isString });
   expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({ id: 5, name: 'joe' });
-
-  
 });
 
 

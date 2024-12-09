@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
+    "target": "ES2020",
+    "module": "NodeNext",
+    "lib": [
+      "ES2020"
+    ],
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -9,6 +13,7 @@
     // Library stuff
     "removeComments": true,
     "sourceMap": true,
+    "baseUrl": "./",
     "outDir": "./dist",
     "declaration": true,
   },

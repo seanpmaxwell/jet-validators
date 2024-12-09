@@ -3,10 +3,16 @@
   "version": "1.0.5",
   "description": "A list common typescript validator-functions and some useful utilities to go with them.",
   "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./utils": "./dist/utils/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./dist/utils/index.js"
+    }
   },
   "scripts": {
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
