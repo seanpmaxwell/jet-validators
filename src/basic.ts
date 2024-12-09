@@ -2,7 +2,7 @@ import { orNullable, orOptional } from './common';
 
 // When doing "import .. from './utils';"" there was a bug with 
 // "package.json exports:" so had to do the full path.
-import { transform, parseBoolean } from './utils/util-functions';
+import { parseBoolean } from './utils/util-functions';
 
 
 // **** Types **** //
@@ -29,7 +29,7 @@ export const isNullableBooleanArray = orNullable(isBooleanArray);
 export const isNullishBooleanArray = orNullable(isOptionalBooleanArray);
 
 // Is it a boolean after doing "parseBoolean"
-export const isValidBoolean = transform(parseBoolean, isBoolean);
+export const isValidBoolean = _isValidBoolean;
 export const isOptionalValidBoolean = orOptional(isValidBoolean);
 export const isNullableValidBoolean = orNullable(isValidBoolean);
 export const isNullishValidBoolean = orNullable(isOptionalValidBoolean);
@@ -59,7 +59,7 @@ export const isNullableBigIntArray = orNullable(isBigIntArray);
 export const isNullishBigIntArr = orNullable(isOptionalBigIntArray);
 
 // Valid number (is it still a number after doing Number(arg))
-export const isValidNumber = transform(Number, isNumber);
+export const isValidNumber = _isValidNumber;
 export const isOptionalValidNumber = orOptional(isValidNumber);
 export const isNullableValidNumber = orNullable(isValidNumber);
 export const isNullishValidNumber = orNullable(isOptionalValidNumber);
@@ -169,6 +169,14 @@ function _isNumber(arg: unknown): arg is number {
 }
 
 /**
+ * Is it a valid number after casting to a number.
+ */
+function _isValidNumber(arg: unknown): arg is string | number | boolean {
+  const argf = Number(arg);
+  return !isNaN(argf);
+}
+
+/**
  * Wrapper to check basic type.
  */
 function _isObject(arg: unknown): arg is NonNullable<object> {
@@ -191,6 +199,14 @@ function _checkType<T>(type: string) {
   return (arg: unknown): arg is T => {
     return typeof arg === type;
   };
+}
+
+/**
+ * Is it a boolean after doing parse boolean.
+ */
+function _isValidBoolean(arg: unknown): arg is number | string | boolean {
+  arg = parseBoolean(arg);
+  return isBoolean(arg);
 }
 
 /**
