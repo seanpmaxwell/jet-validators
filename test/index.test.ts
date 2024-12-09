@@ -788,6 +788,11 @@ test('test "traverseObject" function', () => {
     nested: {
       milli: 1733528684737,
       invalid: '2024-12-06TVB23:43:37.012Z',
+      dateArr: [
+        { created: 1733528684737 },
+        { created: 1733528684737 },
+        { created: 1733528684737 },
+      ]
     },
   });
   expect(result).toStrictEqual({
@@ -796,6 +801,11 @@ test('test "traverseObject" function', () => {
     nested: {
       milli: new Date(1733528684737),
       invalid: 'Invalid Date',
+      dateArr: [
+        { created: new Date(1733528684737) },
+        { created: new Date(1733528684737) },
+        { created: new Date(1733528684737) },
+      ],
     },
   });
 });

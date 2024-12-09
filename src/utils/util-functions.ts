@@ -437,6 +437,10 @@ function _traverseObjectHelperCore(
   for (const [key, value] of entries) {
     if (isRecord(value)) {
       _traverseObjectHelperCore(value, cb);
+    } else if (Array.isArray(value)) {
+      for (const item of value) {
+        _traverseObjectHelperCore(item, cb);
+      }
     } else {
       cb(key, value, parentObj);
     }

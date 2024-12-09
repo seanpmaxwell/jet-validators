@@ -597,7 +597,9 @@ parseUser({ id: 5, name: 'joe' }); // => { id: 5, name: 'joe' }
 
 
 #### `traverseObject` <a name="traverseObject"></a>
-Iterate over each key in an object (works recursively too) and fire a callback function for each key/value pair that is reached. This is useful if you need to modify an object before doing something with it. Note that for `parseObject` and `testObject` you should wrap the validator-function with `transform` and not use `traverseObject`. `traverseObject` is useful when you need to modify an object for some other validator like `jasmine` or `vitest` (that's what I use it for).
+Iterate over each key in an object (works recursively too) and fire a callback function for each key/value pair that is reached. This is useful if you need to modify an object before doing something with it. If any key/value pair is an array objects, each of those objects will be iterated over too.
+
+> Note that for `parseObject` and `testObject` you should wrap the validator-function with `transform` and not use `traverseObject`. `traverseObject` is useful when you need to modify an object for some other validator like `jasmine` or `vitest` (that's what I use it for).
 
 ```typescript
   const convertValidToDateObjects = traverseObject((key, value, parentObj) => {
@@ -614,6 +616,7 @@ Iterate over each key in an object (works recursively too) and fire a callback f
     nested: {
       milli: 1733528684737,
       invalid: '2024-12-06TVB23:43:37.012Z',
+      dateArr: [1733528684737, 1733528684737, 1733528684737],
     },
   });
 
@@ -624,6 +627,11 @@ Iterate over each key in an object (works recursively too) and fire a callback f
   //   nested: {
   //     milli: new Date(1733528684737),
   //     invalid: 'Invalid Date',
+  //     dateArr: [
+  //       new Date(1733528684737),
+  //       new Date(1733528684737),
+  //       new Date(1733528684737),
+  //     ],
   //   },
   // }
 ```
