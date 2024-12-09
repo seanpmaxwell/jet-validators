@@ -86,13 +86,52 @@ export function parseBoolean(arg: unknown): boolean | undefined {
 }
 
 /**
- * Safe JSON parse
+ * Parse a JSON string.
  */
-export function safeJsonParse<T>(arg: unknown): T {
+export function parseJson<T>(arg: unknown): T {
   if (isString(arg)) {
     return JSON.parse(arg) as T;
   } else {
     throw Error('JSON parse argument must be a string.');
+  }
+}
+
+/**
+ * Parse a JSON string.
+ */
+export function parseOptionalJson<T>(arg: unknown): T | undefined {
+  if (arg === undefined) {
+    return arg;
+  } else if (isString(arg)) {
+    return JSON.parse(arg) as T;
+  } else {
+    throw Error('JSON parse argument must be string or undefined.');
+  }
+}
+
+/**
+ * Parse a JSON string.
+ */
+export function parseNullableJson<T>(arg: unknown): T | null {
+  if (arg === null) {
+    return arg;
+  } else if (isString(arg)) {
+    return JSON.parse(arg) as T;
+  } else {
+    throw Error('JSON parse argument must be string or null.');
+  }
+}
+
+/**
+ * Parse a JSON string.
+ */
+export function parseNullishJson<T>(arg: unknown): T | null | undefined {
+  if (arg === null || arg === undefined) {
+    return arg;
+  } else if (isString(arg)) {
+    return JSON.parse(arg) as T;
+  } else {
+    throw Error('JSON parse argument must be string, null, or undefined.');
   }
 }
 

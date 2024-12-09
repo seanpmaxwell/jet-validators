@@ -5,7 +5,10 @@ export {
   iterateObjectEntries,
   transform,
   parseBoolean,
-  safeJsonParse,
+  parseJson,
+  parseOptionalJson,
+  parseNullableJson,
+  parseNullishJson,
   // Parse Object
   parseObject,
   parseOptionalObject,

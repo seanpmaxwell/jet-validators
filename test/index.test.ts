@@ -113,7 +113,7 @@ import {
   parseObject,
   parseObjectArray,
   parseOptionalObject,
-  safeJsonParse,
+  parseJson,
   testObject,
   transform,
   traverseObject,
@@ -543,8 +543,8 @@ test('test simple utilities', () => {
   expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
   expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);
 
-  // Check "transform" and "safeJsonParse" functions
-  const isNumArrWithParse = transform(safeJsonParse, isNumberArray);
+  // Check "transform" and "parseJson" functions
+  const isNumArrWithParse = transform(parseJson, isNumberArray);
   expect(isNumArrWithParse('[1,2,3]', val => {
     expect(isNumberArray(val)).toStrictEqual(true);
   })).toStrictEqual(true);
@@ -720,7 +720,7 @@ test('test "parseObject" function', () => {
 /**
  * Test "testObject" function
  */
-test('test "testObj" function', () => {
+test('test "testObject" function', () => {
 
   // Do basic test
   const testUser = testObject({
