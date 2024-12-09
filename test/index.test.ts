@@ -117,6 +117,7 @@ import {
   testObject,
   transform,
   traverseObject,
+  TSchema,
 } from '../src/utils';
 
 
@@ -706,6 +707,15 @@ test('test "parseObject" function', () => {
     id: 5,
     name: null,
   });
+
+  // ** Wrap parseObject ** //
+  const customParse = <U extends TSchema>(schema: U) => {
+    return parseObject(schema, (prop: string) => console.error(prop + ' failed'))
+  }
+  const parseUserAlt = customParse({ id: isNumber, name: isString });
+  expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({ id: 5, name: 'joe' });
+
+  
 });
 
 

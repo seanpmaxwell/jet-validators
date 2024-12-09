@@ -15,6 +15,7 @@ export {
   parseOptionalObjectArray,
   parseNullableObjectArray,
   parseNullishObjectArray,
+  TSchema,
   // Test Object
   testObject,
   testOptionalObject,

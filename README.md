@@ -43,6 +43,7 @@
     - [parseObject](#parseObject)
     - [testObject](#testObject)
     - [Custom Validators](#custom-validators)
+    - [Wrapping Parse/Test](#wrapping-parse-test)
     - [traverseObject](#traverseObject)
 <br/>
 
@@ -572,6 +573,20 @@ For `parseObject` and `testObject` you aren't restricted to the validator-functi
     id: 5,
     name: 'joe',
   });
+```
+
+#### Wrapping Parse/Test functions <a name="wrapping-parse-test"></a>
+If you want to wrap the `parseObject` or `testObject` function cause you may want to let's say, apply the same error handler to multiple object-validators, you need to import the `TSchema` type have your generic extend it:
+```typescript
+import { isNumber, isString } from 'jet-validators';
+import { parseObject, TSchema } from 'jet-validators/utils';
+
+const customParse = <U extends TSchema>(schema: U) => {
+  return parseObject(schema, (prop: string) => console.error(prop + ' failed validation'))
+}
+
+const parseUser = customParse({ id: isNumber, name: isString });
+parseUser({ id: 5, name: 'joe' }); // => { id: 5, name: 'joe' }
 ```
 
 

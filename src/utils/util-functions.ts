@@ -99,7 +99,7 @@ export function safeJsonParse<T>(arg: unknown): T {
 
 // **** Parse Object **** //
 
-interface TSchema {
+export interface TSchema {
   [key: string]: TValidateWithTransform<unknown> | TSchema;
 }
 
@@ -119,8 +119,8 @@ type TInferParseResHelper<U> = {
 
 type TParseOnError<A> = (
   A extends true 
-  ? ((property?: string, value?: unknown, index?: number, caughtErr?: unknown) => void) 
-  : ((property?: string, value?: unknown, caughtErr?: unknown) => void)
+  ? ((property: string, value: unknown, index?: number, caughtErr?: unknown) => void) 
+  : ((property: string, value: unknown, caughtErr?: unknown) => void)
 );
 
 export const parseObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
