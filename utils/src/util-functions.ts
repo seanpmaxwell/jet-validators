@@ -1,5 +1,13 @@
-import { isFunction, isNullOrUndef, isObject, isRecord, isString, TRecord } from '../basic';
-import { AddMods, TValidateWithTransform } from '../common';
+import {
+  isFunction,
+  isNullOrUndef,
+  isObject,
+  isRecord,
+  isString,
+  TRecord,
+} from '../../dist';
+
+import { AddMods, TValidateWithTransform } from '../../dist/common';
 
 
 // **** Simple Util **** //

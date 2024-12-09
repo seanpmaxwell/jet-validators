@@ -118,7 +118,7 @@ import {
   transform,
   traverseObject,
   TSchema,
-} from '../src/utils';
+} from '../utils';
 
 
 /**

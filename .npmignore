@@ -2,14 +2,15 @@
 
 # ignore dev files
 src
+utils/src
 test
 .vscode
 
 # not needed npm stuff
 package-lock.json
 node_modules
-tsconfig.json
-tsconfig.build.json
+**/**/tsconfig.json
+**/**/tsconfig.build.json
 eslint.config.ts
 README-git
 README-npm
