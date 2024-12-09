@@ -1,5 +1,5 @@
 # jet-validators 🧑✈️
-> A list common typescript validator-functions and some useful utilities to go with them.
+> A list common TypeScript validator-functions and some useful utilities to go with them.
 <br/>
 
 
