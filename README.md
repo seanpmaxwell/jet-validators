@@ -49,7 +49,7 @@
 
 
 ## Introduction <a name="introduction"></a>
-A simple, but long, list of validator-functions commonly used when checking values in TypeScript. This is not meant to replace advanced schema validation libraries like `zod`, `valibot`, `jet-schema` etc. This is just a list of pre-defined validator-functions to save you time and boiler-plate code in TypeScript.
+A simple, but long, list of validator-functions commonly used when checking values in TypeScript. This is not meant to replace advanced schema validation libraries like `zod`, `valibot`, `jet-schema` etc. This is just a list of pre-defined validator-functions to save you time and boilerplate code in TypeScript.
 
 ### Quick Glance
 ```typescript
@@ -66,11 +66,11 @@ if (isBooleanArray(val)) {
 
 ### Why jet-validators
 - Contains validator-functions for the vast majority of real world scenarios you will encounter.
-- For basic validators, there's no initialization step, you just important the validator-function and start using it.
+- For basic validators, there's no initialization step, you just import the validator-function and start using it.
 - Overload regular expressions using environment variables.
-- Use pre-defined (or your own) validator-functions to validate object properties.
 - Contains some useful utilities for modifying values before validation.
-- Zero dependency
+- Also has some utilities for simple object schema validation. 
+- Zero dependency!
 <br/>
 
 
@@ -223,8 +223,8 @@ Checks if the argument is a non-null non-array object. Type predicate is `Record
 Verifies the argument matches the regular-expression. Note than an empty string will validate to `true` for each function.
 
 ### Overloading with environment variables <a name="overloading"></a>
-The regular expressions for each function below can be overwritten using the environment variables. To overload an regular expression create an environment variables with the format:<br/>
-- JET_VALIDATORS_REGEX_{name of the function in uppercase} (i.e. `JET_VALIDATORS_REGEX_EMAIL`)
+The regular expressions for each function below can be overwritten using the environment variables. To overload a regular expression create an environment variables with the format:<br/>
+- JET_VALIDATORS_REGEX_{name of the function in uppercase} (i.e. `JET_VALIDATORS_REGEX_EMAIL=^\S+@\S+\.\S+$`)
 
 ### `isColor` <a name="isColor"></a>
 - isColor
@@ -290,7 +290,6 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 - isNullishInRangeArray
 
 ```typescript
-
   // Between 0 and 100
   const isBetween0And100 = isInRange(0, 100);
   isBetween0And100(50); // false
@@ -343,7 +342,7 @@ Checks if the argument is a key of the object. Note that this will not work for 
 ```
 
 ### `isEnum` <a name="isEnum"></a>
-Check if the argument is a valid enum object. Unlike other complex validators this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
+Check if the argument is a valid enum object. Unlike other complex validators, this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
 - isEnum
 - isOptionalEnum
 - isNullableEnum
@@ -371,12 +370,13 @@ Check if the argument is a value of the enum. You must initialize this with a va
     Bar,
   }
   const isNumberEnumVal = isEnumVal(NumberEnum);
+  isNumberEnumVal(NumberEnum.Foo); // true
 ```
 <br/><br/>
 
 
 ## Utilities <a name="utilities"></a>
-These complement the validator functions and are useful if you need to modify a value before checking it or validate an object's schema. Utilities need to be imported using `/utils` at the end of the library name:
+These complement the validator-functions and are useful if you need to modify a value before checking it or validate an object's schema. Utilities need to be imported using `/utils` at the end of the library name:
 ```typescript
 import { parseObject } from 'jet-validators/utils';
 ```
@@ -393,7 +393,7 @@ Remove `null`/`undefined` from type-predicates and runtime validation:
 ```
 
 #### `iterateObjectEntries` <a name="iterateObjectEntries"></a>
-Loop through and object's key/value pairs and fire a callback for each one. If any callback returns `false`, the whole function will return `false`. It will also caste the object to generic if passed one. Note that this does not work recursively. This function is useful for dynamic objects where you don't know what they keys will be:
+Loop through and object's key/value pairs and fire a callback for each one. If any callback returns `false`, the whole function will return `false`. It will also caste the return value to the generic if passed one. Note that this does not work recursively. This function is useful for dynamic objects where you don't know what the keys will be:
 ```typescript
   const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
     isString(key) && isNumber(val));
@@ -402,12 +402,12 @@ Loop through and object's key/value pairs and fire a callback for each one. If a
 ```
 
 #### `transform` <a name="transform"></a>
-Accepts a transforming function for the first argument, a validator for the second, and returns a validator function which calls the transform function before validating. The returned validator-function provides a callback as the second argument if you need to access the transformed value. You should use `transform` if you need to modify a value when using `parseObject` or `testObject`.
+Accepts a transformation function for the first argument, a validator for the second, and returns a validator-function which calls the transform function before validating. The returned validator-function provides a callback as the second argument, if you need to access the transformed value. You should use `transform` if you need to modify a value when using `parseObject` or `testObject`.
 ```typescript
   const isNumArrWithParse = transform((arg: string) => JSON.parse(arg), isNumberArray);
   isNumArrWithParse('[1,2,3]', val => {
     isNumberArray(val); // true
-  }));
+  })); // true
 ```
 
 #### `parseBoolean` <a name="parseBoolean"></a>
@@ -423,7 +423,7 @@ Converts the following values to a boolean. Note will also covert the string equ
 ```
 
 #### `parseJson` <a name="parseJson"></a>
-Calls the `JSON.parse` function. If the argument is not a string an error will be thrown.
+Calls the `JSON.parse` function, if the argument is not a string an error will be thrown.
 - parseJson
 - parseOptionalJson
 - parseNullableJson
@@ -435,13 +435,13 @@ Calls the `JSON.parse` function. If the argument is not a string an error will b
 ```
 
 ### Validating object schemas <a name="validating-object-schemas"></a>
-If you need to validate an object schema, you can pass a validator object with the key being a property of the object and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
+If you need to validate an object schema, you can pass a validator object with the key being a property of the object and the value being any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
 
-> These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as a simple object validating tool where using a separate schema validation library might be overkill. If you need some more powerful, I highly recommend `jet-validators` sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
+> These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as simple object validating tools where using a separate schema validation library might be overkill. If you need something more powerful, I highly recommend `jet-validators` sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
 
 
 #### `parseObject` <a name="parseObject"></a>
-This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a second error handler argument which will fire whenever a validator function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
+This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a error-handler function as the second argument which will fire whenever a validator-function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
 - parseObject
 - parseOptionalObject
 - parseNullableObject
@@ -510,7 +510,7 @@ This function iterates an object (and any nested object) and runs the validator-
 ```
 
 #### `testObject` <a name="testObject"></a>
-Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen.
+Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well.
 - testObject
 - testOptionalObject
 - testNullableObject
@@ -573,8 +573,8 @@ For `parseObject` and `testObject` you aren't restricted to the validator-functi
   });
 ```
 
-#### Wrapping Parse/Test functions <a name="wrapping-parse-test"></a>
-If you want to wrap the `parseObject` or `testObject` function cause you may want to let's say, apply the same error handler to multiple object-validators, you need to import the `TSchema` type have your generic extend it:
+#### Wrapping parseObject/testObject functions <a name="wrapping-parse-test"></a>
+If you want to wrap the `parseObject` or `testObject` functions cause you want to let's say, apply the same error handler to multiple object-validators, you need to import the `TSchema` type and have your generic extend it:
 ```typescript
 import { isNumber, isString } from 'jet-validators';
 import { parseObject, TSchema } from 'jet-validators/utils';
