@@ -267,18 +267,28 @@ The regular expressions for each function below can be overwritten using the env
 These require an initialization step which will return a validator function.
 
 ### `isInArray` <a name="isInArray"></a>
-Does the argument strictly equal any item in the array:
-```typescript
-  const isInArrTest = isInArray(['1', '2', '3']);
-  isInArrTest('1'); // => true
-```
+Does the argument strictly equal any item in the array.
 - isInArray
 - isOptionalInArray
 - isNullableInArray
 - isNullishInArray
 
+```typescript
+  const isInArrTest = isInArray(['1', '2', '3']);
+  isInArrTest('1'); // => true
+```
+
 ### `isInRange` <a name="isInRange"></a>
-Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`. If you want to check if the number is not between two numbers, use the bigger number for the first param and the lesser number for the second:
+Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`. If you want to check if the number is not between two numbers, use the bigger number for the first param and the lesser number for the second.
+- isInRange
+- isOptionalInRange
+- isNullableInRange
+- isNullishInRange
+- isInRangeArray
+- isOptionalInRangeArray
+- isNullableInRangeArray
+- isNullishInRangeArray
+
 ```typescript
 
   // Between 0 and 100
@@ -308,18 +318,17 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
   lessThan50OrGreaterThan100(101); // true
 ```
 
-Variations:
-- isInRange
-- isOptionalInRange
-- isNullableInRange
-- isNullishInRange
-- isInRangeArray
-- isOptionalInRangeArray
-- isNullableInRangeArray
-- isNullishInRangeArray
-
 ### `isKeyOf` <a name="isKeyOf"></a>
 Checks if the argument is a key of the object. Note that this will not work for symbols.
+- isKeyOf
+- isOptionalKeyOf
+- isNullableKeyOf
+- isNullishKeyOf
+- isKeyOfArray
+- isOptionalKeyOfArray
+- isNullableKeyOfArray
+- isNullishKeyOfArray
+
 ```typescript
   const someObject = {
     foo: 'bar',
@@ -333,18 +342,14 @@ Checks if the argument is a key of the object. Note that this will not work for 
   isKeyofSomeObjectArr(['bada', 'foo']); // true
 ```
 
-Variations:
-- isKeyOf
-- isOptionalKeyOf
-- isNullableKeyOf
-- isNullishKeyOf
-- isKeyOfArray
-- isOptionalKeyOfArray
-- isNullableKeyOfArray
-- isNullishKeyOfArray
-
 ### `isEnum` <a name="isEnum"></a>
 Check if the argument is a valid enum object. Unlike other complex validators this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
+- isEnum
+- isOptionalEnum
+- isNullableEnum
+- isNullishEnum
+- TEnum (type)
+
 ```typescript
   enum StringEnum {
     Foo = 'foo',
@@ -353,30 +358,20 @@ Check if the argument is a valid enum object. Unlike other complex validators th
   isEnum(StringEnum) // true
 ```
 
-Variations:
-- isEnum
-- isOptionalEnum
-- isNullableEnum
-- isNullishEnum
-- TEnum (type)
-
-
 ### `isEnumVal` <a name="isEnumVal"></a>
-Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`. 
+Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`.
+- isEnumVal
+- isOptionalEnumVal
+- isNullableEnumVal
+- isNullishEnumVal
+
 ```typescript
   enum NumberEnum {
     Foo,
     Bar,
   }
   const isNumberEnumVal = isEnumVal(NumberEnum);
-
 ```
-
-Variations:
-- isEnumVal
-- isOptionalEnumVal
-- isNullableEnumVal
-- isNullishEnumVal
 <br/><br/>
 
 
@@ -428,17 +423,16 @@ Converts the following values to a boolean. Note will also covert the string equ
 ```
 
 #### `parseJson` <a name="parseJson"></a>
-Calls the `JSON.parse` function. If the argument is not a string an error will be thrown:
-```typescript
-  const numberArr = parseJson<number[]>('[1,2,3]');
-  isNumberArray(val); // true
-```
-
-Variations:
+Calls the `JSON.parse` function. If the argument is not a string an error will be thrown.
 - parseJson
 - parseOptionalJson
 - parseNullableJson
 - parseNullishJson
+
+```typescript
+  const numberArr = parseJson<number[]>('[1,2,3]');
+  isNumberArray(val); // true
+```
 
 ### Validating object schemas <a name="validating-object-schemas"></a>
 If you need to validate an object schema, you can pass a validator object with the key being a property of the object and the value being the any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
@@ -448,6 +442,15 @@ If you need to validate an object schema, you can pass a validator object with t
 
 #### `parseObject` <a name="parseObject"></a>
 This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a second error handler argument which will fire whenever a validator function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
+- parseObject
+- parseOptionalObject
+- parseNullableObject
+- parseNullishObject
+- parseObjectArray
+- parseOptionalObjectArray
+- parseNullableObjectArray
+- parseNullishObjectArray
+
 ```typescript
   interface IUser {
     id: number;
@@ -506,19 +509,18 @@ This function iterates an object (and any nested object) and runs the validator-
   ]);
 ```
 
-Variations:
-- parseObject
-- parseOptionalObject
-- parseNullableObject
-- parseNullishObject
-- parseObjectArray
-- parseOptionalObjectArray
-- parseNullableObjectArray
-- parseNullishObjectArray
-
-
 #### `testObject` <a name="testObject"></a>
-Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen: 
+Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen.
+- testObject
+- testOptionalObject
+- testNullableObject
+- testNullishObject
+- testObjectArray
+- testOptionalObjectArray
+- testNullableObjectArray
+- testNullishObjectArray
+
+
 ```typescript
   const user: IUser = {
     id: '5',
@@ -543,16 +545,6 @@ Test object is nearly identical to `parseObject` (it actually calls `parseObject
     // }
   }
 ```
-
-Variations:
-- testObject
-- testOptionalObject
-- testNullableObject
-- testNullishObject
-- testObjectArray
-- testOptionalObjectArray
-- testNullableObjectArray
-- testNullishObjectArray
 
 
 #### Custom Validators <a name="custom-validators"></a>
@@ -598,6 +590,14 @@ parseUser({ id: 5, name: 'joe' }); // => { id: 5, name: 'joe' }
 
 #### `traverseObject` <a name="traverseObject"></a>
 Iterate over each key in an object (works recursively too) and fire a callback function for each key/value pair that is reached. This is useful if you need to modify an object before doing something with it. If any key/value pair is an array objects, each of those objects will be iterated over too.
+- traverseObject
+- traverseOptionalObject
+- traverseNullableObject
+- traverseNullishObject
+- traverseObjectArray
+- traverseOptionalObjectArray
+- traverseNullableObjectArray
+- traverseNullishObjectArray
 
 > Note that for `parseObject` and `testObject` you should wrap the validator-function with `transform` and not use `traverseObject`. `traverseObject` is useful when you need to modify an object for some other validator like `jasmine` or `vitest` (that's what I use it for).
 
@@ -635,13 +635,3 @@ Iterate over each key in an object (works recursively too) and fire a callback f
   //   },
   // }
 ```
-
-Variations:
-- traverseObject
-- traverseOptionalObject
-- traverseNullableObject
-- traverseNullishObject
-- traverseObjectArray
-- traverseOptionalObjectArray
-- traverseNullableObjectArray
-- traverseNullishObjectArray
