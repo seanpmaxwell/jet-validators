@@ -49,7 +49,7 @@
 
 
 ## Introduction <a name="introduction"></a>
-A simple, but long, list of validator-functions commonly used when checking values in TypeScript. This is not meant to replace advanced schema validation libraries like `zod`, `valibot`, `jet-schema` etc. This is just a list of pre-defined validator-functions to save you time and boiler-plate code in TypeScript.
+A simple, but long, list of validator-functions commonly used when checking values in TypeScript. This is not meant to replace advanced schema validation libraries like `zod`, `valibot`, `jet-schema` etc. This is just a list of pre-defined validator-functions to save you time and boilerplate code in TypeScript.
 
 ### Quick Glance
 ```typescript
