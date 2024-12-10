@@ -417,7 +417,7 @@ Accepts a transformation function for the first argument, a validator for the se
   })); // true
 ```
 
-#### `parseBoolean` <a name="parseBoolean"></a>
+#### `parseBoolean` <a name="parse-boolean"></a>
 - parseBoolean
 - parseOptionalBoolean
 - parseNullableBoolean
