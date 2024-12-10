@@ -318,7 +318,6 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 ```
 
 ### `isKeyOf` <a name="isKeyOf"></a>
-Checks if the argument is a key of the object. Note that this will not work for symbols.
 - isKeyOf
 - isOptionalKeyOf
 - isNullableKeyOf
@@ -327,6 +326,8 @@ Checks if the argument is a key of the object. Note that this will not work for 
 - isOptionalKeyOfArray
 - isNullableKeyOfArray
 - isNullishKeyOfArray
+
+Checks if the argument is a key of the object. Note that this will not work for symbols.
 
 ```typescript
   const someObject = {
@@ -342,12 +343,13 @@ Checks if the argument is a key of the object. Note that this will not work for 
 ```
 
 ### `isEnum` <a name="isEnum"></a>
-Check if the argument is a valid enum object. Unlike other complex validators, this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
 - isEnum
 - isOptionalEnum
 - isNullableEnum
 - isNullishEnum
 - TEnum (type)
+
+Check if the argument is a valid enum object. Unlike other complex validators, this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
 
 ```typescript
   enum StringEnum {
@@ -358,11 +360,12 @@ Check if the argument is a valid enum object. Unlike other complex validators, t
 ```
 
 ### `isEnumVal` <a name="isEnumVal"></a>
-Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`.
 - isEnumVal
 - isOptionalEnumVal
 - isNullableEnumVal
 - isNullishEnumVal
+
+Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`.
 
 ```typescript
   enum NumberEnum {
@@ -423,11 +426,12 @@ Converts the following values to a boolean. Note will also covert the string equ
 ```
 
 #### `parseJson` <a name="parseJson"></a>
-Calls the `JSON.parse` function, if the argument is not a string an error will be thrown.
 - parseJson
 - parseOptionalJson
 - parseNullableJson
 - parseNullishJson
+
+Calls the `JSON.parse` function, if the argument is not a string an error will be thrown.
 
 ```typescript
   const numberArr = parseJson<number[]>('[1,2,3]');
@@ -441,7 +445,6 @@ If you need to validate an object schema, you can pass a validator object with t
 
 
 #### `parseObject` <a name="parseObject"></a>
-This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a error-handler function as the second argument which will fire whenever a validator-function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
 - parseObject
 - parseOptionalObject
 - parseNullableObject
@@ -450,6 +453,8 @@ This function iterates an object (and any nested object) and runs the validator-
 - parseOptionalObjectArray
 - parseNullableObjectArray
 - parseNullishObjectArray
+
+This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a error-handler function as the second argument which will fire whenever a validator-function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
 
 ```typescript
   interface IUser {
@@ -510,7 +515,6 @@ This function iterates an object (and any nested object) and runs the validator-
 ```
 
 #### `testObject` <a name="testObject"></a>
-Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well.
 - testObject
 - testOptionalObject
 - testNullableObject
@@ -520,6 +524,7 @@ Test object is nearly identical to `parseObject` (it actually calls `parseObject
 - testNullableObjectArray
 - testNullishObjectArray
 
+Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well.
 
 ```typescript
   const user: IUser = {
@@ -589,7 +594,6 @@ parseUser({ id: 5, name: 'joe' }); // => { id: 5, name: 'joe' }
 
 
 #### `traverseObject` <a name="traverseObject"></a>
-Iterate over each key in an object (works recursively too) and fire a callback function for each key/value pair that is reached. This is useful if you need to modify an object before doing something with it. If any key/value pair is an array objects, each of those objects will be iterated over too.
 - traverseObject
 - traverseOptionalObject
 - traverseNullableObject
@@ -598,6 +602,8 @@ Iterate over each key in an object (works recursively too) and fire a callback f
 - traverseOptionalObjectArray
 - traverseNullableObjectArray
 - traverseNullishObjectArray
+
+Iterate over each key in an object (works recursively too) and fire a callback function for each key/value pair that is reached. This is useful if you need to modify an object before doing something with it. If any key/value pair is an array objects, each of those objects will be iterated over too.
 
 > Note that for `parseObject` and `testObject` you should wrap the validator-function with `transform` and not use `traverseObject`. `traverseObject` is useful when you need to modify an object for some other validator like `jasmine` or `vitest` (that's what I use it for).
 
