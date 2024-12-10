@@ -268,19 +268,18 @@ The regular expressions for each function below can be overwritten using the env
 These require an initialization step which will return a validator function.
 
 ### `isInArray` <a name="is-in-array"></a>
-Does the argument strictly equal any item in the array.
 - isInArray
 - isOptionalInArray
 - isNullableInArray
 - isNullishInArray
 
+Does the argument strictly equal any item in the array:
 ```typescript
   const isInArrTest = isInArray(['1', '2', '3']);
   isInArrTest('1'); // => true
 ```
 
 ### `isInRange` <a name="is-in-range"></a>
-Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`. If you want to check if the number is not between two numbers, use the bigger number for the first param and the lesser number for the second.
 - isInRange
 - isOptionalInRange
 - isNullableInRange
@@ -290,6 +289,7 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 - isNullableInRangeArray
 - isNullishInRangeArray
 
+Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`. If you want to check if the number is not between two numbers, use the bigger number for the first param and the lesser number for the second:
 ```typescript
   // Between 0 and 100
   const isBetween0And100 = isInRange(0, 100);
@@ -328,8 +328,7 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 - isNullableKeyOfArray
 - isNullishKeyOfArray
 
-Checks if the argument is a key of the object. Note that this will not work for symbols.
-
+Checks if the argument is a key of the object. Note that this will not work for symbols:
 ```typescript
   const someObject = {
     foo: 'bar',
@@ -350,8 +349,7 @@ Checks if the argument is a key of the object. Note that this will not work for 
 - isNullishEnum
 - TEnum (type)
 
-Check if the argument is a valid enum object. Unlike other complex validators, this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`.
-
+Check if the argument is a valid enum object. Unlike other complex validators, this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`:
 ```typescript
   enum StringEnum {
     Foo = 'foo',
@@ -366,8 +364,7 @@ Check if the argument is a valid enum object. Unlike other complex validators, t
 - isNullableEnumVal
 - isNullishEnumVal
 
-Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`.
-
+Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`:
 ```typescript
   enum NumberEnum {
     Foo,
@@ -406,7 +403,7 @@ Loop through and object's key/value pairs and fire a callback for each one. If a
 ```
 
 #### `transform` <a name="transform"></a>
-Accepts a transformation function for the first argument, a validator for the second, and returns a validator-function which calls the transform function before validating. The returned validator-function provides a callback as the second argument, if you need to access the transformed value. You should use `transform` if you need to modify a value when using `parseObject` or `testObject`.
+Accepts a transformation function for the first argument, a validator for the second, and returns a validator-function which calls the transform function before validating. The returned validator-function provides a callback as the second argument, if you need to access the transformed value. You should use `transform` if you need to modify a value when using `parseObject` or `testObject`:
 ```typescript
   const isNumArrWithParse = transform((arg: string) => JSON.parse(arg), isNumberArray);
   isNumArrWithParse('[1,2,3]', val => {
@@ -432,8 +429,7 @@ Converts the following values to a boolean. Note will also covert the string equ
 - parseNullableJson
 - parseNullishJson
 
-Calls the `JSON.parse` function, if the argument is not a string an error will be thrown.
-
+Calls the `JSON.parse` function, if the argument is not a string an error will be thrown:
 ```typescript
   const numberArr = parseJson<number[]>('[1,2,3]');
   isNumberArray(val); // true
@@ -455,8 +451,7 @@ If you need to validate an object schema, you can pass a validator object with t
 - parseNullableObjectArray
 - parseNullishObjectArray
 
-This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a error-handler function as the second argument which will fire whenever a validator-function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet).
-
+This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a error-handler function as the second argument which will fire whenever a validator-function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet):
 ```typescript
   interface IUser {
     id: number;
@@ -525,8 +520,7 @@ This function iterates an object (and any nested object) and runs the validator-
 - testNullableObjectArray
 - testNullishObjectArray
 
-Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well.
-
+Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well:
 ```typescript
   const user: IUser = {
     id: '5',
