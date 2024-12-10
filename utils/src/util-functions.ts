@@ -64,7 +64,7 @@ export function transform<T>(
  * Convert all string/number boolean types to a boolean. If not a valid boolean
  * return "undefined".
  */
-export function parseBoolean(arg: unknown): boolean | undefined {
+export function parseBoolean(arg: unknown, errMsg?: string): boolean {
   if (typeof arg === 'string') {
     arg = arg.toLowerCase();
     if (arg === 'true') {
@@ -90,7 +90,40 @@ export function parseBoolean(arg: unknown): boolean | undefined {
     return arg;
   }
   // Default
-  return undefined;
+  throw new Error(errMsg ?? 'Argument must be a valid boolean.')
+}
+
+/***
+ * Parse optional boolean.
+ */
+export function parseOptionalBoolean(arg: unknown): boolean | undefined {
+  if (arg === undefined) {
+    return arg;
+  } else {
+    return parseBoolean(arg, 'Argument must be a valid boolean | undefined.');
+  }
+}
+
+/***
+ * Parse nullable boolean.
+ */
+export function parseNullableBoolean(arg: unknown): boolean | null {
+  if (arg === null) {
+    return arg;
+  } else {
+    return parseBoolean(arg, 'Argument must be a valid boolean | null.');
+  }
+}
+
+/***
+ * Parse nullish boolean.
+ */
+export function parseNullishBoolean(arg: unknown): boolean | null | undefined {
+  if (arg === null || arg === undefined) {
+    return arg;
+  } else {
+    return parseBoolean(arg, 'Argument must be a valid boolean | null | undefined.');
+  }
 }
 
 /**

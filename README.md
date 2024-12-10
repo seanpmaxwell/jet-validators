@@ -411,6 +411,11 @@ Accepts a transformation function for the first argument, a validator for the se
 ```
 
 #### `parseBoolean` <a name="parseBoolean"></a>
+- parseBoolean
+- parseOptionalBoolean
+- parseNullableBoolean
+- parseNullishBoolean
+
 Converts the following values to a boolean. Note will also covert the string equivalents:
 - `"true" or true`: `true` (case insensitive i.e. `"TrUe" => true`)
 - `"false" or false`: `false` (case insensitive i.e. `"FaLsE" => false`)
