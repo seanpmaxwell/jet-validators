@@ -77,7 +77,7 @@ if (isRecord(val)) {
 
 ## Installation <a name="installation"></a>
 ```bash
-  npm i -s jet-validators
+npm i -s jet-validators
 ```
 <br/>
 
