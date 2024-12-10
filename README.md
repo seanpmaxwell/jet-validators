@@ -7,14 +7,14 @@
 - [Introduction](#introduction)
 - [Basic Validators](#basic-validators)
   - [Nullables](#nullables)
-  - [isBoolean](#isBoolean)
-  - [isValidBoolean](#isValidBoolean)
-  - [isNumber](#isNumber)
-  - [isBigInt](#isBigInt)
-  - [isValidNumber](#isValidNumber)
-  - [isString](#isString)
-  - [isNonEmptyString](#isNonEmptyString)
-  - [isSymbol](#isSymbol)
+  - [isBoolean](#is-noolean)
+  - [isValidBoolean](#is-valid-boolean)
+  - [isNumber](#is-number)
+  - [isBigInt](#is-bigint)
+  - [isValidNumber](#is-valid-number)
+  - [isString](#is-string)
+  - [isNonEmptyString](#is-non-empty-string)
+  - [isSymbol](#is-symbol)
   - [isDate](#isDate)
   - [isValidDate](#isValidDate)
   - [isObject](#isObject)
@@ -22,29 +22,30 @@
   - [isFunction](#isFunction)
 - [Regular Expressions](#regular-expressions)
   - [Overloading with environment variables](#overloading)
-  - [isColor](#isColor)
-  - [isEmail](#isEmail)
-  - [isUrl](#isUrl)
-  - [isAlphaNumericString](#isAlphaNumericString)
+  - [isColor](#is-color)
+  - [isEmail](#is-email)
+  - [isUrl](#is-url)
+  - [isAlphaNumericString](#is-alpha-numeric-string)
+  - [isAlphabeticString](#is-alphabetic-string)
 - [Complex Validators](#complex-validators)
-  - [isInArray](#isInArray)
-  - [isInRange](#isInRange)
-  - [isKeyOf](#isKeyOf)
-  - [isEnum](#isEnum)
-  - [isEnumVal](#isEnumVal)
+  - [isInArray](#is-in-array)
+  - [isInRange](#is-in-range)
+  - [isKeyOf](#is-key-of)
+  - [isEnum](#is-enum)
+  - [isEnumVal](#is-enum-val)
 - [Utilities](#utilities)
   - [Simple Utilities](#simple-utilities)
-    - [nonNullable](#nonNullable)
-    - [iterateObjectEntries](#iterateObjectEntries)
+    - [nonNullable](#non-nullable)
+    - [iterateObjectEntries](#iterate-object-entries)
     - [transform](#transform)
-    - [parseBoolean](#parseBoolean)
-    - [parseJson](#parseJson)
+    - [parseBoolean](#parse-boolean)
+    - [parseJson](#parse-json)
   - [Validating object schemas](#validating-object-schemas)
-    - [parseObject](#parseObject)
-    - [testObject](#testObject)
+    - [parseObject](#parse-object)
+    - [testObject](#test-object)
     - [Custom Validators](#custom-validators)
     - [Wrapping Parse/Test](#wrapping-parse-test)
-    - [traverseObject](#traverseObject)
+    - [traverseObject](#traverse-object)
 <br/>
 
 
@@ -82,7 +83,7 @@ These can be imported and used directly and don't require any configuration.
 - isNull
 - isNullOrUndef
 
-### `isBoolean` <a name="isBoolean"></a>
+### `isBoolean` <a name="is-boolean"></a>
 - isBoolean
 - isOptionalBoolean
 - isNullableBoolean
@@ -92,7 +93,7 @@ These can be imported and used directly and don't require any configuration.
 - isNullableBooleanArray
 - isNullishBooleanArray
 
-### `isValidBoolean` <a name="isValidBoolean"></a>
+### `isValidBoolean` <a name="is-valid-boolean"></a>
 Is it a valid boolean after calling the `parseBoolean` utility function.
 - isValidBoolean
 - isOptionalValidBoolean
@@ -103,7 +104,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableValidBooleanArray
 - isNullishValidBooleanArray
 
-### `isNumber` <a name="isNumber"></a>
+### `isNumber` <a name="is-number"></a>
 - isNumber
 - isOptionalNumber
 - isNullableNumber
@@ -113,7 +114,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableNumberArray
 - isNullishNumberArray
 
-### `isBigInt` <a name="isBigInt"></a>
+### `isBigInt` <a name="is-bigint"></a>
 - isBigInt
 - isOptionalBigInt
 - isNullableBigInt
@@ -123,7 +124,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableBigIntArray
 - isNullishBigIntArr
 
-### `isValidNumber` <a name="isValidNumber"></a>
+### `isValidNumber` <a name="is-valid-number"></a>
 - isValidNumber
 - isOptionalValidNumber
 - isNullableValidNumber
@@ -133,7 +134,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableValidNumberArray
 - isNishValidNumArr
 
-### `isString` <a name="isString"></a>
+### `isString` <a name="is-string"></a>
 - isString
 - isOptionalString
 - isNullableString
@@ -143,7 +144,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableStringArray
 - isNullishStringArray
 
-### `isNonEmptyString` <a name="isNonEmptyString"></a>
+### `isNonEmptyString` <a name="is-non-empty-string"></a>
 - isNonEmptyString
 - isOptionalNonEmptyString
 - isNullableNonEmptyString
@@ -154,7 +155,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullishNonEmptyStringArray
 - TNonEmptyStr
 
-### `isSymbol` <a name="isSymbol"></a>
+### `isSymbol` <a name="is-symbol"></a>
 - isSymbol
 - isOptionalSymbol
 - isNullableSymbol
@@ -164,7 +165,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableSymbolArray
 - isNullishSymbolArray
 
-### `isDate` <a name="isDate"></a>
+### `isDate` <a name="is-date"></a>
 - isDate
 - isOptionalDate
 - isNullableDate
@@ -174,7 +175,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableDateArray
 - isNullishDateArray
 
-### `isValidDate` <a name="isValidDate"></a>
+### `isValidDate` <a name="is-valid-date"></a>
 Is it a valid date after wrapping with `new Date()` (could be `Date`, `string`, `number`)
 - isValidDate
 - isOptionalValidDate
@@ -185,7 +186,7 @@ Is it a valid date after wrapping with `new Date()` (could be `Date`, `string`, 
 - isNullableValidDateArray
 - isNullishValidDateArray
 
-### `isObject` <a name="isObject"></a>
+### `isObject` <a name="is-object"></a>
 - isObject
 - isOptionalObject
 - isNullableObject
@@ -195,7 +196,7 @@ Is it a valid date after wrapping with `new Date()` (could be `Date`, `string`, 
 - isNullableObjectArray
 - isNullishObjectArray
 
-### `isRecord` <a name="isRecord"></a>
+### `isRecord` <a name="is-record"></a>
 Checks if the argument is a non-null non-array object. Type predicate is `Record<string, unknown>`.
 - isRecord
 - isOptionalRecord
@@ -207,7 +208,7 @@ Checks if the argument is a non-null non-array object. Type predicate is `Record
 - isNullishRecordArray
 - TRecord (type)
 
-### `isFunction` <a name="isFunction"></a>
+### `isFunction` <a name="is-function"></a>
 - isFunction
 - isOptionalFunction
 - isNullableFunction
@@ -226,35 +227,35 @@ Verifies the argument matches the regular-expression. Note than an empty string 
 The regular expressions for each function below can be overwritten using the environment variables. To overload a regular expression create an environment variables with the format:<br/>
 - JET_VALIDATORS_REGEX_{name of the function in uppercase} (i.e. `JET_VALIDATORS_REGEX_EMAIL=^\S+@\S+\.\S+$`)
 
-### `isColor` <a name="isColor"></a>
+### `isColor` <a name="is-color"></a>
 - isColor
 - isOptionalColor
 - isNullableColor
 - isNullishColor
 - TColor (type)
 
-### `isEmail` <a name="isEmail"></a>
+### `isEmail` <a name="is-email"></a>
 - isEmail
 - isOptionalEmail
 - isNullableEmail
 - isNullishEmail
 - TEmail (type)
 
-### `isUrl` <a name="isUrl"></a>
+### `isUrl` <a name="is-url"></a>
 - isUrl
 - isOptionalUrl
 - isNullableUrl
 - isNullishUrl
 - TURL (type)
 
-### `isAlphaNumericString` <a name="isAlphaNumericString"></a>
+### `isAlphaNumericString` <a name="is-alpha-numeric-string"></a>
 - isAlphaNumericString
 - isOptionalAlphaNumericString
 - isNullableAlphaNumericString
 - isNullishAlphaNumericString
 - TAlphabeticStr (type)
 
-### `isAlphabeticString` <a name="isAlphabeticString"></a>
+### `isAlphabeticString` <a name="is-alphabetic-string"></a>
 - isAlphabeticString
 - isOptionalAlphabeticString
 - isNullableAlphabeticString
@@ -266,7 +267,7 @@ The regular expressions for each function below can be overwritten using the env
 ## Complex Validators <a name="complex-validators"></a>
 These require an initialization step which will return a validator function.
 
-### `isInArray` <a name="isInArray"></a>
+### `isInArray` <a name="is-in-array"></a>
 Does the argument strictly equal any item in the array.
 - isInArray
 - isOptionalInArray
@@ -278,7 +279,7 @@ Does the argument strictly equal any item in the array.
   isInArrTest('1'); // => true
 ```
 
-### `isInRange` <a name="isInRange"></a>
+### `isInRange` <a name="is-in-range"></a>
 Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`. If you want to check if the number is not between two numbers, use the bigger number for the first param and the lesser number for the second.
 - isInRange
 - isOptionalInRange
@@ -317,7 +318,7 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
   lessThan50OrGreaterThan100(101); // true
 ```
 
-### `isKeyOf` <a name="isKeyOf"></a>
+### `isKeyOf` <a name="is-key-of"></a>
 - isKeyOf
 - isOptionalKeyOf
 - isNullableKeyOf
@@ -342,7 +343,7 @@ Checks if the argument is a key of the object. Note that this will not work for 
   isKeyofSomeObjectArr(['bada', 'foo']); // true
 ```
 
-### `isEnum` <a name="isEnum"></a>
+### `isEnum` <a name="is-enum"></a>
 - isEnum
 - isOptionalEnum
 - isNullableEnum
@@ -359,7 +360,7 @@ Check if the argument is a valid enum object. Unlike other complex validators, t
   isEnum(StringEnum) // true
 ```
 
-### `isEnumVal` <a name="isEnumVal"></a>
+### `isEnumVal` <a name="is-enum-val"></a>
 - isEnumVal
 - isOptionalEnumVal
 - isNullableEnumVal
@@ -387,7 +388,7 @@ import { parseObject } from 'jet-validators/utils';
 
 ### Simple Utilities <a name="simple-utilities"></a>
 
-#### `nonNullable` <a name="nonNullable"></a>
+#### `nonNullable` <a name="non-nullable"></a>
 Remove `null`/`undefined` from type-predicates and runtime validation:
 ```typescript
   const isString = nonNullable(isNullishString);
@@ -395,7 +396,7 @@ Remove `null`/`undefined` from type-predicates and runtime validation:
   isString(undefined); // false
 ```
 
-#### `iterateObjectEntries` <a name="iterateObjectEntries"></a>
+#### `iterateObjectEntries` <a name="iterate-object-entries"></a>
 Loop through and object's key/value pairs and fire a callback for each one. If any callback returns `false`, the whole function will return `false`. It will also caste the return value to the generic if passed one. Note that this does not work recursively. This function is useful for dynamic objects where you don't know what the keys will be:
 ```typescript
   const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
@@ -413,7 +414,7 @@ Accepts a transformation function for the first argument, a validator for the se
   })); // true
 ```
 
-#### `parseBoolean` <a name="parseBoolean"></a>
+#### `parseBoolean` <a name="parse-boolean"></a>
 Converts the following values to a boolean. Note will also covert the string equivalents:
 - `"true" or true`: `true` (case insensitive i.e. `"TrUe" => true`)
 - `"false" or false`: `false` (case insensitive i.e. `"FaLsE" => false`)
@@ -425,7 +426,7 @@ Converts the following values to a boolean. Note will also covert the string equ
   parseBoolean('0') // false
 ```
 
-#### `parseJson` <a name="parseJson"></a>
+#### `parseJson` <a name="parse-json"></a>
 - parseJson
 - parseOptionalJson
 - parseNullableJson
@@ -444,7 +445,7 @@ If you need to validate an object schema, you can pass a validator object with t
 > These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as simple object validating tools where using a separate schema validation library might be overkill. If you need something more powerful, I highly recommend this repo's sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
 
 
-#### `parseObject` <a name="parseObject"></a>
+#### `parseObject` <a name="parse-object"></a>
 - parseObject
 - parseOptionalObject
 - parseNullableObject
@@ -514,7 +515,7 @@ This function iterates an object (and any nested object) and runs the validator-
   ]);
 ```
 
-#### `testObject` <a name="testObject"></a>
+#### `testObject` <a name="test-object"></a>
 - testObject
 - testOptionalObject
 - testNullableObject
@@ -593,7 +594,7 @@ parseUser({ id: 5, name: 'joe' }); // => { id: 5, name: 'joe' }
 ```
 
 
-#### `traverseObject` <a name="traverseObject"></a>
+#### `traverseObject` <a name="traverse-object"></a>
 - traverseObject
 - traverseOptionalObject
 - traverseNullableObject
