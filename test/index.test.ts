@@ -553,7 +553,7 @@ test('test simple utilities', () => {
   expect(parseBoolean(false)).toStrictEqual(false);
   expect(parseBoolean(true)).toStrictEqual(true);
   expect(parseBoolean('fAlSe')).toStrictEqual(false);
-  expect(parseBoolean('fAlSee')).toStrictEqual(undefined);
+  expect(() => parseBoolean('fAlSee')).toThrowError();
   expect(parseBoolean('tRUe')).toStrictEqual(true);
   expect(parseBoolean(1)).toStrictEqual(true);
   expect(parseBoolean(0)).toStrictEqual(false);

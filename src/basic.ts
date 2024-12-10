@@ -202,8 +202,12 @@ function _checkType<T>(type: string) {
  * Is it a boolean after doing parse boolean.
  */
 function _isValidBoolean(arg: unknown): arg is number | string | boolean {
-  arg = parseBoolean(arg);
-  return isBoolean(arg);
+  try {
+    arg = parseBoolean(arg);
+    return isBoolean(arg);
+  } catch (err) {
+    return false;
+  }
 }
 
 /**
