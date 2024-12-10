@@ -54,14 +54,14 @@ A simple, but long, list of validator-functions commonly used when checking valu
 
 ### Quick Glance
 ```typescript
-import { isOptionalString, isBooleanArray } from 'jet-validators';
+import { isOptionalString, isRecord } from 'jet-validators';
 
 if (isOptionalString(val)) {
   // val is string | undefined
 }
 
-if (isBooleanArray(val)) {
-  // val is boolean[]
+if (isRecord(val)) {
+  val['foo'] = 'bar';
 }
 ```
 
