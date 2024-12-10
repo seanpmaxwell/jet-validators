@@ -5,6 +5,7 @@
 
 ## Table of Contents
 - [Introduction](#introduction)
+- [Installation](#installation)
 - [Basic Validators](#basic-validators)
   - [Nullables](#nullables)
   - [isBoolean](#is-noolean)
@@ -74,6 +75,11 @@ if (isRecord(val)) {
 - Zero dependency!
 <br/>
 
+## Installation <a name="installation"></a>
+```bash
+  npm i -s jet-validators
+```
+<br/>
 
 ## Basic Validators <a name="basic-validators"></a>
 These can be imported and used directly and don't require any configuration.
