@@ -248,6 +248,8 @@ test('test basic validators', () => {
   // Date
   const D1 = new Date();
   expect(isDate(D1)).toStrictEqual(true);
+  expect(isDate(new Date('2024-11-09T23:43:58.788Z'))).toStrictEqual(true);
+  expect(isDate(new Date('horse'))).toStrictEqual(false);
   expect(isDate(false)).toStrictEqual(false);
   expect(isOptionalDate(D1)).toStrictEqual(true);
   expect(isOptionalDate(undefined)).toStrictEqual(true);

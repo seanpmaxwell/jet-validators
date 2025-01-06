@@ -96,7 +96,7 @@ export const isNullableSymbolArray = orNullable(isSymbolArray);
 export const isNullishSymbolArray = orNullable(isOptionalSymbolArray);
 
 // Date
-export const isDate = (arg: unknown): arg is Date => arg instanceof Date;
+export const isDate = _isDate;
 export const isOptionalDate = orOptional(isDate);
 export const isNullableDate = orNullable(isDate);
 export const isNullishDate = orNullable(isOptionalDate);
@@ -208,6 +208,13 @@ function _isValidBoolean(arg: unknown): arg is number | string | boolean {
   } catch (err) {
     return false;
   }
+}
+
+/**
+ * Is an instance of Date and that its not invalid.
+ */
+function _isDate(arg: unknown): arg is Date {
+  return arg instanceof Date && !isNaN(arg.getTime());
 }
 
 /**

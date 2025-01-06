@@ -172,6 +172,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullishSymbolArray
 
 ### `isDate` <a name="is-date"></a>
+Is argument an instance of `Date` with a valid time value: `"!isNaN(arg.getTime())" => true`
 - isDate
 - isOptionalDate
 - isNullableDate
@@ -182,7 +183,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullishDateArray
 
 ### `isValidDate` <a name="is-valid-date"></a>
-Is it a valid date after wrapping with `new Date()` (could be `Date`, `string`, `number`)
+Is argument a valid date after wrapping with `new Date()` (could be `Date`, `string`, `number`)
 - isValidDate
 - isOptionalValidDate
 - isNullableValidDate
