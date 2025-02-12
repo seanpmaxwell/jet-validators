@@ -694,9 +694,10 @@ const deepCompareAlt = customDeepCompare({
   onlyCompareFields: ['id', 'created'],
 });
 
-const user1 = { id: 1, created: new Date('2012-6-17') },
-  user2 = { id: 1, created: 1339916400000 },
-  user3 = { id: 1, name: 'joe', created: new Date('2012-6-17') },
+const date1 = new Date('2012-6-17'),
+  user1 = { id: 1, created: date1 },
+  user2 = { id: 1, created: date1.getTime() },
+  user3 = { id: 1, name: 'joe', created: date1 },
 
 deepCompare(user1, user2); // => false
 deepCompare(user1, user3); // => false

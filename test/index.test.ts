@@ -118,11 +118,14 @@ import {
   transform,
   traverseObject,
   TSchema,
+  customDeepCompare,
+  deepCompare,
 } from '../utils';
 
-// pick up here
-import { customDeepCompare, deepCompare } from '../utils/src'
 
+/******************************************************************************
+                                 Tests
+******************************************************************************/
 
 /**
  * Test all the basic validators
@@ -836,7 +839,8 @@ test('test "deepCompare()" function', () => {
     });
 
   const date1 = new Date('2012-6-17'),
-    date2 = new Date(date1);
+    date2 = new Date(date1),
+    date3 = date1.getTime();
   (date2 as any).cow = 'green';
 
   // Init dummy data
@@ -844,7 +848,7 @@ test('test "deepCompare()" function', () => {
     User2 = { id: 1, name: 'john' },
     User3 = { id: 1, name: 'jane' },
     User4 = { id: 1, name: 'john', created: date1 },
-    User5 = { id: 1, name: 'john', created: 1339916400000 },
+    User5 = { id: 1, name: 'john', created: date3 },
     User5a = { id: 1, name: 'john', created: date2}
 
   const User6 = {
