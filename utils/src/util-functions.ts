@@ -4,6 +4,7 @@ import {
   isObject,
   isRecord,
   isString,
+  isDate,
   TRecord,
 } from '../../dist';
 
@@ -486,4 +487,171 @@ function _traverseObjectHelperCore(
       cb(key, value, parentObj);
     }
   }
+}
+
+
+// **** Compare Objects **** //
+
+type TDeepCompareCb = (val1: unknown, val2: unknown) => void;
+type TDeepCompareFn = (arg1: unknown, arg2: unknown) => boolean;
+
+interface IDeepCompareOptions {
+  disregardDateException?: boolean,
+  onlyCompareFields?: string[],
+  convertToDateFields?: string[], 
+}
+
+export const deepCompare = customDeepCompare({});
+
+/**
+ * Do a deep-comparison of two objects and fire a callback for each unequal 
+ * value.
+ * 
+ * Options:
+ *  - "disregardDateException": For date objects we just compare the time value 
+ *    not the references of the date objects themselves. You can overwrite 
+ *    this using "disregardDateException".
+ *  - "onlyCompareFields": If only want to compare some properties in two 
+ *    objects and not the full object. Note this DOES NOT apply to nested 
+ *    objects. Also if this array contains properties not present in the 
+ *    objects, those properties will not be affected.
+ *  - "convertToDateFields": If you want a property to be converted to a date 
+ *    before comparison, pass the property name here. This DOES apply to nested
+ *    objects.
+ */
+export function customDeepCompare(
+  cbOrOptions: TDeepCompareCb | IDeepCompareOptions,
+  options?: IDeepCompareOptions,
+): TDeepCompareFn {
+  let cbF: TDeepCompareCb | undefined,
+    optionsF: IDeepCompareOptions | undefined;
+  if (typeof cbOrOptions === 'function') {
+    cbF = cbOrOptions;
+    if (!!options) {
+      optionsF = options;
+    }
+  } else if (typeof cbOrOptions === 'object') {
+    optionsF = cbOrOptions;
+  }
+  return (arg1: unknown, arg2: unknown) => {
+    return _customDeepCompareHelper(arg1, arg2, cbF, optionsF);
+  }
+}
+
+/**
+ * Run the comparison logic.
+ */
+function _customDeepCompareHelper(
+  arg1: unknown,
+  arg2: unknown,
+  cb?: TDeepCompareCb,
+  options?: IDeepCompareOptions,
+): boolean {
+  // ** Strict compare if not both objects ** //
+  if (!isObject(arg1) ||arg1 === null || !isObject(arg2) || arg2 === null) {
+    const isEqual = (arg1 === arg2);
+    if (!isEqual && !!cb) {
+      cb(arg1, arg2);
+    }
+    return isEqual;
+  }
+  // ** Compare dates ** //
+  if (!options?.disregardDateException && (isDate(arg1) && isDate(arg2))) {
+    const isEqual = (arg1.getTime() === arg2.getTime());
+    if (!isEqual && !!cb) {
+      cb(arg1, arg2);
+    }
+    return isEqual;
+  }
+  // ** Compare arrays ** //
+  if (Array.isArray(arg1) || Array.isArray(arg2)) {
+    if (!(Array.isArray(arg1) && Array.isArray(arg2))) {
+      cb?.(arg1, arg2);
+      return false;
+    }
+    if (!cb && arg1.length !== arg2.length) {
+      return false
+    }
+    let length = arg1.length,
+      isEqualF = true;
+    if (arg2.length > arg1.length) {
+      length = arg2.length;
+    }
+    for (let i = 0; i < length; i++) {
+      const isEqual = _customDeepCompareHelper(arg1[i], arg2[i], cb, options);
+      if (!isEqual) {
+        if (!cb) {
+          return false;
+        }
+        isEqualF = false;
+      }
+    }
+    return isEqualF
+  }
+  // ** Compare Object *** //
+  // If only comparing some properties, filter out the unincluded keys.
+  let keys1 = Object.keys(arg1),
+    keys2 = Object.keys(arg2);
+  if (!!options?.onlyCompareFields) {
+    keys1 = keys1.filter(key => options?.onlyCompareFields?.includes(key))
+    keys2 = keys2.filter(key => options?.onlyCompareFields?.includes(key))
+    // This option only applies to top level
+    options = { ...options }
+    delete options.onlyCompareFields;
+  }
+  if (!cb && keys1.length !== keys2.length) {
+    return false
+  }
+  // Compare the properties of each object
+  let keys = keys1;
+  if (keys2.length > keys1.length) {
+    keys = keys2;
+  }
+  let isEqual = true;
+  for (const key of keys) {
+    let val1 = (arg1 as TRecord)[key],
+    val2 = (arg2 as TRecord)[key];
+    // Check property is present for both
+    if (arg1.hasOwnProperty(key) && !arg2.hasOwnProperty(key)) {
+      if (!!cb) {
+        cb(val1, `key "${key}" not present`);
+        isEqual = false;
+        continue;
+      } else {
+        return false;
+      }
+    } else if (!arg1.hasOwnProperty(key) && arg2.hasOwnProperty(key)) {
+      if (!!cb) {
+        cb(`key "${key}" not present`, val2);
+        isEqual = false;
+        continue;
+      } else {
+        return false;
+      }
+    }
+    // Check if meant to converted to date first
+    if (!!options?.convertToDateFields?.includes(key)) {
+        const d1 = new Date(val1 as string),
+         d2 = new Date(val2 as string);
+      if (d1.getTime() !== d2.getTime()) {
+        if (!!cb) {
+          cb(val1, val2);
+          isEqual = false;
+        } else {
+          return false;
+        }
+      }
+      continue;
+    }
+    // Recursion
+    if (!_customDeepCompareHelper(val1, val2, cb, options)) {
+      if (!cb) {
+        return false;
+      } 
+      isEqual = false;
+      continue;
+    }
+  }
+  // Return
+  return isEqual;
 }

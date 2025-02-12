@@ -1,5 +1,5 @@
 import { isNumber, isString } from '../dist';
-import { transform } from '../dist/utils';
+import { transform } from '../utils/dist';
 import { isBoolean } from '../../jet-validators';
 
 console.log(isString('horse'))

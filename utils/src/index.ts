@@ -40,4 +40,7 @@ export {
   traverseOptionalObjectArray,
   traverseNullableObjectArray,
   traverseNullishObjectArray,
+  // Deep compare
+  deepCompare,
+  customDeepCompare,
 } from './util-functions';

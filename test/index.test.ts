@@ -120,6 +120,9 @@ import {
   TSchema,
 } from '../utils';
 
+// pick up here
+import { customDeepCompare, deepCompare } from '../utils/src'
+
 
 /**
  * Test all the basic validators
@@ -567,7 +570,7 @@ test('test simple utilities', () => {
 /**
  * Test "parseObject" function
  */
-test('test "parseObject" function', () => {
+test('test "parseObject()" function', () => {
 
   interface IUser {
     id: number;
@@ -722,7 +725,7 @@ test('test "parseObject" function', () => {
 /**
  * Test "testObject" function
  */
-test('test "testObject" function', () => {
+test('test "testObject()" function', () => {
 
   // Do basic test
   const testUser = testObject({
@@ -774,7 +777,7 @@ test('test "testObject" function', () => {
 /**
  * Test "traverseObject" function
  */
-test('test "traverseObject" function', () => {
+test('test "traverseObject()" function', () => {
 
   // Do basic test
   const convertValidToDateObjects = traverseObject((key, value, parentObj) => {
@@ -810,4 +813,85 @@ test('test "traverseObject" function', () => {
       ],
     },
   });
+});
+
+
+/**
+ * Test "deepCompare" function
+ */
+test('test "deepCompare()" function', () => {
+
+  const compareCb = (val1: unknown, val2: unknown) => {
+    throw new Error(`Unequal vals => "Value1: ${val1} Value2: ${val2}`);
+  }
+
+  // Init deep comparison functions
+  const deepCompare2 = customDeepCompare(compareCb),
+    deepCompare3 = customDeepCompare({
+      convertToDateFields: ['created'],
+      onlyCompareFields: ['id', 'name', 'created', 'updated'],
+    }),
+    deepCompare4 = customDeepCompare(compareCb, {
+      disregardDateException: true,
+    });
+
+  const date1 = new Date('2012-6-17'),
+    date2 = new Date(date1);
+  (date2 as any).cow = 'green';
+
+  // Init dummy data
+  const User1 = { id: 1, name: 'john' },
+    User2 = { id: 1, name: 'john' },
+    User3 = { id: 1, name: 'jane' },
+    User4 = { id: 1, name: 'john', created: date1 },
+    User5 = { id: 1, name: 'john', created: 1339916400000 },
+    User5a = { id: 1, name: 'john', created: date2}
+
+  const User6 = {
+    id: 1,
+    name: 'john',
+    address: {
+      street: 'foo',
+      zip: 1234,
+      unit: ['apt', 202]
+    }
+  },
+  User7 = {
+    id: 1,
+    name: 'john',
+    address: {
+      street: 'foo',
+      zip: 1234,
+      unit: ['apt', 202]
+    }
+  },
+  User8 = {
+    id: 1,
+    name: 'john',
+    address: {
+      street: 'foo',
+      zip: 1234,
+      city: 'seattle',
+    }
+  }
+
+  const arr1 = [ 'horse', 'cow', 2, User1, User8],
+    arr2 = [ 'horse', 'cow', 2, User1, User8 ],
+    arr3 = ['horse', User8, 2, User1, 'cow' ];
+
+  // Tests
+  expect(deepCompare(User1, User2)).toBeTruthy();
+  expect(deepCompare(User1, User3)).toBeFalsy();
+  expect(deepCompare(User1, User4)).toBeFalsy();
+  expect(() => deepCompare2(User1, User4)).toThrowError();
+  expect(deepCompare(User4, User5)).toBeFalsy();
+  expect(deepCompare3(User4, User5)).toBeTruthy();
+  expect(deepCompare(User6, User7)).toBeTruthy();
+  expect(deepCompare(User6, User8)).toBeFalsy();
+  expect(() => deepCompare2(User6, User8)).toThrowError();
+  expect(deepCompare3(User6, User8)).toBeTruthy();
+  expect(deepCompare(arr1, arr2)).toBeTruthy();
+  expect(deepCompare(arr1, arr3)).toBeFalsy();
+  expect(deepCompare(User4, User5a)).toBeTruthy();
+  expect(() => deepCompare4(User4, User5a)).toThrowError();
 });
