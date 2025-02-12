@@ -663,6 +663,8 @@ If you wish to access the values everytime a comparison fails or modify the beha
 
 > `customDeepCompare("callback or options")` or `customDeepCompare("callback", "options")`
 
+##### The `callback` function
+
 - The callback function provides the values that failed during the comparison will fire everytime a comparison fails:
 ```typescript
 import { customDeepCompare } from 'jet-validators/util';
@@ -675,11 +677,9 @@ deepCompare({ id: 1 }, { id: 2 }); // => false
 
 ##### The `options` object
 ```typescript
-{
-  disregardDateException?: boolean;
-  onlyCompareFields?: string[];
-  convertToDateFields?: string[];
-}
+disregardDateException?: boolean;
+onlyCompareFields?: string[];
+convertToDateFields?: string[];
 ```
 
 - `disregardDateException`: By default, date objects are compared using the epoch time value (`.getTime()`) not the key value pairs on the object itself. If you wish to disregard this, set `disregardDateException: true`.
