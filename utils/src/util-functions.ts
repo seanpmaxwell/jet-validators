@@ -496,9 +496,9 @@ type TDeepCompareCb = (val1: unknown, val2: unknown) => void;
 type TDeepCompareFn = (arg1: unknown, arg2: unknown) => boolean;
 
 interface IDeepCompareOptions {
-  disregardDateException?: boolean,
-  onlyCompareFields?: string[],
-  convertToDateFields?: string[], 
+  disregardDateException?: boolean;
+  onlyCompareFields?: string[];
+  convertToDateFields?: string[];
 }
 
 export const deepCompare = customDeepCompare({});

@@ -47,6 +47,9 @@
     - [Custom Validators](#custom-validators)
     - [Wrapping Parse/Test](#wrapping-parse-test)
     - [traverseObject](#traverse-object)
+  - [deepCompare and customDeepCompare](#deepCompare-fns)
+    - [deepCompare](#deepCompare)
+    - [customDeepCompare](#customDeepCompare)
 <br/>
 
 
@@ -648,3 +651,56 @@ Iterate over each key in an object (works recursively too) and fire a callback f
   //   },
   // }
 ```
+
+
+### deepCompare and customDeepCompare <a name="deepCompare-fns"></a>
+
+#### `deepCompare` <a name="deepCompare"></a>
+Performs a deep comparison of two objects. I know there's a ton of object comparison options out there (i.e. `lodash.isEqual`) but this along with `customDeepCompare` is a little more versatile. If two values are both instances of `Date` then their epoch (`.getTime()`) will be used for comparison. This can be overriden with the `customDeepCompare` function.
+
+#### `customDeepCompare` <a name="customDeepCompare"></a>
+If you wish to access the values everytime a comparison fails or modify the behavior of the `deepCompare` function, you can use the `customDeepCompare` which receives a callback function and/or an options object. The value returned will be a custom `deepCompare` function with the parameters saved.
+
+> `customDeepCompare("callback or options")` or `customDeepCompare("callback", "options")`
+
+- The callback function provides the values that failed during the comparison will fire everytime a comparison fails:
+```typescript
+import { customDeepCompare } from 'jet-validators/util';
+
+const deepCompare = customDeepCompare((val1, val2) => console.log(val1, val2));
+
+// This will return false and print out "1, 2"
+deepCompare({ id: 1 }, { id: 2 }); // => false
+```
+
+##### The `options` object
+```typescript
+{
+  disregardDateException?: boolean;
+  onlyCompareFields?: string[];
+  convertToDateFields?: string[];
+}
+```
+
+- `disregardDateException`: By default, date objects are compared using the epoch time value (`.getTime()`) not the key value pairs on the object itself. If you wish to disregard this, set `disregardDateException: true`.
+- `onlyCompareFields`: If you want to compare some properties in two objects and not the full object, you can pass an array of strings and only those keys will be used in the comparison. <b>Note</b> this DOES NOT apply to nested objects. Also, if this array contains keys not present in the objects, those keys will not have any effect.
+- `convertToDateFields`: If you want a property or properties to be converted to a date object before comparison, pass the key here: this DOES apply to nested objects. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified.
+
+```typescript
+import { deepCompare, customDeepCompare } from 'jet-validators/util';
+
+const deepCompareAlt = customDeepCompare({
+  convertToDateFields: ['created'],
+  onlyCompareFields: ['id', 'created'],
+});
+
+const user1 = { id: 1, created: new Date('2012-6-17') },
+  user2 = { id: 1, created: 1339916400000 },
+  user3 = { id: 1, name: 'joe', created: new Date('2012-6-17') },
+
+deepCompare(user1, user2); // => false
+deepCompare(user1, user3); // => false
+deepCompareAlt(user1, user2); // => true
+deepCompareAlt(user1, user3); // => true
+```
+
