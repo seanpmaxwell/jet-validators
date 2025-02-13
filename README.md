@@ -695,14 +695,14 @@ deepCompareAlt(user1, user3); // => true
 
 ##### The `callback` function
 ```typescript
-(val1: unknown, val2: unknown, key?: string) => void;
+(key: string, val1: unknown, val2: unknown) => void;
 ```
 
 - The callback function provides the values that failed during the comparison will fire everytime a comparison fails:
 ```typescript
 import { customDeepCompare } from 'jet-validators/util';
 
-const deepCompare = customDeepCompare((val1, val2, key) => console.log(key, val1, val2));
+const deepCompare = customDeepCompare((key, val1, val2) => console.log(key, val1, val2));
 
 // This will return false and print out "id,1,2" and "name,joe,jane" 
 deepCompare({ id: 1, name: 'joe' }, { id: 2, name: 'jane' }); // => false
