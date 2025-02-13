@@ -911,7 +911,7 @@ test('test "deepCompare()" function override "rec" option', () => {
 
   const deepCompare1 = customDeepCompare({
     convertToDateProps: { rec: false, props: 'created' },
-    onlyCompareProps: ['id', 'name', 'created', 'address'],
+    onlyCompareProps: ['id', 'name', 'address'],
   }),
   deepCompare2 = customDeepCompare({
     onlyCompareProps: 'id',
