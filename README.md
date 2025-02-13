@@ -681,20 +681,20 @@ deepCompare({ id: 1, name: 'joe' }, { id: 2, name: 'jane' }); // => false
 ##### The `options` object
 ```typescript
 disregardDateException?: boolean;
-onlyCompareFields?: string[];
-convertToDateFields?: string[];
+onlyCompareProps?: string | string[] | { rec: boolean, props: string | string [] };
+convertToDateProps?: string | string[] | { rec: boolean, props: string | string [] };
 ```
 
 - `disregardDateException`: By default, date objects are compared using the epoch time value (`.getTime()`) not the key value pairs on the object itself. If you wish to disregard this, set `disregardDateException: true`.
-- `onlyCompareFields`: If you want to compare some properties in two objects and not the full object, you can pass an array of strings and only those keys will be used in the comparison. <b>Note</b> this DOES NOT apply to nested objects. Also, if this array contains keys not present in the objects, those keys will not have any effect.
-- `convertToDateFields`: If you want a property or properties to be converted to a date object before comparison, pass the key here: this DOES apply to nested objects. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified.
+- `onlyCompareProps`: If you want to compare some properties in two objects and not the full object, you can pass an array of strings and only those keys will be used in the comparison. By default this property IS NOT recursive. If you wish to make it recursive, you can pass an object instead of an array or string array with `rec: true`.
+- `convertToDateProps`: If you want a property or properties to be converted to a date object before comparison, pass the key here. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified. By default this property IS recursive. If you wish to make it not recursive you can pass an object instead of an array or string array with `rec: false`.
 
 ```typescript
 import { deepCompare, customDeepCompare } from 'jet-validators/util';
 
 const deepCompareAlt = customDeepCompare({
-  convertToDateFields: ['created'],
-  onlyCompareFields: ['id', 'created'],
+  convertToDateProps: ['created'],
+  onlyCompareProps: ['id', 'created'],
 });
 
 const date1 = new Date('2012-6-17'),

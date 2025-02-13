@@ -494,11 +494,18 @@ function _traverseObjectHelperCore(
 
 type TDeepCompareCb = (val1: unknown, val2: unknown, key?: string) => void;
 type TDeepCompareFn = (arg1: unknown, arg2: unknown) => boolean;
+type TOptionProps =  string | string[] | { rec: boolean, props: string | string [] };
 
 interface IDeepCompareOptions {
   disregardDateException?: boolean;
-  onlyCompareFields?: string[];
-  convertToDateFields?: string[];
+  onlyCompareProps?: TOptionProps;
+  convertToDateProps?: TOptionProps;
+}
+
+interface IProcessedDeepCompareOptions {
+  disregardDateException: boolean;
+  onlyCompareProps?: { rec: boolean, props: string [] };
+  convertToDateProps?: { rec: boolean, props: string [] };
 }
 
 export const deepCompare = customDeepCompare({});
@@ -506,36 +513,69 @@ export const deepCompare = customDeepCompare({});
 /**
  * Do a deep-comparison of two objects and fire a callback for each unequal 
  * value.
- * 
- * Options:
- *  - "disregardDateException": For date objects we just compare the time value 
- *    not the references of the date objects themselves. You can overwrite 
- *    this using "disregardDateException".
- *  - "onlyCompareFields": If only want to compare some properties in two 
- *    objects and not the full object. Note this DOES NOT apply to nested 
- *    objects. Also if this array contains properties not present in the 
- *    objects, those properties will not be affected.
- *  - "convertToDateFields": If you want a property to be converted to a date 
- *    before comparison, pass the property name here. This DOES apply to nested
- *    objects.
  */
 export function customDeepCompare(
   cbOrOptions: TDeepCompareCb | IDeepCompareOptions,
   options?: IDeepCompareOptions,
 ): TDeepCompareFn {
   let cbF: TDeepCompareCb | undefined,
-    optionsF: IDeepCompareOptions | undefined;
+    optionsF: IProcessedDeepCompareOptions;
+  // Process the options
   if (typeof cbOrOptions === 'function') {
     cbF = cbOrOptions;
     if (!!options) {
-      optionsF = options;
+      optionsF = _processOptions(options);
     }
   } else if (typeof cbOrOptions === 'object') {
-    optionsF = cbOrOptions;
+    optionsF = _processOptions(cbOrOptions);
+  } else {
+    optionsF = { disregardDateException: false };
   }
+  // Return compare function
   return (arg1: unknown, arg2: unknown) => {
-    return _customDeepCompareHelper(arg1, arg2, cbF, optionsF);
+    const opts = { ...optionsF };
+    return _customDeepCompareHelper(arg1, arg2, opts, cbF);
   }
+}
+
+/**
+ * Setup the options
+ */
+function _processOptions(opts: IDeepCompareOptions): IProcessedDeepCompareOptions {
+  // Init retVal
+  const retVal: IProcessedDeepCompareOptions = {
+    disregardDateException: !!opts.disregardDateException,
+  };
+  // Process "onlyCompareProps"
+  if (!!opts.onlyCompareProps) {
+    const ocp = opts.onlyCompareProps;
+    if (isString(ocp)) {
+      retVal.onlyCompareProps = { rec: true, props: [ocp] };
+    } else if (Array.isArray(ocp)) {
+      retVal.onlyCompareProps = { rec: true, props: [ ...ocp ] };
+    } else if (isObject(ocp)) {
+      retVal.onlyCompareProps = {
+        rec: ocp.rec,
+        props: Array.isArray(ocp.props) ? [ ...ocp.props ] : [ocp.props],
+      };
+    }
+  }
+  // Process "convertToDateProps"
+  if (!!opts.convertToDateProps) {
+    const cdp = opts.convertToDateProps;
+    if (isString(cdp)) {
+      retVal.convertToDateProps = { rec: false, props: [cdp] };
+    } else if (Array.isArray(cdp)) {
+      retVal.convertToDateProps = { rec: false, props: [ ...cdp ] };
+    } else if (isObject(cdp)) {
+      retVal.convertToDateProps = {
+        rec: cdp.rec,
+        props: Array.isArray(cdp.props) ? [ ...cdp.props ] : [cdp.props],
+      };
+    }
+  }
+  // Return
+  return retVal;
 }
 
 /**
@@ -544,8 +584,8 @@ export function customDeepCompare(
 function _customDeepCompareHelper(
   arg1: unknown,
   arg2: unknown,
+  options: IProcessedDeepCompareOptions,
   cb?: TDeepCompareCb,
-  options?: IDeepCompareOptions,
   paramKey?: string,
 ): boolean {
   // ** Strict compare if not both objects ** //
@@ -557,7 +597,7 @@ function _customDeepCompareHelper(
     return isEqual;
   }
   // ** Compare dates ** //
-  if (!options?.disregardDateException && (isDate(arg1) && isDate(arg2))) {
+  if (!options.disregardDateException && (isDate(arg1) && isDate(arg2))) {
     const isEqual = (arg1.getTime() === arg2.getTime());
     if (!isEqual && !!cb) {
       cb(arg1, arg2, paramKey);
@@ -579,7 +619,7 @@ function _customDeepCompareHelper(
       length = arg2.length;
     }
     for (let i = 0; i < length; i++) {
-      const isEqual = _customDeepCompareHelper(arg1[i], arg2[i], cb, options);
+      const isEqual = _customDeepCompareHelper(arg1[i], arg2[i], options, cb);
       if (!isEqual) {
         if (!cb) {
           return false;
@@ -593,12 +633,14 @@ function _customDeepCompareHelper(
   // If only comparing some properties, filter out the unincluded keys.
   let keys1 = Object.keys(arg1),
     keys2 = Object.keys(arg2);
-  if (!!options?.onlyCompareFields) {
-    keys1 = keys1.filter(key => options?.onlyCompareFields?.includes(key))
-    keys2 = keys2.filter(key => options?.onlyCompareFields?.includes(key))
+  if (!!options?.onlyCompareProps) {
+    const { props } = options.onlyCompareProps;
+    keys1 = keys1.filter(key => props.includes(key))
+    keys2 = keys2.filter(key => props.includes(key))
     // This option only applies to top level
-    options = { ...options }
-    delete options.onlyCompareFields;
+    if (!options.onlyCompareProps.rec) {
+      delete options.onlyCompareProps;
+    }
   }
   if (!cb && keys1.length !== keys2.length) {
     return false
@@ -631,7 +673,10 @@ function _customDeepCompareHelper(
       }
     }
     // Check if meant to converted to date first
-    if (!!options?.convertToDateFields?.includes(key)) {
+    if (!!options.convertToDateProps?.props.includes(key)) {
+      if (!options.convertToDateProps.rec) {
+        delete options.convertToDateProps;
+      }
         const d1 = new Date(val1 as string),
          d2 = new Date(val2 as string);
       if (d1.getTime() !== d2.getTime()) {
@@ -645,7 +690,7 @@ function _customDeepCompareHelper(
       continue;
     }
     // Recursion
-    if (!_customDeepCompareHelper(val1, val2, cb, options, key)) {
+    if (!_customDeepCompareHelper(val1, val2, options, cb, key)) {
       if (!cb) {
         return false;
       } 

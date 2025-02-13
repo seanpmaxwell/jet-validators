@@ -831,8 +831,8 @@ test('test "deepCompare()" function', () => {
   // Init deep comparison functions
   const deepCompare2 = customDeepCompare(compareCb),
     deepCompare3 = customDeepCompare({
-      convertToDateFields: ['created'],
-      onlyCompareFields: ['id', 'name', 'created', 'updated'],
+      convertToDateProps: ['created'],
+      onlyCompareProps: ['id', 'name', 'created', 'updated'],
     }),
     deepCompare4 = customDeepCompare(compareCb, {
       disregardDateException: true,
