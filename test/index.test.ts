@@ -884,19 +884,19 @@ test('test "deepCompare()" function', () => {
     arr3 = ['horse', User8, 2, User1, 'cow' ];
 
   // Tests
-  // expect(deepCompare(User1, User2)).toBeTruthy();
-  expect(deepCompare2(User1, User3)).toBeFalsy();
-  // expect(deepCompare(User1, User3)).toBeFalsy();
-  // expect(deepCompare(User1, User4)).toBeFalsy();
-  // expect(() => deepCompare2(User1, User4)).toThrowError();
-  // expect(deepCompare(User4, User5)).toBeFalsy();
-  // expect(deepCompare3(User4, User5)).toBeTruthy();
-  // expect(deepCompare(User6, User7)).toBeTruthy();
-  // expect(deepCompare(User6, User8)).toBeFalsy();
-  // expect(() => deepCompare2(User6, User8)).toThrowError();
-  // expect(deepCompare3(User6, User8)).toBeTruthy();
-  // expect(deepCompare(arr1, arr2)).toBeTruthy();
-  // expect(deepCompare(arr1, arr3)).toBeFalsy();
-  // expect(deepCompare(User4, User5a)).toBeTruthy();
-  // expect(() => deepCompare4(User4, User5a)).toThrowError();
+  expect(deepCompare(User1, User2)).toBeTruthy();
+  expect(() => deepCompare2(User1, User3)).toThrowError();
+  expect(deepCompare(User1, User3)).toBeFalsy();
+  expect(deepCompare(User1, User4)).toBeFalsy();
+  expect(() => deepCompare2(User1, User4)).toThrowError();
+  expect(deepCompare(User4, User5)).toBeFalsy();
+  expect(deepCompare3(User4, User5)).toBeTruthy();
+  expect(deepCompare(User6, User7)).toBeTruthy();
+  expect(deepCompare(User6, User8)).toBeFalsy();
+  expect(() => deepCompare2(User6, User8)).toThrowError();
+  expect(deepCompare3(User6, User8)).toBeTruthy();
+  expect(deepCompare(arr1, arr2)).toBeTruthy();
+  expect(deepCompare(arr1, arr3)).toBeFalsy();
+  expect(deepCompare(User4, User5a)).toBeTruthy();
+  expect(() => deepCompare4(User4, User5a)).toThrowError();
 });
