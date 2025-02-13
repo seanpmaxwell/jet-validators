@@ -661,7 +661,37 @@ Performs a deep comparison of two objects. I know there's a ton of object compar
 #### `customDeepCompare` <a name="customDeepCompare"></a>
 If you wish to access the values everytime a comparison fails or modify the behavior of the `deepCompare` function, you can use the `customDeepCompare` which receives a callback function and/or an options object. The value returned will be a custom `deepCompare` function with the parameters saved.
 
-> `customDeepCompare("callback or options")` or `customDeepCompare("callback", "options")`
+> `customDeepCompare("callback or options")` or `customDeepCompare("options", "callback")`
+
+##### The `options` object
+```typescript
+disregardDateException?: boolean;
+onlyCompareProps?: string | string[];
+convertToDateProps?: string | string[] | { rec: boolean, props: string | string [] };
+```
+
+- `disregardDateException`: By default, date objects are compared using the epoch time value from `.getTime()` not the key value pairs on the object itself. If you wish to disregard this, set `disregardDateException: true`.
+- `onlyCompareProps`: If you want to compare some properties in two objects and not the full object, you can pass a string or an array of strings and only those keys will be used in the comparison. Note that this will not affect arrays, so that if you compare an array of objects the options will be passed down to those objects. This option is not recursive so will not affect any nested objects.
+- `convertToDateProps`: If you want a property or properties to be converted to a date object before comparison, you can pass a string or an array of strings and those properties with be converted to `Date` objects. By default this option IS recursive. If you wish to make it not recursive you can pass an object instead of an array or string array with `rec: false`. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified. 
+
+```typescript
+import { deepCompare, customDeepCompare } from 'jet-validators/util';
+
+const deepCompareAlt = customDeepCompare({
+  convertToDateProps: 'created',
+  onlyCompareProps: ['id', 'created'],
+});
+
+const date1 = new Date('2012-6-17'),
+  user1 = { id: 1, created: date1 },
+  user2 = { id: 1, created: date1.getTime() },
+  user3 = { id: 1, name: 'joe', created: date1 },
+
+deepCompare(user1, user2); // => false
+deepCompare(user1, user3); // => false
+deepCompareAlt(user1, user2); // => true
+deepCompareAlt(user1, user3); // => true
+```
 
 ##### The `callback` function
 ```typescript
@@ -677,34 +707,3 @@ const deepCompare = customDeepCompare((val1, val2, key) => console.log(key, val1
 // This will return false and print out "id,1,2" and "name,joe,jane" 
 deepCompare({ id: 1, name: 'joe' }, { id: 2, name: 'jane' }); // => false
 ```
-
-##### The `options` object
-```typescript
-disregardDateException?: boolean;
-onlyCompareProps?: string | string[];
-convertToDateProps?: string | string[] | { rec: boolean, props: string | string [] };
-```
-
-- `disregardDateException`: By default, date objects are compared using the epoch time value (`.getTime()`) not the key value pairs on the object itself. If you wish to disregard this, set `disregardDateException: true`.
-- `onlyCompareProps`: If you want to compare some properties in two objects and not the full object, you can pass a string or an array of strings and only those keys will be used in the comparison. Note that this will not affect arrays, so that if you compare an array of objects the options will be passed down to those objects. This option is not recursive so will not affect any nested objects.
-- `convertToDateProps`: If you want a property or properties to be converted to a date object before comparison, you can pass a string or an array of strings and those properties with be converted to `Date` objects. By default this option IS recursive. If you wish to make it not recursive you can pass an object instead of an array or string array with `rec: false`. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified. 
-
-```typescript
-import { deepCompare, customDeepCompare } from 'jet-validators/util';
-
-const deepCompareAlt = customDeepCompare({
-  convertToDateProps: ['created'],
-  onlyCompareProps: ['id', 'created'],
-});
-
-const date1 = new Date('2012-6-17'),
-  user1 = { id: 1, created: date1 },
-  user2 = { id: 1, created: date1.getTime() },
-  user3 = { id: 1, name: 'joe', created: date1 },
-
-deepCompare(user1, user2); // => false
-deepCompare(user1, user3); // => false
-deepCompareAlt(user1, user2); // => true
-deepCompareAlt(user1, user3); // => true
-```
-

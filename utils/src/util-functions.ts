@@ -492,7 +492,7 @@ function _traverseObjectHelperCore(
 
 // **** Compare Objects **** //
 
-type TDeepCompareCb = (val1: unknown, val2: unknown, key?: string) => void;
+type TDeepCompareCb = (key: string, val1: unknown, val2: unknown) => void;
 type TDeepCompareFn = (arg1: unknown, arg2: unknown) => boolean;
 
 interface IDeepCompareOptions {
@@ -507,38 +507,35 @@ interface IProcessedDeepCompareOptions {
   convertToDateProps?: { rec: boolean, props: string [] };
 }
 
+// Default function has no options
 export const deepCompare = customDeepCompare({});
 
 /**
  * Do a deep-comparison of two objects and fire a callback for each unequal 
  * value.
  */
-export function customDeepCompare(
-  cbOrOptions: TDeepCompareCb | IDeepCompareOptions,
-  options?: IDeepCompareOptions,
-): TDeepCompareFn {
-  let cbF: TDeepCompareCb | undefined,
-    optionsF: IProcessedDeepCompareOptions;
+export function customDeepCompare(optionsOrCb: IDeepCompareOptions, cb?: TDeepCompareCb): TDeepCompareFn;
+export function customDeepCompare(optionsOrCb: TDeepCompareCb): TDeepCompareFn;
+export function customDeepCompare(optionsOrCb: IDeepCompareOptions | TDeepCompareCb, cb?: TDeepCompareCb): TDeepCompareFn {
   // Process the options
-  if (typeof cbOrOptions === 'function') {
-    cbF = cbOrOptions;
-    if (!!options) {
-      optionsF = _processOptions(options);
-    }
-  } else if (typeof cbOrOptions === 'object') {
-    optionsF = _processOptions(cbOrOptions);
-  } else {
+  let optionsF: IProcessedDeepCompareOptions,
+    cbF = cb;
+  if (typeof optionsOrCb === 'object') {
+    optionsF = _processOptions(optionsOrCb);
+  } else if (typeof optionsOrCb === 'function') {
+    cbF = optionsOrCb;
     optionsF = { disregardDateException: false };
+
   }
   // Return compare function
   return (arg1: unknown, arg2: unknown) => {
     const opts = { ...optionsF };
-    return _customDeepCompareHelper(arg1, arg2, opts, cbF);
+    return _customDeepCompareHelper(arg1, arg2, opts, cbF, '');
   }
 }
 
 /**
- * Setup the options
+ * Setup the options object.
  */
 function _processOptions(opts: IDeepCompareOptions): IProcessedDeepCompareOptions {
   // Init retVal
@@ -579,14 +576,14 @@ function _customDeepCompareHelper(
   arg1: unknown,
   arg2: unknown,
   options: IProcessedDeepCompareOptions,
-  cb?: TDeepCompareCb,
-  paramKey?: string,
+  cb: TDeepCompareCb | undefined,
+  paramKey: string,
 ): boolean {
   // ** Strict compare if not both objects ** //
   if (!isObject(arg1) ||arg1 === null || !isObject(arg2) || arg2 === null) {
     const isEqual = (arg1 === arg2);
     if (!isEqual && !!cb) {
-      cb(arg1, arg2, paramKey);
+      cb(paramKey, arg1, arg2);
     }
     return isEqual;
   }
@@ -594,14 +591,14 @@ function _customDeepCompareHelper(
   if (!options.disregardDateException && (isDate(arg1) && isDate(arg2))) {
     const isEqual = (arg1.getTime() === arg2.getTime());
     if (!isEqual && !!cb) {
-      cb(arg1, arg2, paramKey);
+      cb(paramKey, arg1, arg2);
     }
     return isEqual;
   }
   // ** Compare arrays ** //
   if (Array.isArray(arg1) || Array.isArray(arg2)) {
     if (!(Array.isArray(arg1) && Array.isArray(arg2))) {
-      cb?.(arg1, arg2, paramKey);
+      cb?.(paramKey, arg1, arg2);
       return false;
     }
     if (!cb && arg1.length !== arg2.length) {
@@ -613,7 +610,7 @@ function _customDeepCompareHelper(
       length = arg2.length;
     }
     for (let i = 0; i < length; i++) {
-      const isEqual = _customDeepCompareHelper(arg1[i], arg2[i], options, cb);
+      const isEqual = _customDeepCompareHelper(arg1[i], arg2[i], options, cb, `Index: ${i}`);
       if (!isEqual) {
         if (!cb) {
           return false;
@@ -631,8 +628,6 @@ function _customDeepCompareHelper(
     const props = options.onlyCompareProps;
     keys1 = keys1.filter(key => props.includes(key))
     keys2 = keys2.filter(key => props.includes(key))
-    // This option only applies to top level
-    delete options.onlyCompareProps;
   }
   if (!cb && keys1.length !== keys2.length) {
     return false
@@ -657,7 +652,7 @@ function _customDeepCompareHelper(
     // Check property is present for both
     if (arg1.hasOwnProperty(key) && !arg2.hasOwnProperty(key)) {
       if (!!cb) {
-        cb(val1, `key "${key}" not present`);
+        cb(key, val1, 'not present');
         isEqual = false;
         continue;
       } else {
@@ -665,7 +660,7 @@ function _customDeepCompareHelper(
       }
     } else if (!arg1.hasOwnProperty(key) && arg2.hasOwnProperty(key)) {
       if (!!cb) {
-        cb(`key "${key}" not present`, val2);
+        cb(key, 'not present', val2);
         isEqual = false;
         continue;
       } else {
@@ -678,7 +673,7 @@ function _customDeepCompareHelper(
         d2 = new Date(val2 as string);
       if (d1.getTime() !== d2.getTime()) {
         if (!!cb) {
-          cb(val1, val2, key);
+          cb(key, val1, val2);
           isEqual = false;
         } else {
           return false;
@@ -686,8 +681,13 @@ function _customDeepCompareHelper(
       }
       continue;
     }
+    // This option only applies to top level
+    const optionsF = { ...options }
+    if (options.onlyCompareProps) {
+      delete optionsF.onlyCompareProps;
+    }
     // Recursion
-    if (!_customDeepCompareHelper(val1, val2, options, cb, key)) {
+    if (!_customDeepCompareHelper(val1, val2, optionsF, cb, key)) {
       if (!cb) {
         return false;
       } 

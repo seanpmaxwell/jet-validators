@@ -823,19 +823,19 @@ test('test "traverseObject()" function', () => {
  */
 test('test "deepCompare()" function basic', () => {
 
-  const throwErrCb = (val1: unknown, val2: unknown, key?: string) => {
+  const throwErrCb = (key: string, val1: unknown, val2: unknown) => {
     throw new Error(`Unequal vals | Key: "${key}" Value1: ${val1} Value2: ${val2}`);
   }
 
   // Init deep comparison functions
   const deepCompare2 = customDeepCompare(throwErrCb),
-    deepCompare3 = customDeepCompare((...params) => console.log(...params), {
+    deepCompare3 = customDeepCompare({
       convertToDateProps: 'created',
       onlyCompareProps: ['id', 'name', 'created'],
     }),
-    deepCompare4 = customDeepCompare(throwErrCb, {
+    deepCompare4 = customDeepCompare({
       disregardDateException: true,
-    });
+    }, throwErrCb);
 
   const date1 = new Date('2012-6-17'),
     date2 = new Date(date1),
@@ -912,7 +912,10 @@ test('test "deepCompare()" function override "rec" option', () => {
   const deepCompare1 = customDeepCompare({
     convertToDateProps: { rec: false, props: 'created' },
     onlyCompareProps: ['id', 'name', 'created', 'address'],
-  });
+  }),
+  deepCompare2 = customDeepCompare({
+    onlyCompareProps: 'id',
+  }, (...params) => console.log(...params));
 
   const date1 = new Date('2012-6-17'),
     date2 = new Date(date1),
@@ -950,10 +953,17 @@ test('test "deepCompare()" function override "rec" option', () => {
     },
   };
 
+  const Post1 = { id: 1, text: 'asdf' },
+    Post2 = { id: 2, text: 'ffff' },
+    Post3 = { id: 2, text: 'gggg' };
+
   const arr = [ User1, User2, User3 ],
-    arr2 = structuredClone(arr);
+    arr2 = structuredClone(arr),
+    arr3 = [ Post1, Post2 ],
+    arr4 = [ Post1, Post3 ];
 
   expect(deepCompare1(User1, User2)).toBeTruthy();
   expect(deepCompare1(User1, User3)).toBeFalsy();
   expect(deepCompare1(arr, arr2)).toBeTruthy();
+  expect(deepCompare2(arr3, arr4)).toBeTruthy();
 });
