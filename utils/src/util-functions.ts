@@ -494,17 +494,16 @@ function _traverseObjectHelperCore(
 
 type TDeepCompareCb = (val1: unknown, val2: unknown, key?: string) => void;
 type TDeepCompareFn = (arg1: unknown, arg2: unknown) => boolean;
-type TOptionProps =  string | string[] | { rec: boolean, props: string | string [] };
 
 interface IDeepCompareOptions {
   disregardDateException?: boolean;
-  onlyCompareProps?: TOptionProps;
-  convertToDateProps?: TOptionProps;
+  onlyCompareProps?: string | string[];
+  convertToDateProps?: string | string[] | { rec: boolean, props: string | string [] };
 }
 
 interface IProcessedDeepCompareOptions {
   disregardDateException: boolean;
-  onlyCompareProps?: { rec: boolean, props: string [] };
+  onlyCompareProps?: string | string[];
   convertToDateProps?: { rec: boolean, props: string [] };
 }
 
@@ -550,23 +549,18 @@ function _processOptions(opts: IDeepCompareOptions): IProcessedDeepCompareOption
   if (!!opts.onlyCompareProps) {
     const ocp = opts.onlyCompareProps;
     if (isString(ocp)) {
-      retVal.onlyCompareProps = { rec: true, props: [ocp] };
+      retVal.onlyCompareProps = [ocp];
     } else if (Array.isArray(ocp)) {
-      retVal.onlyCompareProps = { rec: true, props: [ ...ocp ] };
-    } else if (isObject(ocp)) {
-      retVal.onlyCompareProps = {
-        rec: ocp.rec,
-        props: Array.isArray(ocp.props) ? [ ...ocp.props ] : [ocp.props],
-      };
+      retVal.onlyCompareProps = [ ...ocp ];
     }
   }
   // Process "convertToDateProps"
   if (!!opts.convertToDateProps) {
     const cdp = opts.convertToDateProps;
     if (isString(cdp)) {
-      retVal.convertToDateProps = { rec: false, props: [cdp] };
+      retVal.convertToDateProps = { rec: true, props: [cdp] };
     } else if (Array.isArray(cdp)) {
-      retVal.convertToDateProps = { rec: false, props: [ ...cdp ] };
+      retVal.convertToDateProps = { rec: true, props: [ ...cdp ] };
     } else if (isObject(cdp)) {
       retVal.convertToDateProps = {
         rec: cdp.rec,
@@ -634,16 +628,22 @@ function _customDeepCompareHelper(
   let keys1 = Object.keys(arg1),
     keys2 = Object.keys(arg2);
   if (!!options?.onlyCompareProps) {
-    const { props } = options.onlyCompareProps;
+    const props = options.onlyCompareProps;
     keys1 = keys1.filter(key => props.includes(key))
     keys2 = keys2.filter(key => props.includes(key))
     // This option only applies to top level
-    if (!options.onlyCompareProps.rec) {
-      delete options.onlyCompareProps;
-    }
+    delete options.onlyCompareProps;
   }
   if (!cb && keys1.length !== keys2.length) {
     return false
+  }
+  // Setup convertToDateProps
+  let convertToDateProps: string[] | undefined;
+  if (!!options.convertToDateProps) {
+    convertToDateProps = [ ...options.convertToDateProps.props ];
+    if (!options.convertToDateProps.rec) {
+      delete options.convertToDateProps;
+    }
   }
   // Compare the properties of each object
   let keys = keys1;
@@ -673,15 +673,12 @@ function _customDeepCompareHelper(
       }
     }
     // Check if meant to converted to date first
-    if (!!options.convertToDateProps?.props.includes(key)) {
-      if (!options.convertToDateProps.rec) {
-        delete options.convertToDateProps;
-      }
-        const d1 = new Date(val1 as string),
-         d2 = new Date(val2 as string);
+    if (!!convertToDateProps?.includes(key)) {
+      const d1 = new Date(val1 as string),
+        d2 = new Date(val2 as string);
       if (d1.getTime() !== d2.getTime()) {
         if (!!cb) {
-          cb(val1, val2);
+          cb(val1, val2, key);
           isEqual = false;
         } else {
           return false;

@@ -681,13 +681,13 @@ deepCompare({ id: 1, name: 'joe' }, { id: 2, name: 'jane' }); // => false
 ##### The `options` object
 ```typescript
 disregardDateException?: boolean;
-onlyCompareProps?: string | string[] | { rec: boolean, props: string | string [] };
+onlyCompareProps?: string | string[];
 convertToDateProps?: string | string[] | { rec: boolean, props: string | string [] };
 ```
 
 - `disregardDateException`: By default, date objects are compared using the epoch time value (`.getTime()`) not the key value pairs on the object itself. If you wish to disregard this, set `disregardDateException: true`.
-- `onlyCompareProps`: If you want to compare some properties in two objects and not the full object, you can pass an array of strings and only those keys will be used in the comparison. By default this property IS NOT recursive. If you wish to make it recursive, you can pass an object instead of an array or string array with `rec: true`.
-- `convertToDateProps`: If you want a property or properties to be converted to a date object before comparison, pass the key here. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified. By default this property IS recursive. If you wish to make it not recursive you can pass an object instead of an array or string array with `rec: false`.
+- `onlyCompareProps`: If you want to compare some properties in two objects and not the full object, you can pass a string or an array of strings and only those keys will be used in the comparison. Note that this will not affect arrays, so that if you compare an array of objects the options will be passed down to those objects. This option is not recursive so will not affect any nested objects.
+- `convertToDateProps`: If you want a property or properties to be converted to a date object before comparison, you can pass a string or an array of strings and those properties with be converted to `Date` objects. By default this option IS recursive. If you wish to make it not recursive you can pass an object instead of an array or string array with `rec: false`. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified. 
 
 ```typescript
 import { deepCompare, customDeepCompare } from 'jet-validators/util';

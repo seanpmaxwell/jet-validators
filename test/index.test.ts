@@ -120,7 +120,7 @@ import {
   TSchema,
   customDeepCompare,
   deepCompare,
-} from '../utils';
+} from '../utils/src';
 
 
 /******************************************************************************
@@ -818,23 +818,22 @@ test('test "traverseObject()" function', () => {
   });
 });
 
-
 /**
  * Test "deepCompare" function
  */
-test('test "deepCompare()" function', () => {
+test('test "deepCompare()" function basic', () => {
 
-  const compareCb = (val1: unknown, val2: unknown, key?: string) => {
+  const throwErrCb = (val1: unknown, val2: unknown, key?: string) => {
     throw new Error(`Unequal vals | Key: "${key}" Value1: ${val1} Value2: ${val2}`);
   }
 
   // Init deep comparison functions
-  const deepCompare2 = customDeepCompare(compareCb),
-    deepCompare3 = customDeepCompare({
-      convertToDateProps: ['created'],
-      onlyCompareProps: ['id', 'name', 'created', 'updated'],
+  const deepCompare2 = customDeepCompare(throwErrCb),
+    deepCompare3 = customDeepCompare((...params) => console.log(...params), {
+      convertToDateProps: 'created',
+      onlyCompareProps: ['id', 'name', 'created'],
     }),
-    deepCompare4 = customDeepCompare(compareCb, {
+    deepCompare4 = customDeepCompare(throwErrCb, {
       disregardDateException: true,
     });
 
@@ -857,7 +856,8 @@ test('test "deepCompare()" function', () => {
     address: {
       street: 'foo',
       zip: 1234,
-      unit: ['apt', 202]
+      unit: ['apt', 202],
+      created: date1,
     }
   },
   User7 = {
@@ -866,7 +866,8 @@ test('test "deepCompare()" function', () => {
     address: {
       street: 'foo',
       zip: 1234,
-      unit: ['apt', 202]
+      unit: ['apt', 202],
+      created: date2,
     }
   },
   User8 = {
@@ -875,9 +876,10 @@ test('test "deepCompare()" function', () => {
     address: {
       street: 'foo',
       zip: 1234,
+      created: date1,
       city: 'seattle',
     }
-  }
+  };
 
   const arr1 = [ 'horse', 'cow', 2, User1, User8],
     arr2 = [ 'horse', 'cow', 2, User1, User8 ],
@@ -899,4 +901,59 @@ test('test "deepCompare()" function', () => {
   expect(deepCompare(arr1, arr3)).toBeFalsy();
   expect(deepCompare(User4, User5a)).toBeTruthy();
   expect(() => deepCompare4(User4, User5a)).toThrowError();
+});
+
+
+/**
+ * Test "deepCompare" function overriding "rec" option.
+ */
+test('test "deepCompare()" function override "rec" option', () => {
+
+  const deepCompare1 = customDeepCompare({
+    convertToDateProps: { rec: false, props: 'created' },
+    onlyCompareProps: ['id', 'name', 'created', 'address'],
+  });
+
+  const date1 = new Date('2012-6-17'),
+    date2 = new Date(date1),
+    date3 = date1.getTime();
+
+  const User1 = {
+    id: 1,
+    name: 'john',
+    address: {
+      street: 'foo',
+      zip: 1234,
+      unit: ['apt', 202],
+      created: date1,
+    },
+    foo: 'bar',
+  },
+  User2 = {
+    id: 1,
+    name: 'john',
+    address: {
+      street: 'foo',
+      zip: 1234,
+      unit: ['apt', 202],
+      created: date2,
+    }
+  },
+  User3 = {
+    id: 1,
+    name: 'john',
+    address: {
+      street: 'foo',
+      zip: 1234,
+      unit: ['apt', 202],
+      created: date3,
+    },
+  };
+
+  const arr = [ User1, User2, User3 ],
+    arr2 = structuredClone(arr);
+
+  expect(deepCompare1(User1, User2)).toBeTruthy();
+  expect(deepCompare1(User1, User3)).toBeFalsy();
+  expect(deepCompare1(arr, arr2)).toBeTruthy();
 });
