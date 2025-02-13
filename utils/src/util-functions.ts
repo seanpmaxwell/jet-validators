@@ -492,7 +492,7 @@ function _traverseObjectHelperCore(
 
 // **** Compare Objects **** //
 
-type TDeepCompareCb = (val1: unknown, val2: unknown) => void;
+type TDeepCompareCb = (val1: unknown, val2: unknown, key?: string) => void;
 type TDeepCompareFn = (arg1: unknown, arg2: unknown) => boolean;
 
 interface IDeepCompareOptions {
@@ -546,12 +546,13 @@ function _customDeepCompareHelper(
   arg2: unknown,
   cb?: TDeepCompareCb,
   options?: IDeepCompareOptions,
+  paramKey?: string,
 ): boolean {
   // ** Strict compare if not both objects ** //
   if (!isObject(arg1) ||arg1 === null || !isObject(arg2) || arg2 === null) {
     const isEqual = (arg1 === arg2);
     if (!isEqual && !!cb) {
-      cb(arg1, arg2);
+      cb(arg1, arg2, paramKey);
     }
     return isEqual;
   }
@@ -559,14 +560,14 @@ function _customDeepCompareHelper(
   if (!options?.disregardDateException && (isDate(arg1) && isDate(arg2))) {
     const isEqual = (arg1.getTime() === arg2.getTime());
     if (!isEqual && !!cb) {
-      cb(arg1, arg2);
+      cb(arg1, arg2, paramKey);
     }
     return isEqual;
   }
   // ** Compare arrays ** //
   if (Array.isArray(arg1) || Array.isArray(arg2)) {
     if (!(Array.isArray(arg1) && Array.isArray(arg2))) {
-      cb?.(arg1, arg2);
+      cb?.(arg1, arg2, paramKey);
       return false;
     }
     if (!cb && arg1.length !== arg2.length) {
@@ -644,7 +645,7 @@ function _customDeepCompareHelper(
       continue;
     }
     // Recursion
-    if (!_customDeepCompareHelper(val1, val2, cb, options)) {
+    if (!_customDeepCompareHelper(val1, val2, cb, options, key)) {
       if (!cb) {
         return false;
       } 
