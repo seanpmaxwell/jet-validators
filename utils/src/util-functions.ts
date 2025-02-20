@@ -200,8 +200,8 @@ type TInferParseResHelper<U> = {
 
 type TParseOnError<A> = (
   A extends true 
-  ? ((property: string, value: unknown, index?: number, caughtErr?: unknown) => void) 
-  : ((property: string, value: unknown, caughtErr?: unknown) => void)
+  ? ((property: string, value?: unknown, index?: number, caughtErr?: unknown) => void) 
+  : ((property: string, value?: unknown, caughtErr?: unknown) => void)
 );
 
 export const parseObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
@@ -238,8 +238,14 @@ function _parseObject<
   isArr: A,
   onError?: TParseOnError<A>,
 ): (arg: unknown) => TInferParseRes<U, O, N, A> {
-  return (arg: unknown) => _parseObjectHelper<A>(!!optional, !!nullable, isArr, 
-    schema, arg, onError) as TInferParseRes<U, O, N, A>;
+  return (arg: unknown) => _parseObjectHelper<A>(
+    !!optional,
+    !!nullable,
+    isArr, 
+    schema,
+    arg,
+    onError,
+  ) as TInferParseRes<U, O, N, A>;
 }
 
 /**
@@ -256,14 +262,14 @@ function _parseObjectHelper<A>(
   // Check "undefined"
   if (arg === undefined) {
     if (!optional) {
-      onError?.('Value was undefined but not optional', arg);
+      onError?.('Argument is undefined but not optional');
       return undefined;
     }
   }
   // Check "null"
   if (arg === null) {
     if (!nullable) {
-      onError?.('Value was null but not nullable.', arg);
+      onError?.('Argument is null but not nullable.');
       return undefined;
     }
     return null;
@@ -271,14 +277,16 @@ function _parseObjectHelper<A>(
   // Check "array"
   if (isArr) {
     if (!Array.isArray(arg)) {
-      onError?.('Value is not an array.', arg);
+      onError?.('Argument is not an array.', arg);
       return undefined;
     }
     // Iterate array
     for (let i = 0; i < arg.length; i++) {
-      const parsedItem = _parseObjectHelper2(schema, arg[i], (prop, val, caughtErr) => {
-        onError?.(prop, val, i, caughtErr);
-      });
+      const parsedItem = _parseObjectHelper2(
+        schema,
+        arg[i],
+        (prop, val, caughtErr) => onError?.(prop, val, i, caughtErr),
+      );
       if (parsedItem === undefined) {
         arg[i] = undefined
       }
