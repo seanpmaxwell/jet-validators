@@ -332,7 +332,6 @@ function _parseObjectHelper2(
           } else {
             return undefined
           }
-          return undefined;
         }
       } catch (err) {
         if (!!onError) {

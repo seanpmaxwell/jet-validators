@@ -722,6 +722,19 @@ test('test "parseObject()" function', () => {
   }
   const parseUserAlt = customParse({ id: isNumber, name: isString });
   expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({ id: 5, name: 'joe' });
+
+  // ** Test onError for multiple properties ** //
+  const errArr: unknown[] = [];
+  parseObject({
+    id: isNumber,
+    name: isString,
+  }, (prop, val) => {
+    errArr.push({ prop, val });
+  })({ id: 'joe', name: 5 });
+  expect(errArr).toStrictEqual([
+    { prop: 'id', val: 'joe' },
+    { prop: 'name', val: 5 },
+  ])
 });
 
 
