@@ -184,9 +184,7 @@ export interface TSchema {
   [key: string]: TValidateWithTransform<unknown> | TSchema;
 }
 
-type TInferParseRes<U, O, N, A, Schema = TInferParseResHelper<U>> = (
-  AddMods<Schema, O, N, A>
-);
+type TInferParseRes<U, O, N, A, Schema = TInferParseResHelper<U>> = AddMods<Schema, O, N, A>;
 
 type TInferParseResHelper<U> = {
   [K in keyof U]: (
@@ -292,10 +290,9 @@ function _parseObjectHelper<A>(
       }
     }
     return arg;
-  // Default
-  } else {
-    return _parseObjectHelper2(schema, arg, onError as TParseOnError<false>);
   }
+  // Default
+  return _parseObjectHelper2(schema, arg, onError as TParseOnError<false>);
 }
 
 /**
@@ -307,9 +304,12 @@ function _parseObjectHelper2(
   argParentObj: unknown,
   onError?: TParseOnError<false>,
 ): unknown {
+  // Make sure is object
   if (!isRecord(argParentObj)) {
     return;
   }
+  // Iterate object properties
+  let hasErr = false;
   for (const key in schemaParentObj) {
     const schemaProp = schemaParentObj[key],
       val = argParentObj[key];
@@ -317,26 +317,42 @@ function _parseObjectHelper2(
     if (isRecord(schemaProp)) {
       const childVal = _parseObjectHelper2(schemaProp, val, onError);
       if (childVal === undefined) {
-        return undefined;
+        if (!onError) {
+          return undefined;
+        }
       }
     // Run validator
     } else if (isFunction(schemaProp)) {
       try {
-        if (!schemaProp(val, (tval: unknown) => {
-          argParentObj[key] = tval;
-        })) {
-          return onError?.(key, val);
+        // Pass callback in case validator transforms value
+        if (!schemaProp(val, (tval: unknown) => argParentObj[key] = tval)) {
+          if (!!onError) {
+            hasErr = true;
+            onError(key, val);
+          } else {
+            return undefined
+          }
+          return undefined;
         }
       } catch (err) {
-        if (err instanceof Error) {
-          return onError?.(key, val, err.message);
+        if (!!onError) {
+          hasErr = true;
+          if (err instanceof Error) {
+            onError(key, val, err.message);
+          } else {
+            onError(key, val, err);
+          }
         } else {
-          return onError?.(key, val, err);
+          return undefined
         }
       }
     }
   }
-  // Purse keys not in schema
+  // Check error
+  if (hasErr) {
+    return undefined;
+  }
+  // Purge keys not in schema
   for (const key in argParentObj) {
     if (!(key in schemaParentObj)) {
       Reflect.deleteProperty(argParentObj, key);
