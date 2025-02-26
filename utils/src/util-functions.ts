@@ -6,6 +6,7 @@ import {
   isString,
   isDate,
   TRecord,
+  isInArray,
 } from '../../dist';
 
 import { AddMods, TValidateWithTransform } from '../../dist/common';
@@ -279,17 +280,22 @@ function _parseObjectHelper<A>(
       return undefined;
     }
     // Iterate array
+    let hasErr = false;
     for (let i = 0; i < arg.length; i++) {
-      const parsedItem = _parseObjectHelper2(
-        schema,
-        arg[i],
-        (prop, val, caughtErr) => onError?.(prop, val, i, caughtErr),
-      );
+      let cb: TParseOnError<false> | undefined = undefined;
+      if (!!onError) {
+        cb = (prop, val, caughtErr) => onError(prop, val, i, caughtErr)
+      }
+      const parsedItem = _parseObjectHelper2(schema, arg[i], cb);
       if (parsedItem === undefined) {
-        arg[i] = undefined
+        if (!!onError) {
+          return undefined
+        } else {
+          hasErr = true;
+        }
       }
     }
-    return arg;
+    return (hasErr ? undefined : arg);
   }
   // Default
   return _parseObjectHelper2(schema, arg, onError as TParseOnError<false>);
@@ -398,13 +404,9 @@ function _testObject<
   onError?: TParseOnError<A>,
 ) {
   const parseFn = _parseObject(schema, optional, nullable, isArr, onError);
-  return (arg: unknown): arg is typeof objRes => {
-    const objRes = parseFn(arg);
-    if (objRes === undefined) {
-      return false;
-    } else {
-      return true;
-    }
+  return (arg: unknown): arg is typeof res => {
+    const res = parseFn(arg);
+    return (res !== undefined);
   };
 }
 

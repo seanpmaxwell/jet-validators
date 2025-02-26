@@ -120,6 +120,7 @@ import {
   TSchema,
   customDeepCompare,
   deepCompare,
+  testObjectArray,
 } from '../utils/src';
 
 
@@ -762,7 +763,7 @@ test('test "testObject()" function', () => {
   });
   expect(result).toStrictEqual(true);
   
-  // Test combination of "parseObj" and "testObj"
+  // Test combination of "parseObject" and "testObject"
   const testCombo = parseObject({
     id: isNumber,
     name: isString,
@@ -787,6 +788,47 @@ test('test "testObject()" function', () => {
       zip: 98109,
     },
   });
+
+  // Test combination of "parseObject" and "testObjectArray"
+  const testCombo2 = parseObject({
+    id: isNumber,
+    name: isString,
+    addresses: testObjectArray({
+      city: isString,
+      zip: isNumber,
+    }),
+  });
+  const testCombo2GoodData = {
+    id: 5,
+    name: 'john',
+    addresses: [
+      {
+        city: 'Seattle',
+        zip: 98109,
+      },
+      {
+        city: 'Seattle',
+        zip: 98111,
+      },
+    ]
+  },
+  testCombo2GoodDataResult = structuredClone(testCombo2GoodData);
+  const testCombo2FailData = {
+    id: 5,
+    name: 'john',
+    addresses: [
+      {
+        city: 'Seattle',
+        zip: 98109,
+      },
+      {
+        city: 'Seattle',
+        zip: '98111',
+      },
+    ]
+  };
+  expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
+  expect(testCombo2(testCombo2FailData)).toStrictEqual(undefined);
 });
 
 
