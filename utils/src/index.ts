@@ -2,7 +2,6 @@
 export {
   // Simple Utilities
   nonNullable,
-  iterateObjectEntries,
   transform,
   parseBoolean,
   parseOptionalBoolean,

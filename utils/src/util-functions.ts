@@ -27,25 +27,6 @@ export function nonNullable<T>(cb: ((arg: unknown) => arg is T)) {
 }
 
 /**
- * Do a validator callback function for each object entry.
- */
-export function iterateObjectEntries<T = NonNullable<object>>(
-  cb: (key: string, val: unknown) => boolean,
-): (arg: unknown) => arg is T {
-  return (arg: unknown): arg is T => {
-    if (isObject(arg)) {
-      for (const entry of Object.entries(arg)) {
-        if (!cb(entry[0], entry[1])) {
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-}
-
-
-/**
  * Transform a value before checking it.
  */
 export function transform<T>(

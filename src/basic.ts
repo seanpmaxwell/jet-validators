@@ -13,7 +13,7 @@ export type TRecord = Record<string, unknown>;
 // Nullables
 export const isUndef = ((arg: unknown): arg is undefined => arg === undefined);
 export const isNull = ((arg: unknown): arg is null => arg === null);
-export const isNullOrUndef = orNullable(isUndef);
+export const isNullish = orNullable(isUndef);
 
 // Boolean
 export const isBoolean = _checkType<boolean>('boolean');

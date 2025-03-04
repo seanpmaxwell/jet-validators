@@ -5,7 +5,7 @@ import path from 'path';
 import {
   isUndef,
   isNull,
-  isNullOrUndef,
+  isNullish,
   isBoolean,
   isOptionalBoolean,
   isNullableBoolean,
@@ -106,7 +106,6 @@ import {
 } from '../src';
 
 import {
-  iterateObjectEntries,
   nonNullable,
   parseBoolean,
   parseNullishObjectArray,
@@ -135,8 +134,8 @@ test('test basic validators', () => {
   // Nullables
   expect(isUndef(undefined)).toStrictEqual(true);
   expect(isNull(null)).toStrictEqual(true);
-  expect(isNullOrUndef(null)).toStrictEqual(true);
-  expect(isNullOrUndef(undefined)).toStrictEqual(true);
+  expect(isNullish(null)).toStrictEqual(true);
+  expect(isNullish(undefined)).toStrictEqual(true);
 
   // Booleans
   expect(isBoolean(false)).toStrictEqual(true);
@@ -544,12 +543,6 @@ test('test simple utilities', () => {
   expect(nonNullable(isNullableString)('asdf')).toStrictEqual(true);
   expect(nonNullable(isNullableString)(null)).toStrictEqual(false);
   expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
-
-  // Check Object entries
-  const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
-    isString(key) && isNumber(val));
-  expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
-  expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);
 
   // Check "transform" and "parseJson" functions
   const isNumArrWithParse = transform(parseJson, isNumberArray);
