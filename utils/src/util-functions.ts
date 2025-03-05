@@ -159,7 +159,7 @@ export function parseNullishJson<T>(arg: unknown): T | null | undefined {
 }
 
 
-// **** Parse Object **** //
+// **** ParseObject **** //
 
 export type TParser<T> = ((arg: unknown) => T)
 
@@ -414,11 +414,12 @@ function setupParseObjectErrorCb(errArr: TParseErrorItem[]) {
 export class ParseObjectError extends Error {
 
   public static MESSAGE = 'The parseObject function discovered one or ' + 
-    'more errors.';
+    'more errors: ';
   private errorArray: TParseErrorItem[] = [];
 
   public constructor(errorArray: TParseErrorItem[]) {
-    super(ParseObjectError.MESSAGE);
+    const errString = JSON.stringify(errorArray);
+    super(ParseObjectError.MESSAGE + errString);
     this.errorArray = [ ...errorArray ];
   }
 

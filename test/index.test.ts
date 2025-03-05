@@ -856,12 +856,13 @@ test('test "parseObjectPlus()" function', () => {
   } catch (err) {
     if (err instanceof ParseObjectError) {
       errArr = err.getErrors();
+      // console.log(err.message)
     }
   } finally {
     expect(errArr).toStrictEqual([
       { prop: 'id', value: '5' },
       { prop: 'name', value: 1234123 },
-    ])
+    ]);
   }
 
   // Error is a string
@@ -870,11 +871,10 @@ test('test "parseObjectPlus()" function', () => {
   } catch (err) {
     if (err instanceof ParseObjectError) {
       errArr = err.getErrors();
+      // console.log(err.message)
     }
   } finally {
-    expect(errArr).toStrictEqual([
-      'Argument is null but not nullable.'
-    ])
+    expect(errArr).toStrictEqual(['Argument is null but not nullable.']);
   }
 });
 
