@@ -6,6 +6,7 @@ import {
   isString,
   isDate,
   TRecord,
+  isInArray,
 } from '../../dist';
 
 import { AddMods, TValidateWithTransform } from '../../dist/common';
@@ -464,13 +465,9 @@ function _testObject<
   onError?: TParseOnError<A>,
 ) {
   const parseFn = _parseObject(schema, optional, nullable, isArr, onError);
-  return (arg: unknown): arg is typeof objRes => {
-    const objRes = parseFn(arg);
-    if (objRes === undefined) {
-      return false;
-    } else {
-      return true;
-    }
+  return (arg: unknown): arg is typeof res => {
+    const res = parseFn(arg);
+    return (res !== undefined);
   };
 }
 
