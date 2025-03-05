@@ -21,6 +21,10 @@ export {
   parseNullableObjectArray,
   parseNullishObjectArray,
   TSchema,
+  TParser,
+  parseObjectPlus,
+  TParseErrorItem,
+  ParseObjectError,
   // Test Object
   testObject,
   testOptionalObject,

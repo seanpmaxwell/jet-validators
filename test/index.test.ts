@@ -119,6 +119,10 @@ import {
   TSchema,
   customDeepCompare,
   deepCompare,
+  TParser,
+  parseObjectPlus,
+  ParseObjectError,
+  TParseErrorItem,
 } from '../utils/src';
 
 
@@ -585,6 +589,13 @@ test('test "parseObject()" function', () => {
   });
   expect(user).toStrictEqual({ id: 5, name: 'john' });
 
+  // ** Test passing a type to parseObject ** //
+  const parseUserNew: TParser<IUser> = parseObject({
+    id: isNumber,
+    name: isString,
+  });
+  expect(parseUserNew({ id: '5', name: 'a' })).toBeFalsy();
+
   // Parse optional object
   const parseOptUser = parseOptionalObject({
     id: isNumber,
@@ -727,7 +738,7 @@ test('test "parseObject()" function', () => {
   expect(errArr).toStrictEqual([
     { prop: 'id', val: 'joe' },
     { prop: 'name', val: 5 },
-  ])
+  ]);
 });
 
 
@@ -780,6 +791,49 @@ test('test "testObject()" function', () => {
       zip: 98109,
     },
   });
+});
+
+
+/**
+ * Test "parseObjectPlus" function
+ */
+test('test "parseObjectPlus()" function', () => {
+
+  const parseUser = parseObjectPlus({
+    id: isNumber,
+    name: isString,
+  });
+
+  // Array of error objects
+  let errArr: TParseErrorItem[] = [];
+  try {
+    parseUser({
+      id: '5',
+      name: 1234123,
+    });
+  } catch (err) {
+    if (err instanceof ParseObjectError) {
+      errArr = err.getErrors();
+    }
+  } finally {
+    expect(errArr).toStrictEqual([
+      { prop: 'id', value: '5' },
+      { prop: 'name', value: 1234123 },
+    ])
+  }
+
+  // Error is a string
+  try {
+    parseUser(null);
+  } catch (err) {
+    if (err instanceof ParseObjectError) {
+      errArr = err.getErrors();
+    }
+  } finally {
+    expect(errArr).toStrictEqual([
+      'Argument is null but not nullable.'
+    ])
+  }
 });
 
 
