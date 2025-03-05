@@ -28,25 +28,6 @@ export function nonNullable<T>(cb: ((arg: unknown) => arg is T)) {
 }
 
 /**
- * Do a validator callback function for each object entry.
- */
-export function iterateObjectEntries<T = NonNullable<object>>(
-  cb: (key: string, val: unknown) => boolean,
-): (arg: unknown) => arg is T {
-  return (arg: unknown): arg is T => {
-    if (isObject(arg)) {
-      for (const entry of Object.entries(arg)) {
-        if (!cb(entry[0], entry[1])) {
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-}
-
-
-/**
  * Transform a value before checking it.
  */
 export function transform<T>(
@@ -181,6 +162,8 @@ export function parseNullishJson<T>(arg: unknown): T | null | undefined {
 
 // **** Parse Object **** //
 
+export type TParser<T> = ((arg: unknown) => T)
+
 export interface TSchema {
   [key: string]: TValidateWithTransform<unknown> | TSchema;
 }
@@ -261,7 +244,7 @@ function _parseObjectHelper<A>(
   // Check "undefined"
   if (arg === undefined) {
     if (!optional) {
-      onError?.('Argument is undefined but not optional');
+      onError?.('Argument is undefined but not optional.');
       return undefined;
     }
   }
@@ -365,6 +348,84 @@ function _parseObjectHelper2(
   }
   // Return
   return argParentObj;
+}
+
+
+// **** parseObjectPlus **** //
+
+export type TParseErrorItem = {
+  prop: string,
+  value: unknown,
+  moreInfo?: string,
+} | string;
+
+/**
+ * Parse a Request object property and throw a Validation error if it fails.
+ */
+export function parseObjectPlus<U extends TSchema>(schema: U) {
+  return (arg: unknown) => {
+    // Don't alter original object (shallow copy is good enough)
+    if (isObject(arg)) {
+      arg = { ...arg };
+    }
+    // Setup error callback
+    const errArr: TParseErrorItem[] = [],
+      errCb = setupParseObjectErrorCb(errArr);
+    // Run Tests
+    const retVal = parseObject<U>(schema, errCb)(arg);
+    if (errArr.length > 0) {
+      throw new ParseObjectError(errArr);
+    }
+    // Return
+    return retVal;
+  };
+}
+
+/**
+ * Setup the error callback function for when "parseReq" fires and error.
+ */
+function setupParseObjectErrorCb(errArr: TParseErrorItem[]) {
+  return function (
+    prop = 'undefined',
+    value?: unknown,
+    caughtErr?: unknown,
+  ) {
+    // Initialize err
+    let err: TParseErrorItem;
+    if (arguments.length === 1) {
+      err = prop;
+    } else {
+      err = { prop, value };
+    }
+    // Check if there's a "caught error"
+    if (isObject(err) && caughtErr !== undefined) {
+      let moreInfo;
+      if (!isString(caughtErr)) {
+        moreInfo = JSON.stringify(caughtErr);
+      } else {
+        moreInfo = caughtErr;
+      }
+      err.moreInfo = moreInfo;
+    }
+    // Add error to array
+    errArr.push(err);
+  };
+}
+
+export class ParseObjectError extends Error {
+
+  public static MESSAGE = 'The parseObject function discovered one or ' + 
+    'more errors.';
+  private errorArray: TParseErrorItem[] = [];
+
+  public constructor(errorArray: TParseErrorItem[]) {
+    super(ParseObjectError.MESSAGE);
+    this.errorArray = [ ...errorArray ];
+  }
+
+  public getErrors(): TParseErrorItem[] {
+    return [ ...this.errorArray ];
+  }
 }
 
 

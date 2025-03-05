@@ -2,7 +2,6 @@
 export {
   // Simple Utilities
   nonNullable,
-  iterateObjectEntries,
   transform,
   parseBoolean,
   parseOptionalBoolean,
@@ -22,6 +21,10 @@ export {
   parseNullableObjectArray,
   parseNullishObjectArray,
   TSchema,
+  TParser,
+  parseObjectPlus,
+  TParseErrorItem,
+  ParseObjectError,
   // Test Object
   testObject,
   testOptionalObject,

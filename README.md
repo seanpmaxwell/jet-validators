@@ -45,6 +45,7 @@
     - [parseObject](#parse-object)
     - [testObject](#test-object)
     - [Custom Validators](#custom-validators)
+    - [TParser](#tparser)
     - [Wrapping Parse/Test](#wrapping-parse-test)
     - [traverseObject](#traverse-object)
   - [deepCompare and customDeepCompare](#deepCompare-fns)
@@ -90,7 +91,7 @@ These can be imported and used directly and don't require any configuration.
 ### Nullables <a name="nullables"></a>
 - isUndef
 - isNull
-- isNullOrUndef
+- isNullish (is `null` or `undefined`)
 
 ### `isBoolean` <a name="is-boolean"></a>
 - isBoolean
@@ -403,15 +404,6 @@ Remove `null`/`undefined` from type-predicates and runtime validation:
   isString(undefined); // false
 ```
 
-#### `iterateObjectEntries` <a name="iterate-object-entries"></a>
-Loop through and object's key/value pairs and fire a callback for each one. If any callback returns `false`, the whole function will return `false`. It will also caste the return value to the generic if passed one. Note that this does not work recursively. This function is useful for dynamic objects where you don't know what the keys will be:
-```typescript
-  const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
-    isString(key) && isNumber(val));
-  isStrNumObj({ a: 1, b: 2, c: 3 }); // true
-  isStrNumObj({ a: 1, b: 2, c: 'asdf' }); // false
-```
-
 #### `transform` <a name="transform"></a>
 Accepts a transformation function for the first argument, a validator for the second, and returns a validator-function which calls the transform function before validating. The returned validator-function provides a callback as the second argument, if you need to access the transformed value. You should use `transform` if you need to modify a value when using `parseObject` or `testObject`:
 ```typescript
@@ -525,6 +517,7 @@ This function iterates an object (and any nested object) and runs the validator-
   ]);
 ```
 
+
 #### `testObject` <a name="test-object"></a>
 - testObject
 - testOptionalObject
@@ -588,6 +581,25 @@ For `parseObject` and `testObject` you aren't restricted to the validator-functi
   });
 ```
 
+
+#### `TParser<T>` <a name="tparser"></a>
+Use this if you want enforce a schema passed to `parseObject` using a custom type`:
+```ts
+import { isString, isNumber } from 'jet-validators';
+import { parseObject, TParser } from 'jet-validators/utils';
+
+interface IUser {
+  id: number;
+  name: string;
+}
+
+const parseUser: TParser<IUser> = parseObject({
+  id: isNumber,
+  name: isString,
+});
+```
+
+
 #### Wrapping parseObject/testObject functions <a name="wrapping-parse-test"></a>
 If you want to wrap the `parseObject` or `testObject` functions cause you want to let's say, apply the same error handler to multiple object-validators, you need to import the `TSchema` type and have your generic extend it:
 ```typescript
@@ -600,6 +612,39 @@ const customParse = <U extends TSchema>(schema: U) => {
 
 const parseUser = customParse({ id: isNumber, name: isString });
 parseUser({ id: 5, name: 'joe' }); // => { id: 5, name: 'joe' }
+```
+
+
+#### `parseObjectPlus` <a name="parse-object-plus"></a>
+If you want to avoid the hassle of setting up your own error handler for the `parseObject` function, you can import the `parseObjectPlus` function which has its own built in error handler. `parseObjectPlus` will traverse the entire schema and create an array of error objects for each validation that failed. It will then throw a `ParseObjectError` which will contain the array and an error message. If you want to access this array you'll need to use a `try/catch` block:
+```ts
+import { isString, isNumber } from 'jet-validators';
+import { parseObjectPlus, ParseObjectError } from 'jet-validators/utils';
+
+interface IUser {
+  id: number;
+  name: string;
+}
+
+const parseUser = parseObjectPlus({
+  id: isNumber,
+  name: isString,
+});
+
+try {
+  parseUser({
+    id: '5',
+    name: 1234,
+  });
+} catch (err) {
+  if (err instanceof ParseObjectError) {
+    console.log(err.getErrors()); // => 
+    // [
+    //   { prop: 'id', value: '5' },
+    //   { prop: 'name', value: 1234 },
+    // ]
+  }
+}
 ```
 
 

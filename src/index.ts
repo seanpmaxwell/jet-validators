@@ -6,7 +6,7 @@ export {
   // Nullables
   isUndef,
   isNull,
-  isNullOrUndef,
+  isNullish,
   // Boolean
   isBoolean,
   isOptionalBoolean,

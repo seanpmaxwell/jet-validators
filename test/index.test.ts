@@ -5,7 +5,7 @@ import path from 'path';
 import {
   isUndef,
   isNull,
-  isNullOrUndef,
+  isNullish,
   isBoolean,
   isOptionalBoolean,
   isNullableBoolean,
@@ -106,7 +106,6 @@ import {
 } from '../src';
 
 import {
-  iterateObjectEntries,
   nonNullable,
   parseBoolean,
   parseNullishObjectArray,
@@ -120,6 +119,10 @@ import {
   TSchema,
   customDeepCompare,
   deepCompare,
+  TParser,
+  parseObjectPlus,
+  ParseObjectError,
+  TParseErrorItem,
   testObjectArray,
 } from '../utils/src';
 
@@ -136,8 +139,8 @@ test('test basic validators', () => {
   // Nullables
   expect(isUndef(undefined)).toStrictEqual(true);
   expect(isNull(null)).toStrictEqual(true);
-  expect(isNullOrUndef(null)).toStrictEqual(true);
-  expect(isNullOrUndef(undefined)).toStrictEqual(true);
+  expect(isNullish(null)).toStrictEqual(true);
+  expect(isNullish(undefined)).toStrictEqual(true);
 
   // Booleans
   expect(isBoolean(false)).toStrictEqual(true);
@@ -546,12 +549,6 @@ test('test simple utilities', () => {
   expect(nonNullable(isNullableString)(null)).toStrictEqual(false);
   expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
 
-  // Check Object entries
-  const isStrNumObj = iterateObjectEntries<Record<string, number>>((key, val) => 
-    isString(key) && isNumber(val));
-  expect(isStrNumObj({ a: 1, b: 2, c: 3 })).toStrictEqual(true);
-  expect(isStrNumObj({ a: 1, b: 2, c: 'asdf' })).toStrictEqual(false);
-
   // Check "transform" and "parseJson" functions
   const isNumArrWithParse = transform(parseJson, isNumberArray);
   expect(isNumArrWithParse('[1,2,3]', val => {
@@ -592,6 +589,13 @@ test('test "parseObject()" function', () => {
     email: '--',
   });
   expect(user).toStrictEqual({ id: 5, name: 'john' });
+
+  // ** Test passing a type to parseObject ** //
+  const parseUserNew: TParser<IUser> = parseObject({
+    id: isNumber,
+    name: isString,
+  });
+  expect(parseUserNew({ id: '5', name: 'a' })).toBeFalsy();
 
   // Parse optional object
   const parseOptUser = parseOptionalObject({
@@ -735,7 +739,7 @@ test('test "parseObject()" function', () => {
   expect(errArr).toStrictEqual([
     { prop: 'id', val: 'joe' },
     { prop: 'name', val: 5 },
-  ])
+  ]);
 });
 
 
@@ -829,6 +833,49 @@ test('test "testObject()" function', () => {
   };
   expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
   expect(testCombo2(testCombo2FailData)).toStrictEqual(undefined);
+});
+
+
+/**
+ * Test "parseObjectPlus" function
+ */
+test('test "parseObjectPlus()" function', () => {
+
+  const parseUser = parseObjectPlus({
+    id: isNumber,
+    name: isString,
+  });
+
+  // Array of error objects
+  let errArr: TParseErrorItem[] = [];
+  try {
+    parseUser({
+      id: '5',
+      name: 1234123,
+    });
+  } catch (err) {
+    if (err instanceof ParseObjectError) {
+      errArr = err.getErrors();
+    }
+  } finally {
+    expect(errArr).toStrictEqual([
+      { prop: 'id', value: '5' },
+      { prop: 'name', value: 1234123 },
+    ])
+  }
+
+  // Error is a string
+  try {
+    parseUser(null);
+  } catch (err) {
+    if (err instanceof ParseObjectError) {
+      errArr = err.getErrors();
+    }
+  } finally {
+    expect(errArr).toStrictEqual([
+      'Argument is null but not nullable.'
+    ])
+  }
 });
 
 
