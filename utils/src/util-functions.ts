@@ -1,12 +1,11 @@
 import {
   isFunction,
-  isNullOrUndef,
+  isNullish,
   isObject,
   isRecord,
   isString,
   isDate,
   TRecord,
-  isInArray,
 } from '../../dist';
 
 import { AddMods, TValidateWithTransform } from '../../dist/common';
@@ -19,7 +18,7 @@ import { AddMods, TValidateWithTransform } from '../../dist/common';
  */
 export function nonNullable<T>(cb: ((arg: unknown) => arg is T)) {
   return (arg: unknown): arg is NonNullable<T> => {
-    if (isNullOrUndef(arg)) {
+    if (isNullish(arg)) {
       return false;
     } else {
       return cb(arg);
