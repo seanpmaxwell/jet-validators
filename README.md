@@ -48,6 +48,7 @@
     - [TParser](#tparser)
     - [Wrapping Parse/Test](#wrapping-parse-test)
     - [traverseObject](#traverse-object)
+    - [parseObjectPlus](#parse-object-plus)
   - [deepCompare and customDeepCompare](#deepCompare-fns)
     - [deepCompare](#deepCompare)
     - [customDeepCompare](#customDeepCompare)
