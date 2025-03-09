@@ -119,7 +119,7 @@ import {
   customDeepCompare,
   deepCompare,
   TParser,
-  IParseErrorItem,
+  IParseObjectError,
   testObjectArray,
 } from '../utils/src';
 
@@ -728,7 +728,7 @@ test('test "parseObject()" function', () => {
   expect(() => parseUserAlt('horse')).toThrowError();
 
   // ** Test onError for multiple properties ** //
-  let errArr: IParseErrorItem[] = [];
+  let errArr: IParseObjectError[] = [];
   parseObject({
     id: isNumber,
     name: isString,

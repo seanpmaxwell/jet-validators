@@ -180,7 +180,7 @@ type TInferParseResHelper<U> = {
   );
 };
 
-export interface IParseErrorItem {
+export interface IParseObjectError {
   prop?: string;
   value?: unknown;
   caughtErr?: string;
@@ -188,7 +188,7 @@ export interface IParseErrorItem {
   moreInfo?: string;
 };
 
-type TParseOnError = (errors: IParseErrorItem[]) => void;
+type TParseOnError = (errors: IParseObjectError[]) => void;
 
 
 export const parseObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
@@ -261,7 +261,7 @@ function _parseObjectHelper<A>(
     }
     return null;
   }
-  const errArr: IParseErrorItem[] = [];
+  const errArr: IParseObjectError[] = [];
   // Do this if it is an array.
   if (isArr) {
     if (!Array.isArray(arg)) {
@@ -306,7 +306,7 @@ function _parseObjectHelper<A>(
 function _parseObjectHelper2(
   schemaParentObj: TSchema,
   argParentObj: unknown,
-  errArr: IParseErrorItem[],
+  errArr: IParseObjectError[],
   hasOnErrCb: boolean,
   index?: number,
 ): unknown {

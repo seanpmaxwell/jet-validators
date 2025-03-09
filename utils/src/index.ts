@@ -22,7 +22,7 @@ export {
   parseNullishObjectArray,
   TSchema,
   TParser,
-  IParseErrorItem,
+  IParseObjectError,
   // Test Object
   testObject,
   testOptionalObject,

@@ -1,5 +1,6 @@
 import { isNumber, isString } from '../src';
-import { transform, parseObjectPlus, TParser } from '../utils/dist';
+import { transform, parseObject, testObject, TParser } from '../utils/src';
+import { TTester } from '../utils/src';
 // import { isBoolean } from '../../jet-validators';
 
 console.log(isString('horse'))
@@ -11,7 +12,12 @@ interface IUser {
   name: string;
 }
 
-const parseUser: TParser<IUser> = parseObjectPlus({
+const parseUser: TParser<IUser> = parseObject({
+  id: isNumber,
+  name: isString,
+});
+
+const testUser: TTester<IUser> = testObject({
   id: isNumber,
   name: isString,
 });

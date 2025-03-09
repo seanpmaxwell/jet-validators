@@ -43,9 +43,9 @@
     - [parseJson](#parse-json)
   - [Validating object schemas](#validating-object-schemas)
     - [parseObject](#parse-object)
+    - [TParser](#tparser)
     - [testObject](#test-object)
     - [Custom Validators](#custom-validators)
-    - [TParser](#tparser)
     - [Wrapping Parse/Test](#wrapping-parse-test)
   - [deepCompare and customDeepCompare](#deepCompare-fns)
     - [deepCompare](#deepCompare)
@@ -444,7 +444,7 @@ Calls the `JSON.parse` function, if the argument is not a string an error will b
 ### Validating object schemas <a name="validating-object-schemas"></a>
 If you need to validate an object schema, you can pass a validator object with the key being a property of the object and the value being any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
 
-> These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as simple object validating tools where using a separate schema validation library might be overkill. If you need something more powerful, I highly recommend this repo's sister library <a href="https://github.com/seanpmaxwell/jet-schema">jet-schema</a> which allows you to do a lot more like force schema properties using predefined types. 
+> These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as simple object validating tools where using a separate schema validation library might be overkill.
 
 
 #### `parseObject` <a name="parse-object"></a>
@@ -457,8 +457,15 @@ If you need to validate an object schema, you can pass a validator object with t
 - parseNullableObjectArray
 - parseNullishObjectArray
 
-This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass a error-handler function as the second argument which will fire whenever a validator-function fails. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet):
+This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass an  error-handler function as the second argument which will fire whenever a validator-function fails.<br/>
+
+The format for the `onError` callback function is as follows. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet):
+> (errorArray: IParseObjectError[]) => void;
+
+Example of using `parseObject`:
 ```typescript
+  import { parseObject, IParseObjectError } from 'jet-validators/utils';
+
   interface IUser {
     id: number;
     name: string;
@@ -475,7 +482,7 @@ This function iterates an object (and any nested object) and runs the validator-
       city: isString,
       zip: isNumber,
     }
-  }, (property: string, value: unknown, caughtErr?: unknown) => {
+  }, (errorArray: IParseObjectError[]) => {
     throw Error(`Property "${property}" failed to pass validation.`)
   });
 
@@ -554,6 +561,24 @@ Test object is nearly identical to `parseObject` (it actually calls `parseObject
 ```
 
 
+#### `TParser<T> and TTester` <a name="tparser"></a>
+Use these if you want enforce a schema passed to `parseObject` or `testObject` using a custom type`:
+```ts
+import { isString, isNumber } from 'jet-validators';
+import { parseObject, TParser } from 'jet-validators/utils';
+
+interface IUser {
+  id: number;
+  name: string;
+}
+
+const parseUser: TParser<IUser> = parseObject({
+  id: isNumber,
+  name: isString,
+});
+```
+
+
 #### Custom Validators <a name="custom-validators"></a>
 For `parseObject` and `testObject` you aren't restricted to the validator-functions in `jet-validators`. You can write your own validator-function, just make sure your argument is `unknown` and it returns a type predicate:
 ```typescript
@@ -578,24 +603,6 @@ For `parseObject` and `testObject` you aren't restricted to the validator-functi
     id: 5,
     name: 'joe',
   });
-```
-
-
-#### `TParser<T>` <a name="tparser"></a>
-Use this if you want enforce a schema passed to `parseObject` using a custom type`:
-```ts
-import { isString, isNumber } from 'jet-validators';
-import { parseObject, TParser } from 'jet-validators/utils';
-
-interface IUser {
-  id: number;
-  name: string;
-}
-
-const parseUser: TParser<IUser> = parseObject({
-  id: isNumber,
-  name: isString,
-});
 ```
 
 
