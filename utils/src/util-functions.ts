@@ -6,6 +6,7 @@ import {
   isString,
   isDate,
   TRecord,
+  isUndef,
 } from '../../dist';
 
 import { AddMods, TValidateWithTransform } from '../../dist/common';
@@ -184,7 +185,7 @@ export interface IParseErrorItem {
   value?: unknown;
   caughtErr?: string;
   index?: number;
-  rootIssue?: string;
+  moreInfo?: string;
 };
 
 type TParseOnError = (errors: IParseErrorItem[]) => void;
@@ -248,14 +249,14 @@ function _parseObjectHelper<A>(
   // Check "undefined"
   if (arg === undefined) {
     if (!optional) {
-      onError?.([{ rootIssue: 'Root argument is undefined but not optional.' }]);
+      onError?.([{ moreInfo: 'Root argument is undefined but not optional.' }]);
       return undefined;
     }
   }
   // Check "null"
   if (arg === null) {
     if (!nullable) {
-      onError?.([{ rootIssue: 'Root argument is null but not nullable.' }]);
+      onError?.([{ moreInfo: 'Root argument is null but not nullable.' }]);
       return undefined;
     }
     return null;
@@ -264,13 +265,13 @@ function _parseObjectHelper<A>(
   // Do this if it is an array.
   if (isArr) {
     if (!Array.isArray(arg)) {
-      onError?.([{ rootIssue: 'Root argument is not an array.' }]);
+      onError?.([{ moreInfo: 'Root argument is not an array.' }]);
       return undefined;
     }
     // Iterate array
     let hasErr = false;
     for (let i = 0; i < arg.length; i++) {
-      const parsedItem = _parseObjectHelper2(schema, arg[i], errArr, !!onError);
+      const parsedItem = _parseObjectHelper2(schema, arg[i], errArr, !!onError, i);
       if (parsedItem === undefined) {
         if (!!onError) {
           return undefined
@@ -307,9 +308,14 @@ function _parseObjectHelper2(
   argParentObj: unknown,
   errArr: IParseErrorItem[],
   hasOnErrCb: boolean,
+  index?: number,
 ): unknown {
   // Make sure is object
   if (!isRecord(argParentObj)) {
+    errArr.push({
+      moreInfo: 'Parsed item was not an object',
+      ...(isUndef(index) ? {} : { index }),
+    });
     return;
   }
   // Iterate object properties
@@ -319,7 +325,8 @@ function _parseObjectHelper2(
       val = argParentObj[key];
     // Nested object
     if (isRecord(schemaProp)) {
-      const childVal = _parseObjectHelper2(schemaProp, val, errArr, hasOnErrCb);
+      const childVal = _parseObjectHelper2(schemaProp, val, errArr, hasOnErrCb, 
+        index);
       if (childVal === undefined) {
         if (!hasOnErrCb) {
           return undefined;
@@ -341,11 +348,26 @@ function _parseObjectHelper2(
         if (hasOnErrCb) {
           hasErr = true;
           if (err instanceof Error) {
-            errArr.push({ prop: key, value: val, caughtErr: err.message });
+            errArr.push({
+              prop: key,
+              value: val,
+              caughtErr: err.message,
+              ...(isUndef(index) ? {} : { index }),
+            });
           } else if (isString(err)) {
-            errArr.push({ prop: key, value: val, caughtErr: err });
+            errArr.push({
+              prop: key,
+              value: val,
+              caughtErr: err,
+              ...(isUndef(index) ? {} : { index }),
+            });
           } else {
-            errArr.push({ prop: key, value: val, caughtErr: JSON.stringify(err) });
+            errArr.push({
+              prop: key,
+              value: val,
+              caughtErr: JSON.stringify(err),
+              ...(isUndef(index) ? {} : { index }),
+            });
           }
         } else {
           return undefined

@@ -719,14 +719,16 @@ test('test "parseObject()" function', () => {
   });
 
   // ** Wrap parseObject ** //
-  const customParse = <U extends TSchema>(schema: U) => {
-    return parseObject(schema, err => console.error(err))
-  }
+  const customParse = <U extends TSchema>(schema: U) => 
+    parseObject(schema, err => {
+      throw new Error(JSON.stringify(err));
+    });
   const parseUserAlt = customParse({ id: isNumber, name: isString });
   expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({ id: 5, name: 'joe' });
+  expect(() => parseUserAlt('horse')).toThrowError();
 
   // ** Test onError for multiple properties ** //
-  let errArr: unknown[] = [];
+  let errArr: IParseErrorItem[] = [];
   parseObject({
     id: isNumber,
     name: isString,
@@ -734,8 +736,8 @@ test('test "parseObject()" function', () => {
     errArr = err;
   })({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
-    { prop: 'id', val: 'joe' },
-    { prop: 'name', val: 5 },
+    { prop: 'id', value: 'joe' },
+    { prop: 'name', value: 5 },
   ]);
 });
 
