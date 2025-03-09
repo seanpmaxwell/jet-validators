@@ -162,11 +162,23 @@ export function parseNullishJson<T>(arg: unknown): T | null | undefined {
 
 // **** ParseObject **** //
 
-export type TParser<T> = ((arg: unknown) => T)
-
 export interface TSchema {
   [key: string]: TValidateWithTransform<unknown> | TSchema;
 }
+
+type TEnforceSchema<T> = (
+  unknown extends T
+  ? TSchema
+  : TEnforceSchemaHelper<T>
+);
+
+type TEnforceSchemaHelper<T> = Required<{
+  [K in keyof T]: (
+    T[K] extends Record<string, unknown> 
+    ? TValidateWithTransform<T[K]> | TEnforceSchemaHelper<T[K]>
+    : TValidateWithTransform<T[K]>
+  )
+}>;
 
 type TInferParseRes<U, O, N, A, Schema = TInferParseResHelper<U>> = AddMods<Schema, O, N, A>;
 
@@ -180,33 +192,36 @@ type TInferParseResHelper<U> = {
   );
 };
 
-export interface IParseObjectError {
+export interface IParseObjectErrorItem {
+  moreInfo: string;
   prop?: string;
   value?: unknown;
-  caughtErr?: string;
+  caught?: string | Error;
   index?: number;
-  moreInfo?: string;
+  children?: IParseObjectErrorItem[];
 };
 
-type TParseOnError = (errors: IParseObjectError[]) => void;
+type TParseOnError = (errors: IParseObjectErrorItem[]) => void;
 
 
-export const parseObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, false, false, false>(arg, false, false, false, onError);
-export const parseOptionalObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, true, false, false>(arg, true, false, false, onError);
-export const parseNullableObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, false, true, false>(arg, false, true, false, onError);
-export const parseNullishObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, true, true, false>(arg, true, true, false, onError);
-export const parseObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, false, false, true>(arg, false, false, true, onError);
-export const parseOptionalObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, true, false, true>(arg, true, false, true, onError);
-export const parseNullableObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, false, true, true>(arg, false, true, true, onError);
-export const parseNullishObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _parseObject<U, true, true, true>(arg, true, true, true, onError);
+export const parseObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U, onError?: TParseOnError,
+) => _parseObject<U, false, false, false>(arg, false, false, false, onError);
+
+// export const parseOptionalObject = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
+//   _parseObject<T, U>(arg, true, false, false, onError);
+// export const parseNullableObject = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
+//   _parseObject<T, U>(arg, false, true, false, onError);
+// export const parseNullishObject = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
+//   _parseObject<T, U>(arg, true, true, false, onError);
+// export const parseObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
+//   _parseObject<T, U>(arg, false, false, true, onError);
+// export const parseOptionalObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
+//   _parseObject<T, U>(arg, true, false, true, onError);
+// export const parseNullableObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
+//   _parseObject<T, U>(arg, false, true, true, onError);
+// export const parseNullishObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
+//   _parseObject<T, U>(arg, true, true, true, onError);
 
 /**
  * Validates an object schema, calls an error function is supplied one, returns 
@@ -215,16 +230,16 @@ export const parseNullishObjectArray = <U extends TSchema>(arg: U, onError?: TPa
  */
 function _parseObject<
   U extends TSchema,
-  O extends boolean,
-  N extends boolean,
-  A extends boolean,
+  O extends boolean = boolean,
+  N extends boolean = boolean,
+  A extends boolean = boolean,
 >(
   schema: U,
   optional: O,
   nullable: N,
   isArr: A,
   onError?: TParseOnError,
-): (arg: unknown) => TInferParseRes<U, O, N, A> {
+) {
   return (arg: unknown) => _parseObjectHelper<A>(
     !!optional,
     !!nullable,
@@ -261,7 +276,7 @@ function _parseObjectHelper<A>(
     }
     return null;
   }
-  const errArr: IParseObjectError[] = [];
+  const errArr: IParseObjectErrorItem[] = [];
   // Do this if it is an array.
   if (isArr) {
     if (!Array.isArray(arg)) {
@@ -306,7 +321,7 @@ function _parseObjectHelper<A>(
 function _parseObjectHelper2(
   schemaParentObj: TSchema,
   argParentObj: unknown,
-  errArr: IParseObjectError[],
+  errArr: IParseObjectErrorItem[],
   hasOnErrCb: boolean,
   index?: number,
 ): unknown {
@@ -325,11 +340,18 @@ function _parseObjectHelper2(
       val = argParentObj[key];
     // Nested object
     if (isRecord(schemaProp)) {
-      const childVal = _parseObjectHelper2(schemaProp, val, errArr, hasOnErrCb, 
-        index);
+      const childErrArr: IParseObjectErrorItem[] = [],
+        childVal = _parseObjectHelper2(schemaProp, val, childErrArr, hasOnErrCb, index);
       if (childVal === undefined) {
         if (!hasOnErrCb) {
           return undefined;
+        } else {
+          errArr.push({
+            moreInfo: 'Nested validation failed',
+            prop: key,
+            value: val,
+            children: childErrArr,
+          });
         }
       }
     // Run validator
@@ -339,7 +361,11 @@ function _parseObjectHelper2(
         if (!schemaProp(val, (tval: unknown) => argParentObj[key] = tval)) {
           if (hasOnErrCb) {
             hasErr = true;
-            errArr.push({ prop: key, value: val });
+            errArr.push({
+              moreInfo: 'Validator function returned a falsey value.',
+              prop: key,
+              value: val,
+            });
           } else {
             return undefined
           }
@@ -349,23 +375,26 @@ function _parseObjectHelper2(
           hasErr = true;
           if (err instanceof Error) {
             errArr.push({
+              moreInfo: 'Validator function threw an error.',
               prop: key,
               value: val,
-              caughtErr: err.message,
+              caught: err,
               ...(isUndef(index) ? {} : { index }),
             });
           } else if (isString(err)) {
             errArr.push({
+              moreInfo: 'Validator function threw an error.',
               prop: key,
               value: val,
-              caughtErr: err,
+              caught: err,
               ...(isUndef(index) ? {} : { index }),
             });
           } else {
             errArr.push({
+              moreInfo: 'Validator function threw an error.',
               prop: key,
               value: val,
-              caughtErr: JSON.stringify(err),
+              caught: JSON.stringify(err),
               ...(isUndef(index) ? {} : { index }),
             });
           }
@@ -391,8 +420,6 @@ function _parseObjectHelper2(
 
 
 // **** Test Object **** //
-
-export type TTester<T> = ((arg: unknown) => arg is T)
 
 // Test Object (like "parseObj" but returns a type predicate instead)
 export const testObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 

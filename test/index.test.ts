@@ -119,7 +119,7 @@ import {
   customDeepCompare,
   deepCompare,
   TParser,
-  IParseObjectError,
+  IParseObjectErrorItem,
   testObjectArray,
 } from '../utils/src';
 
@@ -727,8 +727,9 @@ test('test "parseObject()" function', () => {
   expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({ id: 5, name: 'joe' });
   expect(() => parseUserAlt('horse')).toThrowError();
 
+
   // ** Test onError for multiple properties ** //
-  let errArr: IParseObjectError[] = [];
+  let errArr: IParseObjectErrorItem[] = [];
   parseObject({
     id: isNumber,
     name: isString,
@@ -832,6 +833,11 @@ test('test "testObject()" function', () => {
   };
   expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
   expect(testCombo2(testCombo2FailData)).toStrictEqual(undefined);
+
+
+  // Test nested error handling
+
+  // pick up here, add errorsArray to ParseObjErr and remove the extract function
 });
 
 /**

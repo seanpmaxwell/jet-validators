@@ -43,7 +43,6 @@
     - [parseJson](#parse-json)
   - [Validating object schemas](#validating-object-schemas)
     - [parseObject](#parse-object)
-    - [TParser](#tparser)
     - [testObject](#test-object)
     - [Custom Validators](#custom-validators)
     - [Wrapping Parse/Test](#wrapping-parse-test)
@@ -558,24 +557,6 @@ Test object is nearly identical to `parseObject` (it actually calls `parseObject
     //   }
     // }
   }
-```
-
-
-#### `TParser<T> and TTester` <a name="tparser"></a>
-Use these if you want enforce a schema passed to `parseObject` or `testObject` using a custom type`:
-```ts
-import { isString, isNumber } from 'jet-validators';
-import { parseObject, TParser } from 'jet-validators/utils';
-
-interface IUser {
-  id: number;
-  name: string;
-}
-
-const parseUser: TParser<IUser> = parseObject({
-  id: isNumber,
-  name: isString,
-});
 ```
 
 
