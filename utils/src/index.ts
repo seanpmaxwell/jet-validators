@@ -22,9 +22,7 @@ export {
   parseNullishObjectArray,
   TSchema,
   TParser,
-  parseObjectPlus,
-  TParseErrorItem,
-  ParseObjectError,
+  IParseObjectError,
   // Test Object
   testObject,
   testOptionalObject,
@@ -34,15 +32,7 @@ export {
   testOptionalObjectArray,
   testNullableObjectArray,
   testNullishObjectArray,
-  // Traverse Object
-  traverseObject,
-  traverseOptionalObject,
-  traverseNullableObject,
-  traverseNullishObject,
-  traverseObjectArray,
-  traverseOptionalObjectArray,
-  traverseNullableObjectArray,
-  traverseNullishObjectArray,
+  TTester,
   // Deep compare
   deepCompare,
   customDeepCompare,
