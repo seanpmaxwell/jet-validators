@@ -179,27 +179,32 @@ type TInferParseResHelper<U> = {
   );
 };
 
-type TParseOnError<A> = (
-  A extends true 
-  ? ((property: string, value?: unknown, index?: number, caughtErr?: unknown) => void) 
-  : ((property: string, value?: unknown, caughtErr?: unknown) => void)
-);
+export interface IParseErrorItem {
+  prop?: string;
+  value?: unknown;
+  caughtErr?: string;
+  index?: number;
+  rootIssue?: string;
+};
 
-export const parseObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+type TParseOnError = (errors: IParseErrorItem[]) => void;
+
+
+export const parseObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, false, false, false>(arg, false, false, false, onError);
-export const parseOptionalObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+export const parseOptionalObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, true, false, false>(arg, true, false, false, onError);
-export const parseNullableObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+export const parseNullableObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, false, true, false>(arg, false, true, false, onError);
-export const parseNullishObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+export const parseNullishObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, true, true, false>(arg, true, true, false, onError);
-export const parseObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const parseObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, false, false, true>(arg, false, false, true, onError);
-export const parseOptionalObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const parseOptionalObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, true, false, true>(arg, true, false, true, onError);
-export const parseNullableObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const parseNullableObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, false, true, true>(arg, false, true, true, onError);
-export const parseNullishObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const parseNullishObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _parseObject<U, true, true, true>(arg, true, true, true, onError);
 
 /**
@@ -217,7 +222,7 @@ function _parseObject<
   optional: O,
   nullable: N,
   isArr: A,
-  onError?: TParseOnError<A>,
+  onError?: TParseOnError,
 ): (arg: unknown) => TInferParseRes<U, O, N, A> {
   return (arg: unknown) => _parseObjectHelper<A>(
     !!optional,
@@ -238,37 +243,34 @@ function _parseObjectHelper<A>(
   isArr: A,
   schema: TSchema,
   arg: unknown,
-  onError?: TParseOnError<A>,
+  onError?: TParseOnError,
 ) {
   // Check "undefined"
   if (arg === undefined) {
     if (!optional) {
-      onError?.('Argument is undefined but not optional.');
+      onError?.([{ rootIssue: 'Root argument is undefined but not optional.' }]);
       return undefined;
     }
   }
   // Check "null"
   if (arg === null) {
     if (!nullable) {
-      onError?.('Argument is null but not nullable.');
+      onError?.([{ rootIssue: 'Root argument is null but not nullable.' }]);
       return undefined;
     }
     return null;
   }
-  // Check "array"
+  const errArr: IParseErrorItem[] = [];
+  // Do this if it is an array.
   if (isArr) {
     if (!Array.isArray(arg)) {
-      onError?.('Argument is not an array.', arg);
+      onError?.([{ rootIssue: 'Root argument is not an array.' }]);
       return undefined;
     }
     // Iterate array
     let hasErr = false;
     for (let i = 0; i < arg.length; i++) {
-      let cb: TParseOnError<false> | undefined = undefined;
-      if (!!onError) {
-        cb = (prop, val, caughtErr) => onError(prop, val, i, caughtErr)
-      }
-      const parsedItem = _parseObjectHelper2(schema, arg[i], cb);
+      const parsedItem = _parseObjectHelper2(schema, arg[i], errArr, !!onError);
       if (parsedItem === undefined) {
         if (!!onError) {
           return undefined
@@ -277,10 +279,23 @@ function _parseObjectHelper<A>(
         }
       }
     }
-    return (hasErr ? undefined : arg);
+    if (!!hasErr) {
+      if (onError && errArr.length > 0) {
+        onError(errArr);
+      }
+      return undefined;
+    }
+    return arg;
   }
-  // Default
-  return _parseObjectHelper2(schema, arg, onError as TParseOnError<false>);
+  // If not an array
+  const resp = _parseObjectHelper2(schema, arg, errArr, !!onError);
+  if (resp === undefined) {
+    if (onError && errArr.length > 0) {
+      onError(errArr);
+    }
+    return undefined;
+  }
+  return arg;
 }
 
 /**
@@ -290,7 +305,8 @@ function _parseObjectHelper<A>(
 function _parseObjectHelper2(
   schemaParentObj: TSchema,
   argParentObj: unknown,
-  onError?: TParseOnError<false>,
+  errArr: IParseErrorItem[],
+  hasOnErrCb: boolean,
 ): unknown {
   // Make sure is object
   if (!isRecord(argParentObj)) {
@@ -303,9 +319,9 @@ function _parseObjectHelper2(
       val = argParentObj[key];
     // Nested object
     if (isRecord(schemaProp)) {
-      const childVal = _parseObjectHelper2(schemaProp, val, onError);
+      const childVal = _parseObjectHelper2(schemaProp, val, errArr, hasOnErrCb);
       if (childVal === undefined) {
-        if (!onError) {
+        if (!hasOnErrCb) {
           return undefined;
         }
       }
@@ -314,20 +330,22 @@ function _parseObjectHelper2(
       try {
         // Pass callback in case validator transforms value
         if (!schemaProp(val, (tval: unknown) => argParentObj[key] = tval)) {
-          if (!!onError) {
+          if (hasOnErrCb) {
             hasErr = true;
-            onError(key, val);
+            errArr.push({ prop: key, value: val });
           } else {
             return undefined
           }
         }
       } catch (err) {
-        if (!!onError) {
+        if (hasOnErrCb) {
           hasErr = true;
           if (err instanceof Error) {
-            onError(key, val, err.message);
+            errArr.push({ prop: key, value: val, caughtErr: err.message });
+          } else if (isString(err)) {
+            errArr.push({ prop: key, value: val, caughtErr: err });
           } else {
-            onError(key, val, err);
+            errArr.push({ prop: key, value: val, caughtErr: JSON.stringify(err) });
           }
         } else {
           return undefined
@@ -350,103 +368,26 @@ function _parseObjectHelper2(
 }
 
 
-// **** parseObjectPlus **** //
-
-export type TParseErrorItem = {
-  prop: string,
-  value: unknown,
-  moreInfo?: string,
-} | string;
-
-/**
- * Parse a Request object property and throw a Validation error if it fails.
- */
-export function parseObjectPlus<U extends TSchema>(schema: U) {
-  return (arg: unknown) => {
-    // Don't alter original object (shallow copy is good enough)
-    if (isObject(arg)) {
-      arg = { ...arg };
-    }
-    // Setup error callback
-    const errArr: TParseErrorItem[] = [],
-      errCb = setupParseObjectErrorCb(errArr);
-    // Run Tests
-    const retVal = parseObject<U>(schema, errCb)(arg);
-    if (errArr.length > 0) {
-      throw new ParseObjectError(errArr);
-    }
-    // Return
-    return retVal;
-  };
-}
-
-/**
- * Setup the error callback function for when "parseReq" fires and error.
- */
-function setupParseObjectErrorCb(errArr: TParseErrorItem[]) {
-  return function (
-    prop = 'undefined',
-    value?: unknown,
-    caughtErr?: unknown,
-  ) {
-    // Initialize err
-    let err: TParseErrorItem;
-    if (arguments.length === 1) {
-      err = prop;
-    } else {
-      err = { prop, value };
-    }
-    // Check if there's a "caught error"
-    if (isObject(err) && caughtErr !== undefined) {
-      let moreInfo;
-      if (!isString(caughtErr)) {
-        moreInfo = JSON.stringify(caughtErr);
-      } else {
-        moreInfo = caughtErr;
-      }
-      err.moreInfo = moreInfo;
-    }
-    // Add error to array
-    errArr.push(err);
-  };
-}
-
-export class ParseObjectError extends Error {
-
-  public static MESSAGE = 'The parseObject function discovered one or ' + 
-    'more errors: ';
-  private errorArray: TParseErrorItem[] = [];
-
-  public constructor(errorArray: TParseErrorItem[]) {
-    const errString = JSON.stringify(errorArray);
-    super(ParseObjectError.MESSAGE + errString);
-    this.errorArray = [ ...errorArray ];
-  }
-
-  public getErrors(): TParseErrorItem[] {
-    return [ ...this.errorArray ];
-  }
-}
-
-
 // **** Test Object **** //
 
+export type TTester<T> = ((arg: unknown) => arg is T)
+
 // Test Object (like "parseObj" but returns a type predicate instead)
-export const testObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+export const testObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, false, false, false>(arg, false, false, false, onError);
-export const testOptionalObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+export const testOptionalObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, true, false, false>(arg, true, false, false, onError);
-export const testNullableObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+export const testNullableObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, false, true, false>(arg, false, true, false, onError);
-export const testNullishObject = <U extends TSchema>(arg: U, onError?: TParseOnError<false>) => 
+export const testNullishObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, true, true, false>(arg, true, true, false, onError);
-export const testObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const testObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, false, false, true>(arg, false, false, true, onError);
-export const testOptionalObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const testOptionalObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, true, false, true>(arg, true, false, true, onError);
-export const testNullableObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const testNullableObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, false, true, true>(arg, false, true, true, onError);
-export const testNullishObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError<true>) => 
+export const testNullishObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
   _testObject<U, true, true, true>(arg, true, true, true, onError);
 
 /**
@@ -462,117 +403,13 @@ function _testObject<
   optional: O,
   nullable: N,
   isArr: A,
-  onError?: TParseOnError<A>,
+  onError?: TParseOnError,
 ) {
   const parseFn = _parseObject(schema, optional, nullable, isArr, onError);
   return (arg: unknown): arg is typeof res => {
     const res = parseFn(arg);
     return (res !== undefined);
   };
-}
-
-
-// **** Traverse Object **** //
-
-type TTraverseCb = (key: string, val: unknown, parentObj: TRecord) => void;
-
-// Test Object (like "parseObj" but returns a type predicate instead)
-export const traverseObject = (cb: TTraverseCb) => 
-  _traverseObject<false, false, false>(false, false, false, cb);
-export const traverseOptionalObject = (cb: TTraverseCb) => 
-  _traverseObject<true, false, false>(true, false, false, cb);
-export const traverseNullableObject = (cb: TTraverseCb) => 
-  _traverseObject<false, true, false>(false, true, false, cb);
-export const traverseNullishObject = (cb: TTraverseCb) => 
-  _traverseObject<true, true, false>(true, true, false, cb);
-export const traverseObjectArray = (cb: TTraverseCb) => 
-  _traverseObject<false, false, true>(false, false, true, cb);
-export const traverseOptionalObjectArray = (cb: TTraverseCb) => 
-  _traverseObject<true, false, true>(true, false, true, cb);
-export const traverseNullableObjectArray = (cb: TTraverseCb) => 
-  _traverseObject<false, true, true>(false, true, true, cb);
-export const traverseNullishObjectArray = (cb: TTraverseCb) => 
-  _traverseObject<true, true, true>(true, true, true, cb);
-
-/**
- * Validates an object schema, calls an error function is supplied one, returns 
- * "undefined" if the parse fails, and works recursively too. NOTE: this will 
- * purge all keys not part of the schema.
- */
-function _traverseObject<
-  O extends boolean,
-  N extends boolean,
-  A extends boolean,
->(
-  optional: O,
-  nullable: N,
-  isArray: A,
-  cb: TTraverseCb,
-) {
-  return <T>(arg: T): T => {
-    _traverseObjectHelper<A>(!!optional, !!nullable, isArray, arg, cb);
-    return arg;
-  }
-}
-
-/**
- * Validate the schema. 
- */
-function _traverseObjectHelper<A>(
-  optional: boolean,
-  nullable: boolean,
-  isArray: A,
-  arg: unknown,
-  cb: TTraverseCb,
-): void {
-  // Check "undefined"
-  if (arg === undefined && !optional) {
-    throw new Error('Value was undefined but not optional.');
-  }
-  // Check "null"
-  if (arg === null && !nullable) {
-    throw new Error('Value was null but not nullable.');
-  }
-  // Check "array"
-  if (isArray) {
-    if (!Array.isArray(arg)) {
-      throw new Error('Value is not an array.');
-    }
-    // Iterate array
-    for (const item of arg) {
-      _traverseObjectHelperCore(item, cb);
-    }
-  // Default
-  } else {
-    _traverseObjectHelperCore(arg, cb);
-  }
-}
-
-/**
- * Iterate an object, apply a validator function to to each property in an 
- * object using the schema.
- */
-function _traverseObjectHelperCore(
-  parentObj: unknown,
-  cb: TTraverseCb,
-): void {
-  // Must be an object
-  if (!isRecord(parentObj)) {
-    return;
-  }
-  // Iterate schema
-  const entries = Object.entries(parentObj);
-  for (const [key, value] of entries) {
-    if (isRecord(value)) {
-      _traverseObjectHelperCore(value, cb);
-    } else if (Array.isArray(value)) {
-      for (const item of value) {
-        _traverseObjectHelperCore(item, cb);
-      }
-    } else {
-      cb(key, value, parentObj);
-    }
-  }
 }
 
 

@@ -115,14 +115,11 @@ import {
   parseJson,
   testObject,
   transform,
-  traverseObject,
   TSchema,
   customDeepCompare,
   deepCompare,
   TParser,
-  parseObjectPlus,
-  ParseObjectError,
-  TParseErrorItem,
+  IParseErrorItem,
   testObjectArray,
 } from '../utils/src';
 
@@ -675,9 +672,9 @@ test('test "parseObject()" function', () => {
   const parseUserWithError = parseObject({
     id: isNumber,
     name: isString,
-  }, (prop, value) => {
-    expect(prop).toStrictEqual('id');
-    expect(value).toStrictEqual('5');
+  }, err => {
+    expect(err[0].prop).toStrictEqual('id');
+    expect(err[0].value).toStrictEqual('5');
   });
   parseUserWithError({
     id: '5',
@@ -688,10 +685,10 @@ test('test "parseObject()" function', () => {
   const parseUserArrWithError = parseObjectArray({
     id: isNumber,
     name: isString,
-  }, (prop, value, index) => {
-    expect(prop).toStrictEqual('id');
-    expect(value).toStrictEqual('3');
-    expect(index).toStrictEqual(2);
+  }, err => {
+    expect(err[0].prop).toStrictEqual('id');
+    expect(err[0].value).toStrictEqual('3');
+    expect(err[0].index).toStrictEqual(2);
   });
   parseUserArrWithError([
     { id: 1, name: '1' },
@@ -711,10 +708,10 @@ test('test "parseObject()" function', () => {
   const parseUserHandleErr = parseObject({
     id: isNumber,
     name: isStrWithErr,
-  }, (prop, value, caughtErr) => {
-    expect(prop).toStrictEqual('name');
-    expect(value).toStrictEqual(null);
-    expect(caughtErr).toStrictEqual('Value was not a valid string.');
+  }, err => {
+    expect(err[0].prop).toStrictEqual('name');
+    expect(err[0].value).toStrictEqual(null);
+    expect(err[0].caughtErr).toStrictEqual('Value was not a valid string.');
   });
   parseUserHandleErr({
     id: 5,
@@ -723,18 +720,18 @@ test('test "parseObject()" function', () => {
 
   // ** Wrap parseObject ** //
   const customParse = <U extends TSchema>(schema: U) => {
-    return parseObject(schema, (prop: string) => console.error(prop + ' failed'))
+    return parseObject(schema, err => console.error(err))
   }
   const parseUserAlt = customParse({ id: isNumber, name: isString });
   expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({ id: 5, name: 'joe' });
 
   // ** Test onError for multiple properties ** //
-  const errArr: unknown[] = [];
+  let errArr: unknown[] = [];
   parseObject({
     id: isNumber,
     name: isString,
-  }, (prop, val) => {
-    errArr.push({ prop, val });
+  }, err => {
+    errArr = err;
   })({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
     { prop: 'id', val: 'joe' },
@@ -833,91 +830,6 @@ test('test "testObject()" function', () => {
   };
   expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
   expect(testCombo2(testCombo2FailData)).toStrictEqual(undefined);
-});
-
-
-/**
- * Test "parseObjectPlus" function
- */
-test('test "parseObjectPlus()" function', () => {
-
-  const parseUser = parseObjectPlus({
-    id: isNumber,
-    name: isString,
-  });
-
-  // Array of error objects
-  let errArr: TParseErrorItem[] = [];
-  try {
-    parseUser({
-      id: '5',
-      name: 1234123,
-    });
-  } catch (err) {
-    if (err instanceof ParseObjectError) {
-      errArr = err.getErrors();
-      // console.log(err.message)
-    }
-  } finally {
-    expect(errArr).toStrictEqual([
-      { prop: 'id', value: '5' },
-      { prop: 'name', value: 1234123 },
-    ]);
-  }
-
-  // Error is a string
-  try {
-    parseUser(null);
-  } catch (err) {
-    if (err instanceof ParseObjectError) {
-      errArr = err.getErrors();
-      // console.log(err.message)
-    }
-  } finally {
-    expect(errArr).toStrictEqual(['Argument is null but not nullable.']);
-  }
-});
-
-
-/**
- * Test "traverseObject" function
- */
-test('test "traverseObject()" function', () => {
-
-  // Do basic test
-  const convertValidToDateObjects = traverseObject((key, value, parentObj) => {
-    if (isValidDate(value)) {
-      parentObj[key] = new Date(value);
-    } else {
-      parentObj[key] = 'Invalid Date';
-    }
-  });
-  const result = convertValidToDateObjects({
-    today: '2024-12-06T23:43:37.012Z',
-    lastYear: '2023-12-06T22:14:20.012Z',
-    nested: {
-      milli: 1733528684737,
-      invalid: '2024-12-06TVB23:43:37.012Z',
-      dateArr: [
-        { created: 1733528684737 },
-        { created: 1733528684737 },
-        { created: 1733528684737 },
-      ]
-    },
-  });
-  expect(result).toStrictEqual({
-    today: new Date('2024-12-06T23:43:37.012Z'),
-    lastYear: new Date('2023-12-06T22:14:20.012Z'),
-    nested: {
-      milli: new Date(1733528684737),
-      invalid: 'Invalid Date',
-      dateArr: [
-        { created: new Date(1733528684737) },
-        { created: new Date(1733528684737) },
-        { created: new Date(1733528684737) },
-      ],
-    },
-  });
 });
 
 /**
