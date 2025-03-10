@@ -461,7 +461,19 @@ This function iterates an object (and any nested objects) and runs the validator
 The format for the `onError` callback function is as follows. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet):
 > (errorArray: IParseObjectError[]) => void;
 
-Example of using `parseObject`:
+```ts
+// The IParseObjectError
+{
+  info: string;
+  prop?: string;
+  value?: unknown;
+  caught?: string;
+  index?: number;
+  children?: IParseObjectError[];
+}
+```
+
+Example of using `parseObject` with a custom error callback:
 ```typescript
   import { parseObject, IParseObjectError } from 'jet-validators/utils';
 
@@ -511,8 +523,16 @@ Example of using `parseObject`:
   const parseUserArrWithError = parseObjectArray({
     id: isNumber,
     name: isString,
-  }, (prop, value, index) => {
-    // index "2" should call the error function. 
+  }, errors => {
+    console.log(errors) // =>
+    // [
+    //   {
+    //     info: 'Validator-function returned false.',
+    //     prop: 'id',
+    //     value: '3',
+    //     index: 2
+    //   }
+    // ]
   });
 
   parseUserArrWithError([
@@ -520,6 +540,22 @@ Example of using `parseObject`:
     { id: 2, name: '2' },
     { id: '3', name: '3' },
   ]);
+```
+
+- If you want to use an external nested validator-function for whatever reason, make sure you pass down the `arg` param AND the `errorCb` so that any nested errors will be added to the error tree:
+```ts
+import { TParseOnError } from 'jet-validators/utils';
+
+const parseUser = parseObject({
+  id: isNumber,
+  name: isString,
+  address: (arg: unknown, errorCb?: TParseOnError) => testAddr(arg, errCb),
+}, errors => { errArr = errors; });
+
+const testAddr = testNullishObject({
+  city: isString,
+  zip: isNumber,
+});
 ```
 
 
@@ -533,7 +569,7 @@ Example of using `parseObject`:
 - testNullableObjectArray
 - testNullishObjectArray
 
-Test object is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well:
+`testObject` is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well:
 ```typescript
   const user: IUser = {
     id: '5',
@@ -594,7 +630,7 @@ import { isNumber, isString } from 'jet-validators';
 import { parseObject, TSchema } from 'jet-validators/utils';
 
 const customParse = <U extends TSchema>(schema: U) => {
-  return parseObject(schema, (prop: string) => console.error(prop + ' failed validation'))
+  return parseObject(schema, errors => throw new YourCustomErrorObject(errors))
 }
 
 const parseUser = customParse({ id: isNumber, name: isString });

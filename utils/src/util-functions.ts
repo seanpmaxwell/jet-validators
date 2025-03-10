@@ -224,7 +224,7 @@ export interface IParseObjectError {
   children?: IParseObjectError[];
 };
 
-type TParseOnError = (errors: IParseObjectError[]) => void;
+export type TParseOnError = (errors: IParseObjectError[]) => void;
 
 
 export const parseObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
@@ -337,9 +337,9 @@ function _parseObjectHelper<A>(
       const parsedItem = _parseObjectHelper2(schema, arg[i], errArr, !!onError, i);
       if (parsedItem === false) {
         if (!!onError) {
-          return false;
-        } else {
           hasErr = true;
+        } else {
+          return false;
         }
       }
     }
@@ -409,17 +409,19 @@ function _parseObjectHelper2(
         let childErrors: IParseObjectError[] = [],
           passed = false,
           info = 'Validator-function returned false.';
-        if ('isTestFn' in schemaProp && schemaProp.isTestFn === true) {
-          info = 'Nested validation failed.';
+        if ('isTransFn' in schemaProp && schemaProp.isTransFn === true) {
+          passed = schemaProp(val, tval => argParentObj[key] = tval);
+        } else {
           if (hasOnErrCb) {
-            passed = schemaProp(val, errors => childErrors = errors as IParseObjectError[]);
+            passed = schemaProp(val, errors => {
+              if (isParseObjectErrArr(errors)) {
+                info = 'Nested validation failed.';
+                childErrors = errors;
+              }
+            });
           } else {
             passed = schemaProp(val);
           }
-        } else if ('isTransFn' in schemaProp && schemaProp.isTransFn === true) {
-          passed = schemaProp(val, tval => argParentObj[key] = tval);
-        } else {
-          passed = schemaProp(val);
         }
         if (!passed) {
           if (hasOnErrCb) {
@@ -432,6 +434,7 @@ function _parseObjectHelper2(
               } : {
                 value: val,
               }),
+              ...(isUndef(index) ? {} : { index }),
             });
           } else {
             return false;
@@ -440,31 +443,21 @@ function _parseObjectHelper2(
       } catch (err) {
         if (hasOnErrCb) {
           hasErr = true;
+          let caught;
           if (err instanceof Error) {
-            errArr.push({
-              info: 'Validator function threw an error.',
-              prop: key,
-              value: val,
-              caught: err.message,
-              ...(isUndef(index) ? {} : { index }),
-            });
+            caught = err.message;
           } else if (isString(err)) {
-            errArr.push({
-              info: 'Validator function threw an error.',
-              prop: key,
-              value: val,
-              caught: err,
-              ...(isUndef(index) ? {} : { index }),
-            });
+            caught = err;
           } else {
-            errArr.push({
-              info: 'Validator function threw an error.',
-              prop: key,
-              value: val,
-              caught: JSON.stringify(err),
-              ...(isUndef(index) ? {} : { index }),
-            });
+            caught = JSON.stringify(err);
           }
+          errArr.push({
+            info: 'Validator function threw an error.',
+            prop: key,
+            value: val,
+            caught,
+            ...(isUndef(index) ? {} : { index }),
+          });
         } else {
           return false;
         }
@@ -483,6 +476,15 @@ function _parseObjectHelper2(
   }
   // Return
   return argParentObj;
+}
+
+/**
+ * Check is a parsed object error array.
+ */
+function isParseObjectErrArr(arg: unknown): arg is IParseObjectError[] {
+  return Array.isArray(arg) && arg.every(item => {
+    return isObject(item) && 'info' in item;
+  });
 }
 
 
@@ -543,13 +545,11 @@ function _testObject<
   isArr: A,
   onError?: TParseOnError,
 ) {
-  const parseFn = _parseObject(schema, optional, nullable, isArr, onError),
-    testFn = (arg: unknown, cb?: TParseOnError): arg is typeof res => {
-      const res = parseFn(arg, cb);
-      return (res as unknown) !== false;
-    };
-  Object.defineProperty(testFn, 'isTestFn', { value: true, writable: false });
-  return testFn;
+  const parseFn = _parseObject(schema, optional, nullable, isArr, onError);
+  return (arg: unknown, cb?: TParseOnError): arg is typeof res => {
+    const res = parseFn(arg, cb);
+    return (res as unknown) !== false;
+  };
 }
 
 

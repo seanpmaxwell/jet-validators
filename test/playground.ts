@@ -6,6 +6,10 @@ import {
   testObject,
   testOptionalObject,
   parseOptionalObject,
+  testNullishObject,
+  TParseOnError,
+  IParseObjectError,
+  parseObjectArray,
 } from '../utils/src';
 
 
@@ -87,15 +91,60 @@ import {
 //   }),
 // });
 
-const parseOptUser = parseOptionalObject({
+// const parseOptUser = parseOptionalObject({
+//   id: isNumber,
+//   name: isString,
+// }, errors => console.log(errors));
+
+// const userArrBad = parseOptUser([
+//   { id: 1, name: 'a' },
+//   { idd: 2, name: 'b' },
+// ]);
+
+// console.log(userArrBad)
+
+let errArr: IParseObjectError[] = [];
+
+const parseUser = parseObject({
   id: isNumber,
   name: isString,
-}, errors => console.log(errors));
+  address: (arg: unknown, errCb?: TParseOnError) => testAddr(arg, errCb),
+  address2: testAddr2(),
+}, errors => { errArr = errors; });
 
-const userArrBad = parseOptUser([
-  { id: 1, name: 'a' },
-  { idd: 2, name: 'b' },
-]);
+const testAddr = testNullishObject({
+  city: isString,
+  zip: isNumber,
+});
 
-console.log(userArrBad)
+function testAddr2() {
+  return testObject({
+    city: isString,
+    zip: isNumber,
+  });
+}
 
+parseUser({
+  id: 1,
+  name: 'sean',
+  address: {
+    city: 'asdf',
+    zip: '1234',
+  },
+});
+
+console.log(JSON.stringify(errArr, null, 2));
+
+
+// const parseUserArr = parseObjectArray({
+//   id: isNumber,
+//   name: isString,
+// }, errors => {
+//   console.log(errors);
+// });
+
+// parseUserArr([
+//   { id: 1, name: '1' },
+//   { id: 2, name: '2' },
+//   { id: '3', name: '3' },
+// ]);
