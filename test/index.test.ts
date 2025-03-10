@@ -743,8 +743,8 @@ test('test "parseObject()" function', () => {
     errArr = err;
   })({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
-    { prop: 'id', value: 'joe', moreInfo: 'Validator-function returned false.' },
-    { prop: 'name', value: 5, moreInfo: 'Validator-function returned false.' },
+    { prop: 'id', value: 'joe', info: 'Validator-function returned false.' },
+    { prop: 'name', value: 5, info: 'Validator-function returned false.' },
   ]);
 });
 
@@ -817,20 +817,20 @@ test('test "testObject()" function', () => {
   });
   expect(errArr).toStrictEqual([
     {
-      moreInfo: 'Nested validation failed.',
+      info: 'Nested validation failed.',
       prop: 'address',
       children: [
         {
-          moreInfo: 'Validator-function returned false.',
+          info: 'Validator-function returned false.',
           prop: 'zip',
           value: 'horse',
         },
         {
-          moreInfo: 'Nested validation failed.',
+          info: 'Nested validation failed.',
           prop: 'country',
           children: [
             {
-              moreInfo: 'Validator-function returned false.',
+              info: 'Validator-function returned false.',
               prop: 'code',
               value: '1234',
             },

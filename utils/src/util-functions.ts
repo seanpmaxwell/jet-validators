@@ -216,7 +216,7 @@ type TInferParseResHelper<U> = {
 };
 
 export interface IParseObjectError {
-  moreInfo: string;
+  info: string;
   prop?: string;
   value?: unknown;
   caught?: string;
@@ -311,7 +311,7 @@ function _parseObjectHelper<A>(
   // Check "undefined"
   if (arg === undefined) {
     if (!optional) {
-      onError?.([{ moreInfo: 'Root argument is undefined but not optional.' }]);
+      onError?.([{ info: 'Root argument is undefined but not optional.' }]);
       return false;
     }
     return undefined;
@@ -319,7 +319,7 @@ function _parseObjectHelper<A>(
   // Check "null"
   if (arg === null) {
     if (!nullable) {
-      onError?.([{ moreInfo: 'Root argument is null but not nullable.' }]);
+      onError?.([{ info: 'Root argument is null but not nullable.' }]);
       return false;
     }
     return null;
@@ -328,7 +328,7 @@ function _parseObjectHelper<A>(
   // Do this if it is an array.
   if (isArr) {
     if (!Array.isArray(arg)) {
-      onError?.([{ moreInfo: 'Root argument is not an array.' }]);
+      onError?.([{ info: 'Root argument is not an array.' }]);
       return false;
     }
     // Iterate array
@@ -377,7 +377,7 @@ function _parseObjectHelper2(
   // Make sure is object
   if (!isRecord(argParentObj)) {
     errArr.push({
-      moreInfo: 'Parsed item was not an object.',
+      info: 'Parsed item was not an object.',
       ...(isUndef(index) ? {} : { index }),
     });
     return false;
@@ -396,7 +396,7 @@ function _parseObjectHelper2(
           return false;
         } else {
           errArr.push({
-            moreInfo: 'Nested validation failed.',
+            info: 'Nested validation failed.',
             prop: key,
             value: val,
             children: childErrArr,
@@ -408,9 +408,9 @@ function _parseObjectHelper2(
       try {
         let childErrors: IParseObjectError[] = [],
           passed = false,
-          moreInfo = 'Validator-function returned false.';
+          info = 'Validator-function returned false.';
         if ('isTestFn' in schemaProp && schemaProp.isTestFn === true) {
-          moreInfo = 'Nested validation failed.';
+          info = 'Nested validation failed.';
           if (hasOnErrCb) {
             passed = schemaProp(val, errors => childErrors = errors as IParseObjectError[]);
           } else {
@@ -425,7 +425,7 @@ function _parseObjectHelper2(
           if (hasOnErrCb) {
             hasErr = true;
             errArr.push({
-              moreInfo,
+              info,
               prop: key,
               ...(childErrors.length > 0 ? {
                 children: childErrors,
@@ -442,7 +442,7 @@ function _parseObjectHelper2(
           hasErr = true;
           if (err instanceof Error) {
             errArr.push({
-              moreInfo: 'Validator function threw an error.',
+              info: 'Validator function threw an error.',
               prop: key,
               value: val,
               caught: err.message,
@@ -450,7 +450,7 @@ function _parseObjectHelper2(
             });
           } else if (isString(err)) {
             errArr.push({
-              moreInfo: 'Validator function threw an error.',
+              info: 'Validator function threw an error.',
               prop: key,
               value: val,
               caught: err,
@@ -458,7 +458,7 @@ function _parseObjectHelper2(
             });
           } else {
             errArr.push({
-              moreInfo: 'Validator function threw an error.',
+              info: 'Validator function threw an error.',
               prop: key,
               value: val,
               caught: JSON.stringify(err),
