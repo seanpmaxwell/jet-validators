@@ -486,7 +486,7 @@ Example of using `parseObject` with a custom error callback:
     }
   }
 
-  const parseUser = parseObject({
+  const parseUser = parseObject<'pass "IUser" here if you want to enforce schema props'>({
     id: transform(Number, isNumber),
     name: isString,
     address: {
