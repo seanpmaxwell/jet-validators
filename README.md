@@ -37,7 +37,6 @@
 - [Utilities](#utilities)
   - [Simple Utilities](#simple-utilities)
     - [nonNullable](#non-nullable)
-    - [iterateObjectEntries](#iterate-object-entries)
     - [transform](#transform)
     - [parseBoolean](#parse-boolean)
     - [parseJson](#parse-json)
