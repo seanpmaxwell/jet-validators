@@ -10,6 +10,7 @@ import {
   TParseOnError,
   IParseObjectError,
   parseObjectArray,
+  TSchema,
 } from '../utils/src';
 
 
@@ -103,37 +104,39 @@ import {
 
 // console.log(userArrBad)
 
-let errArr: IParseObjectError[] = [];
+// let errArr: IParseObjectError[] = [];
 
-const parseUser = parseObject({
-  id: isNumber,
-  name: isString,
-  address: (arg: unknown, errCb?: TParseOnError) => testAddr(arg, errCb),
-  address2: testAddr2(),
-}, errors => { errArr = errors; });
+// const parseUser = parseObject({
+//   id: isNumber,
+//   name: isString,
+//   address: (arg: unknown, errCb?: TParseOnError) => testAddr(arg, errCb),
+//   address2: testAddr2(),
+// }, errors => { errArr = errors; });
 
-const testAddr = testNullishObject({
-  city: isString,
-  zip: isNumber,
-});
+// const testAddr = testNullishObject({
+//   city: isString,
+//   zip: isNumber,
+// });
 
-function testAddr2() {
-  return testObject({
-    city: isString,
-    zip: isNumber,
-  });
-}
+// function testAddr2() {
+//   return testObject({
+//     city: isString,
+//     zip: isNumber,
+//   });
+// }
 
-parseUser({
-  id: 1,
-  name: 'sean',
-  address: {
-    city: 'asdf',
-    zip: '1234',
-  },
-});
+// parseUser({
+//   id: 1,
+//   name: 'sean',
+//   address: {
+//     city: 'asdf',
+//     zip: '1234',
+//   },
+// });
 
-console.log(JSON.stringify(errArr, null, 2));
+// const c = errArr[0].children?.[0]
+
+// console.log(JSON.stringify(errArr, null, 2));
 
 
 // const parseUserArr = parseObjectArray({
@@ -148,3 +151,31 @@ console.log(JSON.stringify(errArr, null, 2));
 //   { id: 2, name: '2' },
 //   { id: '3', name: '3' },
 // ]);
+
+interface IUser {
+  id: number;
+  name: string;
+}
+
+function parseReq<U extends TSchema>(schema: U) {
+  return parseObject(schema, errors => {
+    throw new Error(JSON.stringify(errors));
+  });
+}
+
+function testUser(arg: unknown, errCb?: TParseOnError): arg is IUser {
+  return !!parseUser(arg, errCb);
+}
+
+const parseUser = parseObject<IUser>({
+  id: isNumber,
+  name: isString,
+});
+
+const Validators = {
+  getUser1: parseReq({ user: testUser }),
+} as const;
+
+
+const user: { user: IUser } = Validators.getUser1('asdf');
+

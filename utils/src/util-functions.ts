@@ -183,10 +183,11 @@ export function parseNullishJson<T>(arg: unknown): T | null | undefined {
 
 // **** ParseObject **** //
 
-type TValidatorFn<T> = TTransVldrFn<T> | TParseVldrFn<T>;
+type TSchemaFuncs<T> = TTransVldrFn<T> | TParseVldrFn<T>;
+type TValidatorFn<T> = (arg: unknown) => arg is T;
 
 export interface TSchema {
-  [key: string]: TValidatorFn<unknown> | TSchema;
+  [key: string]: TSchemaFuncs<unknown> | TSchema;
 }
 
 type TEnforceSchema<T> = (
@@ -198,8 +199,8 @@ type TEnforceSchema<T> = (
 type TEnforceSchemaHelper<T> = Required<{
   [K in keyof T]: (
     T[K] extends Record<string, unknown> 
-    ? TValidatorFn<T[K]> | TEnforceSchemaHelper<T[K]>
-    : TValidatorFn<T[K]>
+    ? TSchemaFuncs<T[K]> | TEnforceSchemaHelper<T[K]>
+    : TSchemaFuncs<T[K]>
   )
 }>;
 
