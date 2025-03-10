@@ -610,7 +610,7 @@ test('test "parseObject()" function', () => {
   });
   const optUser2 = parseOptUser(undefined);
   expect(optUser).toStrictEqual({ id: 15, name: 'joe' });
-  expect(optUser2).toStrictEqual(undefined);
+  expect(optUser2).toStrictEqual(false);
 
   // ** Array Test ** //
   const userArr = [user, { id: 1, name: 'a' }, { id: 2, name: 'b' }],
@@ -623,7 +623,7 @@ test('test "parseObject()" function', () => {
   const parsedUserArr = parseUserArr(userArr),
     parsedUserArrBad = parseOptUser(userArrBad);
   expect(userArr).toStrictEqual(parsedUserArr);
-  expect(parsedUserArrBad).toStrictEqual(undefined);
+  expect(parsedUserArrBad).toStrictEqual(false);
   // Nullish or array
   const parseNishUserArr = parseNullishObjectArray({
     id: isNumber,
@@ -670,7 +670,7 @@ test('test "parseObject()" function', () => {
       zip: '98111',
     },
   });
-  expect(userWithAddrBad).toBe(undefined);
+  expect(userWithAddrBad).toBe(false);
 
   // ** Test parse "onError" function ** //
   const parseUserWithError = parseObject({
@@ -817,11 +817,22 @@ test.only('test "testObject()" function', () => {
     {
       moreInfo: 'Nested validation failed.',
       prop: 'address',
-      'children': [
+      children: [
         {
           moreInfo: 'Validator-function returned false.',
           prop: 'zip',
           value: 'horse',
+        },
+        {
+          moreInfo: 'Nested validation failed.',
+          prop: 'country',
+          children: [
+            {
+              moreInfo: 'Validator-function returned false.',
+              prop: 'code',
+              value: '1234',
+            },
+          ],
         },
       ],
     },
@@ -866,7 +877,7 @@ test.only('test "testObject()" function', () => {
     ],
   };
   expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
-  expect(testCombo2(testCombo2FailData)).toStrictEqual(undefined);
+  expect(testCombo2(testCombo2FailData)).toStrictEqual(false);
 });
 
 /**

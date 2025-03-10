@@ -456,7 +456,7 @@ If you need to validate an object schema, you can pass a validator object with t
 - parseNullableObjectArray
 - parseNullishObjectArray
 
-This function iterates an object (and any nested object) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `undefined`. You can optionally pass an  error-handler function as the second argument which will fire whenever a validator-function fails.<br/>
+This function iterates an object (and any nested objects) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `false`. You can optionally pass an  error-handler function as the second argument which will fire whenever a validator-function fails.<br/>
 
 The format for the `onError` callback function is as follows. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet):
 > (errorArray: IParseObjectError[]) => void;

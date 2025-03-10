@@ -269,7 +269,7 @@ export const parseNullishObjectArray = <T, U extends TEnforceSchema<T> = TEnforc
 
 /**
  * Validates an object schema, calls an error function is supplied one, returns 
- * "undefined" if the parse fails, and works recursively too. NOTE: this will 
+ * "false" if the parse fails, and works recursively too. NOTE: this will 
  * purge all keys not part of the schema.
  */
 function _parseObject<
@@ -312,6 +312,7 @@ function _parseObjectHelper<A>(
   if (arg === undefined) {
     if (!optional) {
       onError?.([{ moreInfo: 'Root argument is undefined but not optional.' }]);
+      return false;
     }
     return undefined;
   }
@@ -319,7 +320,7 @@ function _parseObjectHelper<A>(
   if (arg === null) {
     if (!nullable) {
       onError?.([{ moreInfo: 'Root argument is null but not nullable.' }]);
-      return undefined;
+      return false;
     }
     return null;
   }
@@ -328,15 +329,15 @@ function _parseObjectHelper<A>(
   if (isArr) {
     if (!Array.isArray(arg)) {
       onError?.([{ moreInfo: 'Root argument is not an array.' }]);
-      return undefined;
+      return false;
     }
     // Iterate array
     let hasErr = false;
     for (let i = 0; i < arg.length; i++) {
       const parsedItem = _parseObjectHelper2(schema, arg[i], errArr, !!onError, i);
-      if (parsedItem === undefined) {
+      if (parsedItem === false) {
         if (!!onError) {
-          return undefined;
+          return false;
         } else {
           hasErr = true;
         }
@@ -346,18 +347,18 @@ function _parseObjectHelper<A>(
       if (onError && errArr.length > 0) {
         onError(errArr);
       }
-      return undefined;
+      return false;
     }
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return arg;
   }
   // If not an array
   const resp = _parseObjectHelper2(schema, arg, errArr, !!onError);
-  if (resp === undefined) {
+  if (resp === false) {
     if (onError && errArr.length > 0) {
       onError(errArr);
     }
-    return undefined;
+    return false;
   }
   return arg;
 }
@@ -390,9 +391,9 @@ function _parseObjectHelper2(
     if (isRecord(schemaProp)) {
       const childErrArr: IParseObjectError[] = [],
         childVal = _parseObjectHelper2(schemaProp, val, childErrArr, hasOnErrCb);
-      if (childVal === undefined) {
+      if (childVal === false) {
         if (!hasOnErrCb) {
-          return undefined;
+          return false;
         } else {
           errArr.push({
             moreInfo: 'Nested validation failed.',
@@ -433,7 +434,7 @@ function _parseObjectHelper2(
               }),
             });
           } else {
-            return undefined;
+            return false;
           }
         }
       } catch (err) {
@@ -465,14 +466,14 @@ function _parseObjectHelper2(
             });
           }
         } else {
-          return undefined;
+          return false;
         }
       }
     }
   }
   // Check error
   if (hasErr) {
-    return undefined;
+    return false;
   }
   // Purge keys not in schema
   for (const key in argParentObj) {
@@ -545,11 +546,7 @@ function _testObject<
   const parseFn = _parseObject(schema, optional, nullable, isArr, onError),
     testFn = (arg: unknown, cb?: TParseOnError): arg is typeof res => {
       const res = parseFn(arg, cb);
-      if (res === undefined) {
-        return optional;
-      } else {
-        return res !== undefined;
-      }
+      return (res as unknown) !== false;
     };
   Object.defineProperty(testFn, 'isTestFn', { value: true, writable: false });
   return testFn;
