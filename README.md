@@ -494,7 +494,7 @@ Example of using `parseObject` with a custom error callback:
       zip: isNumber,
     }
   }, (errorArray: IParseObjectError[]) => {
-    throw Error(`Property "${property}" failed to pass validation.`)
+    console.error(JSON.stringify(errorArray, null, 2));
   });
 
   const user: IUser = parseUser({
