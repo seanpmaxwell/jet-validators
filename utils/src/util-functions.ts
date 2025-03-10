@@ -183,39 +183,7 @@ export function parseNullishJson<T>(arg: unknown): T | null | undefined {
 
 // **** ParseObject **** //
 
-type TSchemaFuncs<T> = TTransVldrFn<T> | TParseVldrFn<T>;
-type TValidatorFn<T> = (arg: unknown) => arg is T;
-
-export interface TSchema {
-  [key: string]: TSchemaFuncs<unknown> | TSchema;
-}
-
-type TEnforceSchema<T> = (
-  unknown extends T
-  ? TSchema
-  : TEnforceSchemaHelper<T>
-);
-
-type TEnforceSchemaHelper<T> = Required<{
-  [K in keyof T]: (
-    T[K] extends Record<string, unknown> 
-    ? TSchemaFuncs<T[K]> | TEnforceSchemaHelper<T[K]>
-    : TSchemaFuncs<T[K]>
-  )
-}>;
-
-type TInferParseRes<U, O, N, A, Schema = TInferParseResHelper<U>> = AddMods<Schema, O, N, A>;
-
-type TInferParseResHelper<U> = {
-  [K in keyof U]: (
-    U[K] extends TValidatorFn<infer X> 
-    ? X 
-    : U[K] extends TSchema
-    ? TInferParseResHelper<U[K]>
-    : never
-  );
-};
-
+export type TParseOnError = (errors: IParseObjectError[]) => void;
 export interface IParseObjectError {
   info: string;
   prop?: string;
@@ -225,45 +193,74 @@ export interface IParseObjectError {
   children?: IParseObjectError[];
 };
 
-export type TParseOnError = (errors: IParseObjectError[]) => void;
+type TValidatorFn<T> = (arg: unknown) => arg is T;
 
+interface IBasicSchema {
+  [key: string]: TTransVldrFn<unknown> | TParseVldrFn<unknown> | IBasicSchema;
+}
 
-export const parseObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export type TSchema<T = unknown> = (
+  unknown extends T
+  ? IBasicSchema
+  : TSchemaHelper<T>
+);
+
+type TSchemaHelper<T> = Required<{
+  [K in keyof T]: (
+    T[K] extends Record<string, unknown> 
+    ? TTransVldrFn<T[K]> | TParseVldrFn<T[K]> | TSchemaHelper<T[K]>
+    : TTransVldrFn<T[K]> | TParseVldrFn<T[K]>
+  )
+}>;
+
+type TInferFromSchema<U, O, N, A, Schema = TInferFromSchemaHelper<U>> = AddMods<Schema, O, N, A>;
+
+type TInferFromSchemaHelper<U> = {
+  [K in keyof U]: (
+    U[K] extends TValidatorFn<infer X> 
+    ? X 
+    : U[K] extends IBasicSchema
+    ? TInferFromSchemaHelper<U[K]>
+    : never
+  );
+};
+
+export const parseObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, false, false, false>(arg, false, false, false, onError);
 
-export const parseOptionalObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const parseOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, true, false, false>(arg, true, false, false, onError);
 
-export const parseNullableObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const parseNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, false, true, false>(arg, false, true, false, onError);
 
-export const parseNullishObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const parseNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, true, true, false>(arg, true, true, false, onError);
 
-export const parseObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const parseObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, false, false, true>(arg, false, false, true, onError);
 
-export const parseOptionalObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const parseOptionalObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, true, false, true>(arg, true, false, true, onError);
 
-export const parseNullableObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const parseNullableObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, false, true, true>(arg, false, true, true, onError);
 
-export const parseNullishObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const parseNullishObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _parseObject<U, true, true, true>(arg, true, true, true, onError);
@@ -274,7 +271,7 @@ export const parseNullishObjectArray = <T, U extends TEnforceSchema<T> = TEnforc
  * purge all keys not part of the schema.
  */
 function _parseObject<
-  U extends TSchema,
+  U extends IBasicSchema,
   O extends boolean = boolean,
   N extends boolean = boolean,
   A extends boolean = boolean,
@@ -293,9 +290,16 @@ function _parseObject<
     arg,
     ((!!onError || !!errCb) ? errors => {
       onError?.(errors);
-      errCb?.(errors);
+      if (!!errCb) {
+        Object.defineProperty(
+          errors,
+          'isNestedCallbackErrors',
+          { value: true, writable: false },
+        );
+        errCb?.(errors);
+      }
     } : undefined),
-  ) as TInferParseRes<U, O, N, A>;
+  ) as TInferFromSchema<U, O, N, A>;
 }
 
 /**
@@ -305,7 +309,7 @@ function _parseObjectHelper<A>(
   optional: boolean,
   nullable: boolean,
   isArr: A,
-  schema: TSchema,
+  schema: IBasicSchema,
   arg: unknown,
   onError?: TParseOnError,
 ) {
@@ -369,7 +373,7 @@ function _parseObjectHelper<A>(
  * object using the schema.
  */
 function _parseObjectHelper2(
-  schemaParentObj: TSchema,
+  schemaParentObj: IBasicSchema,
   argParentObj: unknown,
   errArr: IParseObjectError[],
   hasOnErrCb: boolean,
@@ -483,50 +487,53 @@ function _parseObjectHelper2(
  * Check is a parsed object error array.
  */
 function isParseObjectErrArr(arg: unknown): arg is IParseObjectError[] {
-  return Array.isArray(arg) && arg.every(item => {
-    return isObject(item) && 'info' in item;
-  });
+  return (
+    Array.isArray(arg) &&
+    arg.length > 0 &&
+    'isNestedCallbackErrors' in arg &&
+    arg.isNestedCallbackErrors === true
+  );
 }
 
 
 // **** Test Object **** //
 
-export const testObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, false, false, false>(arg, false, false, false, onError);
 
-export const testOptionalObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, true, false, false>(arg, true, false, false, onError);
 
-export const testNullableObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, false, true, false>(arg, false, true, false, onError);
 
-export const testNullishObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, true, true, false>(arg, true, true, false, onError);
 
-export const testObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, false, false, true>(arg, false, false, true, onError);
 
-export const testOptionalObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testOptionalObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, true, false, true>(arg, true, false, true, onError);
 
-export const testNullableObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testNullableObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, false, true, true>(arg, false, true, true, onError);
 
-export const testNullishObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+export const testNullishObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   arg: U,
   onError?: TParseOnError,
 ) => _testObject<U, true, true, true>(arg, true, true, true, onError);

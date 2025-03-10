@@ -44,6 +44,7 @@
   - [Validating object schemas](#validating-object-schemas)
     - [parseObject](#parse-object)
     - [testObject](#test-object)
+    - [Combining parseObject and testObject](#combining-test-parse)
     - [Custom Validators](#custom-validators)
     - [Wrapping Parse/Test](#wrapping-parse-test)
   - [deepCompare and customDeepCompare](#deepCompare-fns)
@@ -542,22 +543,6 @@ Example of using `parseObject` with a custom error callback:
   ]);
 ```
 
-- If you want to use an external nested validator-function for whatever reason, make sure you pass down the `arg` param AND the `errorCb` so that any nested errors will be added to the error tree:
-```ts
-import { TParseOnError } from 'jet-validators/utils';
-
-const parseUser = parseObject({
-  id: isNumber,
-  name: isString,
-  address: (arg: unknown, errorCb?: TParseOnError) => testAddr(arg, errCb),
-}, errors => { errArr = errors; });
-
-const testAddr = testNullishObject({
-  city: isString,
-  zip: isNumber,
-});
-```
-
 
 #### `testObject` <a name="test-object"></a>
 - testObject
@@ -595,6 +580,70 @@ const testAddr = testNullishObject({
   }
 ```
 
+#### Combining `parseObject` and `testObject` <a name="combining-test-parse"></a>
+If you have nested objects on another parent object that you want to test or parse, you can add nested `testObject` functions to the parent one. Note that `parseObject` requires validator-functions in the schema (they must return a type-predicate), so you can only use `testObject` for nested schemas.
+
+> <b>IMPORTANT:</b> Due to the limitations with Typescript, if you do not add a generic to a nested schema, all required properties must still be there for typesafety; however, typesafety will not protect the nested schema from extra properties (see below):  
+
+```ts
+import { parseObject, testObject } from 'jet-validators/utils';
+
+interface IUser {
+  id: number;
+  name: string;
+  address: {
+    city: string;
+    zip: number;
+  }
+}
+
+const parseUser = parseObject<IUser>({
+  id: isNumber,
+  name: isString,
+  address: {
+    city: isString,
+    zip: isNumber,
+    // foo: isString, // Causes type error
+  },
+});
+
+const parseUser1 = parseObject<IUser>({
+  id: isNumber,
+  name: isString,
+  address: testObject({
+    city: isString,
+    zip: isNumber,
+    foo: isString, // DOES NOT cause type error because of typescript limitations
+  }),
+});
+
+const parseUser3 = parseObject<IUser>({
+  id: isNumber,
+  name: isString,
+  address: testObject<IUser['address']>({
+    city: isString,
+    zip: isNumber,
+    // foo: isString, // Causes type error
+  }),
+});
+```
+
+- If you want to use an external nested validator-function for whatever reason, make sure you pass down the `arg` param AND the `errorCb` so that any nested errors will be added to the error tree:
+```ts
+import { parseObject, testNullishObject, TParseOnError } from 'jet-validators/utils';
+
+const parseUser = parseObject({
+  id: isNumber,
+  name: isString,
+  address: (arg: unknown, errorCb?: TParseOnError) => testAddr(arg, errCb),
+}, errors => { errArr = errors; });
+
+const testAddr = testNullishObject({
+  city: isString,
+  zip: isNumber,
+});
+```
+
 
 #### Custom Validators <a name="custom-validators"></a>
 For `parseObject` and `testObject` you aren't restricted to the validator-functions in `jet-validators`. You can write your own validator-function, just make sure your argument is `unknown` and it returns a type predicate:
@@ -624,17 +673,38 @@ For `parseObject` and `testObject` you aren't restricted to the validator-functi
 
 
 #### Wrapping parseObject/testObject functions <a name="wrapping-parse-test"></a>
-If you want to wrap the `parseObject` or `testObject` functions cause you want to let's say, apply the same error handler to multiple object-validators, you need to import the `TSchema` type and have your generic extend it:
+If you want to wrap the `parseObject` or `testObject` functions cause for whatever reason, you need to import the `TSchema` type and have your generic extend it:
 ```typescript
 import { isNumber, isString } from 'jet-validators';
 import { parseObject, TSchema } from 'jet-validators/utils';
 
-const customParse = <U extends TSchema>(schema: U) => {
+interface IUser {
+  id: number;
+  name: string;
+}
+
+// Wrap without generic
+const customParse = (schema: TSchema) => {
   return parseObject(schema, errors => throw new YourCustomErrorObject(errors))
 }
 
-const parseUser = customParse({ id: isNumber, name: isString });
-parseUser({ id: 5, name: 'joe' }); // => { id: 5, name: 'joe' }
+// Wrap with generic
+const customParse2 = <T>(schema: TSchema<T>) => {
+  return parseObject<T>(schema, errors => throw new YourCustomErrorObject(errors))
+}
+
+const parseUser = customParse({
+  id: isNumber,
+  name: isString,
+});
+
+const user: IUser = parseUser('...whatever...');
+
+const parseUser2 = customParse2<IUser>({
+  id: isNumber,
+  name: isString,
+  // address: isString, // Will cause type error
+});
 ```
 
 

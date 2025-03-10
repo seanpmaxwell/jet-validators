@@ -20,7 +20,10 @@ import {
 
 // console.log(isString('horse'))
 // console.log(transform(Number, isNumber)('5'))
-// // console.log(isBoolean(false))
+// console.log(isBoolean(false))
+
+
+// **** Basic parseObject test **** //
 
 // interface IUser {
 //   id: number;
@@ -46,6 +49,8 @@ import {
 //   name: isString,
 // });
 
+
+// **** Test multi-layered schema and generic on child parse function **** //
 
 // interface IPost {
 //   id: number;
@@ -104,6 +109,9 @@ import {
 
 // console.log(userArrBad)
 
+
+// **** Test making nest function external **** //
+
 // let errArr: IParseObjectError[] = [];
 
 // const parseUser = parseObject({
@@ -139,6 +147,8 @@ import {
 // console.log(JSON.stringify(errArr, null, 2));
 
 
+// **** Debug Parse Object Array **** //
+
 // const parseUserArr = parseObjectArray({
 //   id: isNumber,
 //   name: isString,
@@ -152,30 +162,104 @@ import {
 //   { id: '3', name: '3' },
 // ]);
 
+
+// **** Debug Type Error Wrap Multiple Layers **** //
+
+// interface IUser {
+//   id: number;
+//   name: string;
+// }
+
+// function parseReq<U extends TSchema>(schema: U) {
+//   return parseObject(schema, errors => {
+//     throw new Error(JSON.stringify(errors));
+//   });
+// }
+
+// function testUser(arg: unknown, errCb?: TParseOnError): arg is IUser {
+//   return !!parseUser(arg, errCb);
+// }
+
+// const parseUser = parseObject<IUser>({
+//   id: isNumber,
+//   name: isString,
+// });
+
+// const Validators = {
+//   getUser1: parseReq({ user: testUser }),
+// } as const;
+
+
+// const user: { user: IUser } = Validators.getUser1('asdf');
+
+
+// **** Test Wrapping **** //
+
 interface IUser {
   id: number;
   name: string;
+  address: {
+    city: string;
+    zip: number;
+  }
 }
 
-function parseReq<U extends TSchema>(schema: U) {
-  return parseObject(schema, errors => {
-    throw new Error(JSON.stringify(errors));
-  });
+interface IUser2 {
+  id: number;
+  name: string;
+  address?: {
+    city: string;
+    zip: number;
+  }
 }
 
-function testUser(arg: unknown, errCb?: TParseOnError): arg is IUser {
-  return !!parseUser(arg, errCb);
-}
+// Wrap without generic
+const customParse = (schema: TSchema) => {
+  return parseObject(schema);
+};
 
-const parseUser = parseObject<IUser>({
+// Wrap with generic
+const customParse2 = <T>(schema: TSchema<T>) => {
+  return parseObject<T>(schema);
+};
+
+const parseUser = customParse2<IUser>({
   id: isNumber,
   name: isString,
+  address: {
+    city: isString,
+    zip: isNumber,
+    // foo: isString, // Causes type error
+  },
 });
 
-const Validators = {
-  getUser1: parseReq({ user: testUser }),
-} as const;
+const parseUser1 = customParse2<IUser>({
+  id: isNumber,
+  name: isString,
+  address: testObject({
+    city: isString,
+    zip: isNumber,
+    foo: isString, // Does not cause type error cause of typescript limitations
+  }),
+});
 
+const parseUser2 = customParse2<IUser2>({
+  id: isNumber,
+  name: isString,
+  address: testOptionalObject({
+    city: isString,
+    zip: isNumber,
+    foo: isString, // Does not cause type error cause of typescript limitations
+  }),
+});
 
-const user: { user: IUser } = Validators.getUser1('asdf');
+const parseUser3 = customParse2<IUser2>({
+  id: isNumber,
+  name: isString,
+  address: testOptionalObject<IUser2['address']>({
+    city: isString,
+    zip: isNumber,
+    // foo: isString, // Causes type error
+  }),
+});
 
