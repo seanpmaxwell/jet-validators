@@ -1,3 +1,5 @@
+/* eslint-disable max-len */
+
 import {
   isFunction,
   isNullish,
@@ -9,7 +11,24 @@ import {
   isUndef,
 } from '../../dist';
 
-import { AddMods, TValidateWithTransform } from '../../dist/common';
+
+// **** Types **** //
+
+// Misc
+type TTransVldrFn<T> = (
+  arg: unknown,
+  cb?: (arg: T) => void,
+) => arg is T;
+
+type TParseVldrFn<T> = (
+  arg: unknown,
+  cb?: (errors: IParseObjectError[]) => void,
+) => arg is T;
+
+// Add modifiers
+type AddNull<T, N> = (N extends true ? T | null : T);
+type AddNullables<T, O, N> = (O extends true ? AddNull<T, N> | undefined  : AddNull<T, N>);
+type AddMods<T, O, N, A> = A extends true ? AddNullables<T[], O, N> : AddNullables<T, O, N>;
 
 
 // **** Simple Util **** //
@@ -33,14 +52,16 @@ export function nonNullable<T>(cb: ((arg: unknown) => arg is T)) {
 export function transform<T>(
   transFn: (arg: unknown) => T,
   vldt: ((arg: unknown) => arg is T),
-): TValidateWithTransform<T> {
-  return (arg: unknown, cb?: (arg: T) => void): arg is T => {
+): TTransVldrFn<T> {
+  const retFn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
     if (arg !== undefined) {
       arg = transFn(arg);
     }
     cb?.(arg as T);
     return vldt(arg);
   };
+  Object.defineProperty(retFn, 'isTransFn', { value: true, writable: false });
+  return retFn;
 }
 
 /**
@@ -73,7 +94,7 @@ export function parseBoolean(arg: unknown, errMsg?: string): boolean {
     return arg;
   }
   // Default
-  throw new Error(errMsg ?? 'Argument must be a valid boolean.')
+  throw new Error(errMsg ?? 'Argument must be a valid boolean.');
 }
 
 /***
@@ -162,8 +183,10 @@ export function parseNullishJson<T>(arg: unknown): T | null | undefined {
 
 // **** ParseObject **** //
 
+type TValidatorFn<T> = TTransVldrFn<T> | TParseVldrFn<T>;
+
 export interface TSchema {
-  [key: string]: TValidateWithTransform<unknown> | TSchema;
+  [key: string]: TValidatorFn<unknown> | TSchema;
 }
 
 type TEnforceSchema<T> = (
@@ -175,8 +198,8 @@ type TEnforceSchema<T> = (
 type TEnforceSchemaHelper<T> = Required<{
   [K in keyof T]: (
     T[K] extends Record<string, unknown> 
-    ? TValidateWithTransform<T[K]> | TEnforceSchemaHelper<T[K]>
-    : TValidateWithTransform<T[K]>
+    ? TValidatorFn<T[K]> | TEnforceSchemaHelper<T[K]>
+    : TValidatorFn<T[K]>
   )
 }>;
 
@@ -184,7 +207,7 @@ type TInferParseRes<U, O, N, A, Schema = TInferParseResHelper<U>> = AddMods<Sche
 
 type TInferParseResHelper<U> = {
   [K in keyof U]: (
-    U[K] extends TValidateWithTransform<infer X> 
+    U[K] extends TValidatorFn<infer X> 
     ? X 
     : U[K] extends TSchema
     ? TInferParseResHelper<U[K]>
@@ -192,36 +215,57 @@ type TInferParseResHelper<U> = {
   );
 };
 
-export interface IParseObjectErrorItem {
+export interface IParseObjectError {
   moreInfo: string;
   prop?: string;
   value?: unknown;
-  caught?: string | Error;
+  caught?: string;
   index?: number;
-  children?: IParseObjectErrorItem[];
+  children?: IParseObjectError[];
 };
 
-type TParseOnError = (errors: IParseObjectErrorItem[]) => void;
+type TParseOnError = (errors: IParseObjectError[]) => void;
 
 
 export const parseObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
-  arg: U, onError?: TParseOnError,
+  arg: U,
+  onError?: TParseOnError,
 ) => _parseObject<U, false, false, false>(arg, false, false, false, onError);
 
-// export const parseOptionalObject = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
-//   _parseObject<T, U>(arg, true, false, false, onError);
-// export const parseNullableObject = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
-//   _parseObject<T, U>(arg, false, true, false, onError);
-// export const parseNullishObject = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
-//   _parseObject<T, U>(arg, true, true, false, onError);
-// export const parseObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
-//   _parseObject<T, U>(arg, false, false, true, onError);
-// export const parseOptionalObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
-//   _parseObject<T, U>(arg, true, false, true, onError);
-// export const parseNullableObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
-//   _parseObject<T, U>(arg, false, true, true, onError);
-// export const parseNullishObjectArray = <T, U extends TSchema>(arg: U, onError?: TParseOnError) => 
-//   _parseObject<T, U>(arg, true, true, true, onError);
+export const parseOptionalObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _parseObject<U, true, false, false>(arg, true, false, false, onError);
+
+export const parseNullableObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _parseObject<U, false, true, false>(arg, false, true, false, onError);
+
+export const parseNullishObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _parseObject<U, true, true, false>(arg, true, true, false, onError);
+
+export const parseObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _parseObject<U, false, false, true>(arg, false, false, true, onError);
+
+export const parseOptionalObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _parseObject<U, true, false, true>(arg, true, false, true, onError);
+
+export const parseNullableObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _parseObject<U, false, true, true>(arg, false, true, true, onError);
+
+export const parseNullishObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _parseObject<U, true, true, true>(arg, true, true, true, onError);
 
 /**
  * Validates an object schema, calls an error function is supplied one, returns 
@@ -240,13 +284,16 @@ function _parseObject<
   isArr: A,
   onError?: TParseOnError,
 ) {
-  return (arg: unknown) => _parseObjectHelper<A>(
+  return (arg: unknown, errCb?: TParseOnError) => _parseObjectHelper<A>(
     !!optional,
     !!nullable,
     isArr, 
     schema,
     arg,
-    onError,
+    ((!!onError || !!errCb) ? errors => {
+      onError?.(errors);
+      errCb?.(errors);
+    } : undefined),
   ) as TInferParseRes<U, O, N, A>;
 }
 
@@ -265,8 +312,8 @@ function _parseObjectHelper<A>(
   if (arg === undefined) {
     if (!optional) {
       onError?.([{ moreInfo: 'Root argument is undefined but not optional.' }]);
-      return undefined;
     }
+    return undefined;
   }
   // Check "null"
   if (arg === null) {
@@ -276,7 +323,7 @@ function _parseObjectHelper<A>(
     }
     return null;
   }
-  const errArr: IParseObjectErrorItem[] = [];
+  const errArr: IParseObjectError[] = [];
   // Do this if it is an array.
   if (isArr) {
     if (!Array.isArray(arg)) {
@@ -289,7 +336,7 @@ function _parseObjectHelper<A>(
       const parsedItem = _parseObjectHelper2(schema, arg[i], errArr, !!onError, i);
       if (parsedItem === undefined) {
         if (!!onError) {
-          return undefined
+          return undefined;
         } else {
           hasErr = true;
         }
@@ -301,6 +348,7 @@ function _parseObjectHelper<A>(
       }
       return undefined;
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return arg;
   }
   // If not an array
@@ -321,14 +369,14 @@ function _parseObjectHelper<A>(
 function _parseObjectHelper2(
   schemaParentObj: TSchema,
   argParentObj: unknown,
-  errArr: IParseObjectErrorItem[],
+  errArr: IParseObjectError[],
   hasOnErrCb: boolean,
   index?: number,
 ): unknown {
   // Make sure is object
   if (!isRecord(argParentObj)) {
     errArr.push({
-      moreInfo: 'Parsed item was not an object',
+      moreInfo: 'Parsed item was not an object.',
       ...(isUndef(index) ? {} : { index }),
     });
     return;
@@ -340,14 +388,14 @@ function _parseObjectHelper2(
       val = argParentObj[key];
     // Nested object
     if (isRecord(schemaProp)) {
-      const childErrArr: IParseObjectErrorItem[] = [],
-        childVal = _parseObjectHelper2(schemaProp, val, childErrArr, hasOnErrCb, index);
+      const childErrArr: IParseObjectError[] = [],
+        childVal = _parseObjectHelper2(schemaProp, val, childErrArr, hasOnErrCb);
       if (childVal === undefined) {
         if (!hasOnErrCb) {
           return undefined;
         } else {
           errArr.push({
-            moreInfo: 'Nested validation failed',
+            moreInfo: 'Nested validation failed.',
             prop: key,
             value: val,
             children: childErrArr,
@@ -357,17 +405,35 @@ function _parseObjectHelper2(
     // Run validator
     } else if (isFunction(schemaProp)) {
       try {
-        // Pass callback in case validator transforms value
-        if (!schemaProp(val, (tval: unknown) => argParentObj[key] = tval)) {
+        let childErrors: IParseObjectError[] = [],
+          passed = false,
+          moreInfo = 'Validator-function returned false.';
+        if ('isTestFn' in schemaProp && schemaProp.isTestFn === true) {
+          moreInfo = 'Nested validation failed.';
+          if (hasOnErrCb) {
+            passed = schemaProp(val, errors => childErrors = errors as IParseObjectError[]);
+          } else {
+            passed = schemaProp(val);
+          }
+        } else if ('isTransFn' in schemaProp && schemaProp.isTransFn === true) {
+          passed = schemaProp(val, tval => argParentObj[key] = tval);
+        } else {
+          passed = schemaProp(val);
+        }
+        if (!passed) {
           if (hasOnErrCb) {
             hasErr = true;
             errArr.push({
-              moreInfo: 'Validator function returned a falsey value.',
+              moreInfo,
               prop: key,
-              value: val,
+              ...(childErrors.length > 0 ? {
+                children: childErrors,
+              } : {
+                value: val,
+              }),
             });
           } else {
-            return undefined
+            return undefined;
           }
         }
       } catch (err) {
@@ -378,7 +444,7 @@ function _parseObjectHelper2(
               moreInfo: 'Validator function threw an error.',
               prop: key,
               value: val,
-              caught: err,
+              caught: err.message,
               ...(isUndef(index) ? {} : { index }),
             });
           } else if (isString(err)) {
@@ -399,7 +465,7 @@ function _parseObjectHelper2(
             });
           }
         } else {
-          return undefined
+          return undefined;
         }
       }
     }
@@ -421,23 +487,45 @@ function _parseObjectHelper2(
 
 // **** Test Object **** //
 
-// Test Object (like "parseObj" but returns a type predicate instead)
-export const testObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, false, false, false>(arg, false, false, false, onError);
-export const testOptionalObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, true, false, false>(arg, true, false, false, onError);
-export const testNullableObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, false, true, false>(arg, false, true, false, onError);
-export const testNullishObject = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, true, true, false>(arg, true, true, false, onError);
-export const testObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, false, false, true>(arg, false, false, true, onError);
-export const testOptionalObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, true, false, true>(arg, true, false, true, onError);
-export const testNullableObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, false, true, true>(arg, false, true, true, onError);
-export const testNullishObjectArray = <U extends TSchema>(arg: U, onError?: TParseOnError) => 
-  _testObject<U, true, true, true>(arg, true, true, true, onError);
+export const testObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, false, false, false>(arg, false, false, false, onError);
+
+export const testOptionalObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, true, false, false>(arg, true, false, false, onError);
+
+export const testNullableObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, false, true, false>(arg, false, true, false, onError);
+
+export const testNullishObject = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, true, true, false>(arg, true, true, false, onError);
+
+export const testObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, false, false, true>(arg, false, false, true, onError);
+
+export const testOptionalObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, true, false, true>(arg, true, false, true, onError);
+
+export const testNullableObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, false, true, true>(arg, false, true, true, onError);
+
+export const testNullishObjectArray = <T, U extends TEnforceSchema<T> = TEnforceSchema<T>>(
+  arg: U,
+  onError?: TParseOnError,
+) => _testObject<U, true, true, true>(arg, true, true, true, onError);
 
 /**
  * Like "parseObj" but returns a type-predicate instead of the object.
@@ -454,11 +542,17 @@ function _testObject<
   isArr: A,
   onError?: TParseOnError,
 ) {
-  const parseFn = _parseObject(schema, optional, nullable, isArr, onError);
-  return (arg: unknown): arg is typeof res => {
-    const res = parseFn(arg);
-    return (res !== undefined);
-  };
+  const parseFn = _parseObject(schema, optional, nullable, isArr, onError),
+    testFn = (arg: unknown, cb?: TParseOnError): arg is typeof res => {
+      const res = parseFn(arg, cb);
+      if (res === undefined) {
+        return optional;
+      } else {
+        return res !== undefined;
+      }
+    };
+  Object.defineProperty(testFn, 'isTestFn', { value: true, writable: false });
+  return testFn;
 }
 
 
@@ -503,7 +597,7 @@ export function customDeepCompare(optionsOrCb: IDeepCompareOptions | TDeepCompar
   return (arg1: unknown, arg2: unknown) => {
     const opts = { ...optionsF };
     return _customDeepCompareHelper(arg1, arg2, opts, cbF, '');
-  }
+  };
 }
 
 /**
@@ -574,7 +668,7 @@ function _customDeepCompareHelper(
       return false;
     }
     if (!cb && arg1.length !== arg2.length) {
-      return false
+      return false;
     }
     let length = arg1.length,
       isEqualF = true;
@@ -582,7 +676,8 @@ function _customDeepCompareHelper(
       length = arg2.length;
     }
     for (let i = 0; i < length; i++) {
-      const isEqual = _customDeepCompareHelper(arg1[i], arg2[i], options, cb, `Index: ${i}`);
+      const isEqual = _customDeepCompareHelper(arg1[i], arg2[i], options, cb, 
+        `Index: ${i}`);
       if (!isEqual) {
         if (!cb) {
           return false;
@@ -590,7 +685,7 @@ function _customDeepCompareHelper(
         isEqualF = false;
       }
     }
-    return isEqualF
+    return isEqualF;
   }
   // ** Compare Object *** //
   // If only comparing some properties, filter out the unincluded keys.
@@ -598,11 +693,11 @@ function _customDeepCompareHelper(
     keys2 = Object.keys(arg2);
   if (!!options?.onlyCompareProps) {
     const props = options.onlyCompareProps;
-    keys1 = keys1.filter(key => props.includes(key))
-    keys2 = keys2.filter(key => props.includes(key))
+    keys1 = keys1.filter(key => props.includes(key));
+    keys2 = keys2.filter(key => props.includes(key));
   }
   if (!cb && keys1.length !== keys2.length) {
-    return false
+    return false;
   }
   // Setup convertToDateProps
   let convertToDateProps: string[] | undefined;
@@ -619,10 +714,13 @@ function _customDeepCompareHelper(
   }
   let isEqual = true;
   for (const key of keys) {
-    let val1 = (arg1 as TRecord)[key],
-    val2 = (arg2 as TRecord)[key];
+    const val1 = (arg1 as TRecord)[key],
+      val2 = (arg2 as TRecord)[key];
     // Check property is present for both
-    if (arg1.hasOwnProperty(key) && !arg2.hasOwnProperty(key)) {
+    if (
+      Object.prototype.hasOwnProperty.call(arg1, key) &&
+      !Object.prototype.hasOwnProperty.call(arg2, key)
+    ) {
       if (!!cb) {
         cb(key, val1, 'not present');
         isEqual = false;
@@ -630,7 +728,10 @@ function _customDeepCompareHelper(
       } else {
         return false;
       }
-    } else if (!arg1.hasOwnProperty(key) && arg2.hasOwnProperty(key)) {
+    } else if (
+      !Object.prototype.hasOwnProperty.call(arg1, key) &&
+      Object.prototype.hasOwnProperty.call(arg2, key)
+    ) {
       if (!!cb) {
         cb(key, 'not present', val2);
         isEqual = false;
@@ -654,7 +755,7 @@ function _customDeepCompareHelper(
       continue;
     }
     // This option only applies to top level
-    const optionsF = { ...options }
+    const optionsF = { ...options };
     if (options.onlyCompareProps) {
       delete optionsF.onlyCompareProps;
     }

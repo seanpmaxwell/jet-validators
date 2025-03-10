@@ -1,5 +1,6 @@
-import { isString } from "./basic";
-import { orNullable, orOptional } from "./common";
+/* eslint-disable max-len */
+import { isString } from './basic';
+import { orNullable, orOptional } from './common';
 
 
 // **** Variables **** //
@@ -61,6 +62,7 @@ export type TAlphaNumericStr = `${string}`;
  * valid value.
  */
 function _matchesRegex<T>(name: TRgxKey) {
+  // eslint-disable-next-line n/no-process-env
   const envVar = process.env['JET_VALIDATORS_REGEX_' + name],
     rgx = !!envVar ? new RegExp(envVar) : DEFAULTS[name];
   return (arg: unknown): arg is T => {

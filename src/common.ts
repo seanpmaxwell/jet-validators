@@ -1,14 +1,3 @@
-// **** Types **** //
-
-// Misc
-export type TValidateWithTransform<T> = (arg: unknown, cb?: (arg: T) => void) => arg is T;
-
-// Add modifiers
-type AddNull<T, N> = (N extends true ? T | null : T);
-export type AddNullables<T, O, N> = (O extends true ? AddNull<T, N> | undefined  : AddNull<T, N>);
-export type AddMods<T, O, N, A> = A extends true ? AddNullables<T[], O, N> : AddNullables<T, O, N>;
-
-
 // **** Functions **** //
 
 /**

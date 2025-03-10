@@ -1,6 +1,16 @@
-import { isNumber, isOptionalString, isString, isBoolean, isObject } from '../src';
-import { transform, parseObject, testObject } from '../utils/src';
-// import { isBoolean } from '../../jet-validators';
+import { isNumber, isOptionalString, isString } from '../src';
+
+import {
+  transform,
+  parseObject,
+  testObject,
+  testOptionalObject,
+} from '../utils/src';
+
+
+/******************************************************************************
+                                Run
+******************************************************************************/
 
 console.log(isString('horse'))
 console.log(transform(Number, isNumber)('5'))
@@ -33,17 +43,45 @@ const testUser = testObject({
 
 interface IPost {
   id: number;
-  text: {
-    state: boolean;
-    content: string;
+  message: string;
+  nested: {
+    id: number;
+    message: string;
   };
 }
 
 const parsePost = parseObject<IPost>({
   id: isNumber,
-  // text: isObject,
-  text: {
-    state: isBoolean,
-    content: isString,
-  }
-})
+  message: isString,
+  nested: {
+    id: isNumber,
+    message: isString,
+  },
+});
+
+const testPost = testObject<IPost>({
+  id: isNumber,
+  message: isString,
+  nested: {
+    id: isNumber,
+    message: isString,
+  },
+});
+
+interface IPostAlt {
+  id: number;
+  message: string;
+  nested?: {
+    id: number;
+    message: string;
+  };
+}
+
+const parsePostAlt = parseObject<IPostAlt>({
+  id: isNumber,
+  message: isString,
+  nested: testOptionalObject<IPostAlt['nested']>({
+    id: isNumber,
+    message: isString,
+  }),
+});

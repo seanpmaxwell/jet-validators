@@ -1,5 +1,11 @@
+/* eslint-disable max-len */
 import { isNull, isNumber, isObject, isRecord, isString, isUndef, isValidNumber } from './basic';
-import { AddMods, AddNullables, orNullable, orOptional } from './common';
+import { orNullable, orOptional } from './common';
+
+// Add modifiers
+type AddNull<T, N> = (N extends true ? T | null : T);
+type AddNullables<T, O, N> = (O extends true ? AddNull<T, N> | undefined  : AddNull<T, N>);
+type AddMods<T, O, N, A> = A extends true ? AddNullables<T[], O, N> : AddNullables<T, O, N>;
 
 
 // **** Is in Array **** //
@@ -98,7 +104,7 @@ function _isInRange<
 function _isInRangeHelper(arg: unknown, rangeFn: TRangeFn): boolean {
   if (isString(arg)) {
     if (isValidNumber(arg)) {
-      arg = Number(arg)
+      arg = Number(arg);
     } else {
       return false;
     }

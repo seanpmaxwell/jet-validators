@@ -124,7 +124,7 @@ export {
   isOptionalFunctionArray,
   isNullableFunctionArray,
   isNullishFunctionArray,
-} from './basic'
+} from './basic';
 
 // Regexes
 export {

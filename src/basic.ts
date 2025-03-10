@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 import { orNullable, orOptional } from './common';
 import { parseBoolean } from '../utils';
 
@@ -162,7 +163,7 @@ function _toArray<T>(cb: ((arg: unknown) => arg is T)) {
  * Wrapper to check basic type.
  */
 function _isNumber(arg: unknown): arg is number {
-  return typeof arg === 'number' && !isNaN(arg as number);
+  return typeof arg === 'number' && !isNaN(arg);
 }
 
 /**
@@ -205,7 +206,7 @@ function _isValidBoolean(arg: unknown): arg is number | string | boolean {
   try {
     arg = parseBoolean(arg);
     return isBoolean(arg);
-  } catch (err) {
+  } catch {
     return false;
   }
 }

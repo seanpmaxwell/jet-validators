@@ -1,3 +1,5 @@
+/* eslint-disable n/no-unsupported-features/node-builtins */
+/* eslint-disable max-len */
 import { expect, test, vi } from 'vitest';
 import dotenv from 'dotenv';
 import path from 'path';
@@ -118,8 +120,8 @@ import {
   TSchema,
   customDeepCompare,
   deepCompare,
-  TParser,
-  IParseObjectErrorItem,
+  IParseObjectError,
+  testOptionalObject,
   testObjectArray,
 } from '../utils/src';
 
@@ -341,10 +343,10 @@ test('test basic validators', () => {
   const R1: TRecord = { foo: 1, bar: 'bar' },
     R2: TRecord = { foo: 1, [1234]: 'bar' }, // numbers are converted to strings
     R3: TRecord = { foo: 1, [Symbol(777)]: 'bar' };
-  const blah: TRecord = {};
-  if (isRecord(blah)) {
-    blah[1234]
-  }
+  // const blah: TRecord = {};
+  // if (isRecord(blah)) {
+  //   blah[1234];
+  // }
   expect(isRecord(R1)).toStrictEqual(true);
   expect(isRecord(R2)).toStrictEqual(true);
   expect(isRecord(R3)).toStrictEqual(true);
@@ -437,11 +439,13 @@ test('test overloading regexes from environment variables', async () => {
     path: path.join(__dirname, '.env.vitest'),
   });
   if (result.error) {
-    console.error(result)
+    // eslint-disable-next-line no-console
+    console.error(result);
   }
   const src = await import('../src/regexes.js');
 
   // Email
+  // eslint-disable-next-line n/no-process-env
   expect(process.env.JET_VALIDATORS_REGEX_COLOR).toStrictEqual('^([A-Fa-f0-9]{6})$');
   expect(src.isColor('ffffff')).toStrictEqual(true);
   expect(src.isColor('#ffffff')).toStrictEqual(false);
@@ -512,7 +516,7 @@ test('test complex validators', () => {
   const NotAnEnum = {
     Foo: 1,
     Bar: 2,
-  }
+  };
   expect(isEnum(StringEnum)).toStrictEqual(true);
   expect(isEnum(NotAnEnum)).toStrictEqual(false);
   expect(isOptionalEnum(NumberEnum)).toStrictEqual(true);
@@ -533,7 +537,7 @@ test('test complex validators', () => {
   expect(isNullableEnumVal(NumberEnum)(null)).toStrictEqual(true);
   expect(isNullishEnumVal(NumberEnum)(null)).toStrictEqual(true);
   expect(isNullishEnumVal(NumberEnum)(1)).toStrictEqual(true);
-})
+});
 
 
 /**
@@ -588,7 +592,7 @@ test('test "parseObject()" function', () => {
   expect(user).toStrictEqual({ id: 5, name: 'john' });
 
   // ** Test passing a type to parseObject ** //
-  const parseUserNew: TParser<IUser> = parseObject({
+  const parseUserNew = parseObject<IUser>({
     id: isNumber,
     name: isString,
   });
@@ -711,7 +715,7 @@ test('test "parseObject()" function', () => {
   }, err => {
     expect(err[0].prop).toStrictEqual('name');
     expect(err[0].value).toStrictEqual(null);
-    expect(err[0].caughtErr).toStrictEqual('Value was not a valid string.');
+    expect(err[0].caught).toStrictEqual('Value was not a valid string.');
   });
   parseUserHandleErr({
     id: 5,
@@ -729,7 +733,7 @@ test('test "parseObject()" function', () => {
 
 
   // ** Test onError for multiple properties ** //
-  let errArr: IParseObjectErrorItem[] = [];
+  let errArr: IParseObjectError[] = [];
   parseObject({
     id: isNumber,
     name: isString,
@@ -737,8 +741,8 @@ test('test "parseObject()" function', () => {
     errArr = err;
   })({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
-    { prop: 'id', value: 'joe' },
-    { prop: 'name', value: 5 },
+    { prop: 'id', value: 'joe', moreInfo: 'Validator function returned false.' },
+    { prop: 'name', value: 5, moreInfo: 'Validator function returned false.' },
   ]);
 });
 
@@ -746,7 +750,7 @@ test('test "parseObject()" function', () => {
 /**
  * Test "testObject" function
  */
-test('test "testObject()" function', () => {
+test.only('test "testObject()" function', () => {
 
   // Do basic test
   const testUser = testObject({
@@ -768,14 +772,19 @@ test('test "testObject()" function', () => {
   expect(result).toStrictEqual(true);
   
   // Test combination of "parseObject" and "testObject"
+  let errArr: IParseObjectError[] = [];
   const testCombo = parseObject({
     id: isNumber,
     name: isString,
     address: testObject({
       city: isString,
       zip: transform(Number, isNumber),
+      country: testOptionalObject({
+        name: isString,
+        code: isNumber,
+      }),
     }),
-  });
+  }, errors => { errArr = errors; });
   const user = testCombo({
     id: 5,
     name: 'john',
@@ -792,6 +801,31 @@ test('test "testObject()" function', () => {
       zip: 98109,
     },
   });
+  testCombo({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'Seattle',
+      zip: 'horse',
+      country: {
+        name: 'USA',
+        code: '1234',
+      },
+    },
+  });
+  expect(errArr).toStrictEqual([
+    {
+      moreInfo: 'Nested validation failed.',
+      prop: 'address',
+      'children': [
+        {
+          moreInfo: 'Validator-function returned false.',
+          prop: 'zip',
+          value: 'horse',
+        },
+      ],
+    },
+  ]);
 
   // Test combination of "parseObject" and "testObjectArray"
   const testCombo2 = parseObject({
@@ -803,20 +837,20 @@ test('test "testObject()" function', () => {
     }),
   });
   const testCombo2GoodData = {
-    id: 5,
-    name: 'john',
-    addresses: [
-      {
-        city: 'Seattle',
-        zip: 98109,
-      },
-      {
-        city: 'Seattle',
-        zip: 98111,
-      },
-    ]
-  },
-  testCombo2GoodDataResult = structuredClone(testCombo2GoodData);
+      id: 5,
+      name: 'john',
+      addresses: [
+        {
+          city: 'Seattle',
+          zip: 98109,
+        },
+        {
+          city: 'Seattle',
+          zip: 98111,
+        },
+      ],
+    },
+    testCombo2GoodDataResult = structuredClone(testCombo2GoodData);
   const testCombo2FailData = {
     id: 5,
     name: 'john',
@@ -829,15 +863,10 @@ test('test "testObject()" function', () => {
         city: 'Seattle',
         zip: '98111',
       },
-    ]
+    ],
   };
   expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
   expect(testCombo2(testCombo2FailData)).toStrictEqual(undefined);
-
-
-  // Test nested error handling
-
-  // pick up here, add errorsArray to ParseObjErr and remove the extract function
 });
 
 /**
@@ -846,8 +875,8 @@ test('test "testObject()" function', () => {
 test('test "deepCompare()" function basic', () => {
 
   const throwErrCb = (key: string, val1: unknown, val2: unknown) => {
-    throw new Error(`Unequal vals | Key: "${key}" Value1: ${val1} Value2: ${val2}`);
-  }
+    throw new Error(`Unequal vals | Key: "${key}" Value1: ${String(val1)} Value2: ${String(val2)}`);
+  };
 
   // Init deep comparison functions
   const deepCompare2 = customDeepCompare(throwErrCb),
@@ -862,7 +891,7 @@ test('test "deepCompare()" function basic', () => {
   const date1 = new Date('2012-6-17'),
     date2 = new Date(date1),
     date3 = date1.getTime();
-  (date2 as any).cow = 'green';
+  (date2 as unknown as TRecord).cow = 'green';
 
   // Init dummy data
   const User1 = { id: 1, name: 'john' },
@@ -870,38 +899,38 @@ test('test "deepCompare()" function basic', () => {
     User3 = { id: 1, name: 'jane' },
     User4 = { id: 1, name: 'john', created: date1 },
     User5 = { id: 1, name: 'john', created: date3 },
-    User5a = { id: 1, name: 'john', created: date2}
+    User5a = { id: 1, name: 'john', created: date2};
 
   const User6 = {
-    id: 1,
-    name: 'john',
-    address: {
-      street: 'foo',
-      zip: 1234,
-      unit: ['apt', 202],
-      created: date1,
-    }
-  },
-  User7 = {
-    id: 1,
-    name: 'john',
-    address: {
-      street: 'foo',
-      zip: 1234,
-      unit: ['apt', 202],
-      created: date2,
-    }
-  },
-  User8 = {
-    id: 1,
-    name: 'john',
-    address: {
-      street: 'foo',
-      zip: 1234,
-      created: date1,
-      city: 'seattle',
-    }
-  };
+      id: 1,
+      name: 'john',
+      address: {
+        street: 'foo',
+        zip: 1234,
+        unit: ['apt', 202],
+        created: date1,
+      },
+    },
+    User7 = {
+      id: 1,
+      name: 'john',
+      address: {
+        street: 'foo',
+        zip: 1234,
+        unit: ['apt', 202],
+        created: date2,
+      },
+    },
+    User8 = {
+      id: 1,
+      name: 'john',
+      address: {
+        street: 'foo',
+        zip: 1234,
+        created: date1,
+        city: 'seattle',
+      },
+    };
 
   const arr1 = [ 'horse', 'cow', 2, User1, User8],
     arr2 = [ 'horse', 'cow', 2, User1, User8 ],
@@ -932,48 +961,49 @@ test('test "deepCompare()" function basic', () => {
 test('test "deepCompare()" function override "rec" option', () => {
 
   const deepCompare1 = customDeepCompare({
-    convertToDateProps: { rec: false, props: 'created' },
-    onlyCompareProps: ['id', 'name', 'address'],
-  }),
-  deepCompare2 = customDeepCompare({
-    onlyCompareProps: 'id',
-  }, (...params) => console.log(...params));
+      convertToDateProps: { rec: false, props: 'created' },
+      onlyCompareProps: ['id', 'name', 'address'],
+    }),
+    deepCompare2 = customDeepCompare({
+      onlyCompareProps: 'id',
+    // eslint-disable-next-line no-console
+    }, (...params) => console.log(...params));
 
   const date1 = new Date('2012-6-17'),
     date2 = new Date(date1),
     date3 = date1.getTime();
 
   const User1 = {
-    id: 1,
-    name: 'john',
-    address: {
-      street: 'foo',
-      zip: 1234,
-      unit: ['apt', 202],
-      created: date1,
+      id: 1,
+      name: 'john',
+      address: {
+        street: 'foo',
+        zip: 1234,
+        unit: ['apt', 202],
+        created: date1,
+      },
+      foo: 'bar',
     },
-    foo: 'bar',
-  },
-  User2 = {
-    id: 1,
-    name: 'john',
-    address: {
-      street: 'foo',
-      zip: 1234,
-      unit: ['apt', 202],
-      created: date2,
-    }
-  },
-  User3 = {
-    id: 1,
-    name: 'john',
-    address: {
-      street: 'foo',
-      zip: 1234,
-      unit: ['apt', 202],
-      created: date3,
+    User2 = {
+      id: 1,
+      name: 'john',
+      address: {
+        street: 'foo',
+        zip: 1234,
+        unit: ['apt', 202],
+        created: date2,
+      },
     },
-  };
+    User3 = {
+      id: 1,
+      name: 'john',
+      address: {
+        street: 'foo',
+        zip: 1234,
+        unit: ['apt', 202],
+        created: date3,
+      },
+    };
 
   const Post1 = { id: 1, text: 'asdf' },
     Post2 = { id: 2, text: 'ffff' },
