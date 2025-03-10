@@ -380,7 +380,7 @@ function _parseObjectHelper2(
       moreInfo: 'Parsed item was not an object.',
       ...(isUndef(index) ? {} : { index }),
     });
-    return;
+    return false;
   }
   // Iterate object properties
   let hasErr = false;

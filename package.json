@@ -6,6 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
+    "playground": "ts-node ./test/playground.ts",
     "test": "NODE_ENV=test vitest",
     "build:utils": "cd utils && rm -rf ./dist && tsc -p tsconfig.build.json && cd ..",
     "build:main": "rm -rf ./dist && tsc -p tsconfig.build.json",

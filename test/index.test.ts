@@ -608,7 +608,7 @@ test('test "parseObject()" function', () => {
     name: 'joe',
     email: '--',
   });
-  const optUser2 = parseOptUser(undefined);
+  const optUser2 = parseOptUser(false);
   expect(optUser).toStrictEqual({ id: 15, name: 'joe' });
   expect(optUser2).toStrictEqual(false);
 
@@ -621,9 +621,11 @@ test('test "parseObject()" function', () => {
     name: isString,
   });
   const parsedUserArr = parseUserArr(userArr),
-    parsedUserArrBad = parseOptUser(userArrBad);
+    parsedUserArrBad = parseUserArr(userArrBad),
+    parsedUserArrBad2 = parseOptUser(userArrBad);
   expect(userArr).toStrictEqual(parsedUserArr);
   expect(parsedUserArrBad).toStrictEqual(false);
+  expect(parsedUserArrBad2).toStrictEqual(false);
   // Nullish or array
   const parseNishUserArr = parseNullishObjectArray({
     id: isNumber,
@@ -741,8 +743,8 @@ test('test "parseObject()" function', () => {
     errArr = err;
   })({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
-    { prop: 'id', value: 'joe', moreInfo: 'Validator function returned false.' },
-    { prop: 'name', value: 5, moreInfo: 'Validator function returned false.' },
+    { prop: 'id', value: 'joe', moreInfo: 'Validator-function returned false.' },
+    { prop: 'name', value: 5, moreInfo: 'Validator-function returned false.' },
   ]);
 });
 
@@ -750,7 +752,7 @@ test('test "parseObject()" function', () => {
 /**
  * Test "testObject" function
  */
-test.only('test "testObject()" function', () => {
+test('test "testObject()" function', () => {
 
   // Do basic test
   const testUser = testObject({
