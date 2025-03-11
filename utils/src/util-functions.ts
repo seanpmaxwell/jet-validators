@@ -34,14 +34,15 @@ type AddMods<T, O, N, A> = A extends true ? AddNullables<T[], O, N> : AddNullabl
 // **** Simple Util **** //
 
 /**
- * Extract null/undefined from a validator function.
+ * Extract null/undefined from a validator function. Have to provide an errCb in case
+ * we are wrapping a nested schema function.
  */
-export function nonNullable<T>(cb: ((arg: unknown) => arg is T)) {
-  return (arg: unknown): arg is NonNullable<T> => {
+export function nonNullable<T>(cb: ((arg: unknown, errCb?: TParseOnError) => arg is T)) {
+  return (arg: unknown, errCb?: TParseOnError): arg is NonNullable<T> => {
     if (isNullish(arg)) {
       return false;
     } else {
-      return cb(arg);
+      return cb(arg, errCb);
     }
   };
 }

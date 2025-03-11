@@ -11,6 +11,7 @@ import {
   IParseObjectError,
   parseObjectArray,
   TSchema,
+  nonNullable,
 } from '../utils/src';
 
 
@@ -262,4 +263,23 @@ const parseUser3 = customParse2<IUser2>({
     // foo: isString, // Causes type error
   }),
 });
+
+const parseUser4 = customParse2<IUser2>({
+  id: isNumber,
+  name: isString,
+  address: nonNullable(testOptionalObject<IUser2['address']>({
+    city: isString,
+    zip: isNumber,
+    // foo: isString, // Causes type error
+  })),
+});
+
+parseUser4({
+  id: 1,
+  name: 'john',
+  address: {
+    city: 'b',
+    zip: '123',
+  },
+}, errors => console.log(JSON.stringify(errors, null, 2)));
 
