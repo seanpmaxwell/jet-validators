@@ -1040,7 +1040,7 @@ test('test "deepCompare()" function override "rec" option', () => {
 /**
  * Test different safety options
  */
-test.only('test different safety options', () => {
+test('test different safety options', () => {
 
   // Default
   const defaultParseUser = parseObject({
