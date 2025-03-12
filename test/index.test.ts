@@ -124,7 +124,6 @@ import {
   testOptionalObject,
   testObjectArray,
   strictParseObject,
-  strictTestObject,
   looseParseObject,
   looseTestObject,
 } from '../utils/src';
@@ -1041,7 +1040,7 @@ test('test "deepCompare()" function override "rec" option', () => {
 /**
  * Test different safety options
  */
-test('test different safety options', () => {
+test.only('test different safety options', () => {
 
   // Default
   const defaultParseUser = parseObject({
@@ -1091,7 +1090,7 @@ test('test different safety options', () => {
     prop: 'address',
   }]);
 
-  // Combdo
+  // Combo
   let errArr2: IParseObjectError[] = [];
 
   const comboParse = strictParseObject({
@@ -1115,9 +1114,9 @@ test('test different safety options', () => {
     id: 1,
     name: 'joe',
     address: {
-      city: 'Seattle',
+      city: 'Seattle', // should raise error
       zip: 1234,
-      street: 'asdf', // should raise error
+      street: 'asdf',
     },
     country: {
       name: 'USA',
@@ -1130,12 +1129,16 @@ test('test different safety options', () => {
       completedCollege: false, // should not raise error
     },
   });
-
-  console.log( errArr2)
   
-  // expect(resp4).toStrictEqual(false);
-  expect(errArr2).toStrictEqual([{
-    info: 'strict-safety failed, prop not in schema.',
-    prop: 'address',
-  }]);
+  expect(resp4).toStrictEqual(false);
+  expect(errArr2).toStrictEqual([
+    {
+      info: 'Nested validation failed.',
+      prop: 'address',
+      children: [{
+        info: 'strict-safety failed, prop not in schema.',
+        prop: 'city',
+      }],
+    },
+  ]);
 });

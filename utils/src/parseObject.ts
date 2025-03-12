@@ -303,7 +303,7 @@ function _parseObjectHelper<A>(
   // If not an array
   const resp = _parseObjectHelper2(schema, arg, errArr, !!onError, safety);
   if (resp === false) {
-    if (onError && errArr.length > 0) {
+    if (!!onError && errArr.length > 0) {
       onError(errArr);
     }
     return false;
@@ -341,13 +341,13 @@ function _parseObjectHelper2(
       const childErrArr: IParseObjectError[] = [],
         childVal = _parseObjectHelper2(schemaProp, val, childErrArr, hasOnErrCb, safety);
       if (childVal === false) {
+        hasErr = true;
         if (!hasOnErrCb) {
           return false;
         } else {
           errArr.push({
             info: 'Nested validation failed.',
             prop: key,
-            value: val,
             children: childErrArr,
             ...(isUndef(index) ? {} : { index }),
           });
@@ -419,7 +419,9 @@ function _parseObjectHelper2(
   // Unless safety = "loose", filter extra keys
   if (safety !== 'loose') {
     for (const key in argParentObj) {
-      if (!(key in schemaParentObj)) {
+      if (key in schemaParentObj) {
+        continue;
+      } else {
         if (safety === 'strict') {
           if (hasOnErrCb) {
             hasErr = true;
