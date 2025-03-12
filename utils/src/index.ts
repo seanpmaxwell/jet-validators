@@ -1,6 +1,4 @@
-
 export {
-  // Simple Utilities
   nonNullable,
   transform,
   parseBoolean,
@@ -11,7 +9,14 @@ export {
   parseOptionalJson,
   parseNullableJson,
   parseNullishJson,
-  // Parse Object
+} from './util-functions';
+
+export {
+  deepCompare,
+  customDeepCompare,
+} from './deepCompare';
+
+export {
   parseObject,
   parseOptionalObject,
   parseNullableObject,
@@ -20,10 +25,25 @@ export {
   parseOptionalObjectArray,
   parseNullableObjectArray,
   parseNullishObjectArray,
+  looseParseObject,
+  looseParseOptionalObject,
+  looseParseNullableObject,
+  looseParseNullishObject,
+  looseParseObjectArray,
+  looseParseOptionalObjectArray,
+  looseParseNullableObjectArray,
+  looseParseNullishObjectArray,
+  strictParseObject,
+  strictParseOptionalObject,
+  strictParseNullableObject,
+  strictParseNullishObject,
+  strictParseObjectArray,
+  strictParseOptionalObjectArray,
+  strictParseNullableObjectArray,
+  strictParseNullishObjectArray,
   TSchema,
   IParseObjectError,
   TParseOnError,
-  // Test Object
   testObject,
   testOptionalObject,
   testNullableObject,
@@ -32,7 +52,20 @@ export {
   testOptionalObjectArray,
   testNullableObjectArray,
   testNullishObjectArray,
-  // Deep compare
-  deepCompare,
-  customDeepCompare,
-} from './util-functions';
+  looseTestObject,
+  looseTestOptionalObject,
+  looseTestNullableObject,
+  looseTestNullishObject,
+  looseTestObjectArray,
+  looseTestOptionalObjectArray,
+  looseTestNullableObjectArray,
+  looseTestNullishObjectArray,
+  strictTestObject,
+  strictTestOptionalObject,
+  strictTestNullableObject,
+  strictTestNullishObject,
+  strictTestObjectArray,
+  strictTestOptionalObjectArray,
+  strictTestNullableObjectArray,
+  strictTestNullishObjectArray,
+} from './parseObject';

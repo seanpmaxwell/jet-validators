@@ -123,6 +123,9 @@ import {
   IParseObjectError,
   testOptionalObject,
   testObjectArray,
+  strictParseObject,
+  looseParseObject,
+  looseTestObject,
 } from '../utils/src';
 
 
@@ -1031,4 +1034,111 @@ test('test "deepCompare()" function override "rec" option', () => {
   expect(deepCompare1(User1, User3)).toBeFalsy();
   expect(deepCompare1(arr, arr2)).toBeTruthy();
   expect(deepCompare2(arr3, arr4)).toBeTruthy();
+});
+
+
+/**
+ * Test different safety options
+ */
+test.only('test different safety options', () => {
+
+  // Default
+  const defaultParseUser = parseObject({
+    id: isNumber,
+    name: isString,
+  });
+  const resp1 = defaultParseUser({
+    id: 1,
+    name: 'joe',
+    address: 'blah',
+  });
+  expect(resp1).toStrictEqual({
+    id: 1,
+    name: 'joe',
+  });
+  
+  // Loose
+  const looseParseUser = looseParseObject({
+    id: isNumber,
+    name: isString,
+  });
+  const resp2 = looseParseUser({
+    id: 1,
+    name: 'joe',
+    address: 'blah',
+  });
+  expect(resp2).toStrictEqual({
+    id: 1,
+    name: 'joe',
+    address: 'blah',
+  });
+
+  // Strict
+  let errArr: IParseObjectError[] = [];
+  const strictParseUser = strictParseObject({
+    id: isNumber,
+    name: isString,
+  }, errors => { errArr = errors; });
+  const resp3 = strictParseUser({
+    id: 1,
+    name: 'joe',
+    address: 'blah',
+  });
+  expect(resp3).toStrictEqual(false);
+  expect(errArr).toStrictEqual([{
+    info: 'strict-safety failed, prop not in schema.',
+    prop: 'address',
+  }]);
+
+  // Combo
+  let errArr2: IParseObjectError[] = [];
+
+  const comboParse = strictParseObject({
+    id: isNumber,
+    name: isString,
+    address: {
+      street: isString,
+      zip: isNumber,
+    },
+    country: testObject({
+      name: isString,
+      code: isNumber,
+    }),
+    education: looseTestObject({
+      collegeName: isString,
+      completedHighschool: isBoolean,
+    }),
+  }, errors => { errArr2 = errors; });
+
+  const resp4 = comboParse({
+    id: 1,
+    name: 'joe',
+    address: {
+      city: 'Seattle', // should raise error
+      zip: 1234,
+      street: 'asdf',
+    },
+    country: {
+      name: 'USA',
+      code: 1234,
+      ranking: 12, // should not raise error
+    },
+    education: {
+      collegeName: 'univ of bob',
+      completedHighschool: false,
+      completedCollege: false, // should not raise error
+    },
+  });
+  
+  expect(resp4).toStrictEqual(false);
+  expect(errArr2).toStrictEqual([
+    {
+      info: 'Nested validation failed.',
+      prop: 'address',
+      children: [{
+        info: 'strict-safety failed, prop not in schema.',
+        prop: 'city',
+      }],
+    },
+  ]);
 });
