@@ -354,7 +354,7 @@ function _parseObjectHelper2(
         }
       }
     // Run validator
-    } else if (isFunction(schemaProp)) { // do function that returns arg is TransVldrFn or TParseSchemaFn
+    } else if (isFunction(schemaProp)) {
       try {
         let childErrors: IParseObjectError[] = [],
           passed = false,
