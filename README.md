@@ -46,6 +46,7 @@
     - [Combining parseObject and testObject](#combining-test-parse)
     - [Custom Validators](#custom-validators)
     - [Wrapping Parse/Test](#wrapping-parse-test)
+    - [Safety settings for parseObject](#parseObject-safety)
   - [deepCompare and customDeepCompare](#deepCompare-fns)
     - [deepCompare](#deepCompare)
     - [customDeepCompare](#customDeepCompare)
@@ -447,6 +448,7 @@ If you need to validate an object schema, you can pass a validator object with t
 
 
 #### `parseObject` <a name="parse-object"></a>
+- `default` Extra properties will be purged but not raise errors.
 - parseObject
 - parseOptionalObject
 - parseNullableObject
@@ -455,6 +457,24 @@ If you need to validate an object schema, you can pass a validator object with t
 - parseOptionalObjectArray
 - parseNullableObjectArray
 - parseNullishObjectArray
+- `loose` Extra properties will not be purged or raise errors.
+- looseParseObject
+- looseParseOptionalObject
+- looseParseNullableObject
+- looseParseNullishObject
+- looseParseObjectArray
+- looseParseOptionalObjectArray
+- looseParseNullableObjectArray
+- looseParseNullishObjectArray
+- `strict` Extra properties will be purged and raise errors.
+- strictParseObject
+- strictParseOptionalObject
+- strictParseNullableObject
+- strictParseNullishObject
+- strictParseObjectArray
+- strictParseOptionalObjectArray
+- strictParseNullableObjectArray
+- strictParseNullishObjectArray
 
 This function iterates an object (and any nested objects) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `false`. You can optionally pass an  error-handler function as the second argument which will fire whenever a validator-function fails.<br/>
 
@@ -544,6 +564,7 @@ Example of using `parseObject` with a custom error callback:
 
 
 #### `testObject` <a name="test-object"></a>
+- `default` Extra properties will be purged but not raise errors.
 - testObject
 - testOptionalObject
 - testNullableObject
@@ -552,6 +573,24 @@ Example of using `parseObject` with a custom error callback:
 - testOptionalObjectArray
 - testNullableObjectArray
 - testNullishObjectArray
+- `loose` Extra properties will not be purged or raise errors.
+- looseTestObject
+- looseTestOptionalObject
+- looseTestNullableObject
+- looseTestNullishObject
+- looseTestObjectArray
+- looseTestOptionalObjectArray
+- looseTestNullableObjectArray
+- looseTestNullishObjectArray,
+- `strict` Extra properties will be purged and raise errors.
+- strictTestObject
+- strictTestOptionalObject
+- strictTestNullableObject
+- strictTestNullishObject
+- strictTestObjectArray
+- strictTestOptionalObjectArray
+- strictTestNullableObjectArray
+- strictTestNullishObjectArray
 
 `testObject` is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well:
 ```typescript
@@ -627,19 +666,34 @@ const parseUser3 = parseObject<IUser>({
 });
 ```
 
-- If you want to use an external nested validator-function for whatever reason, make sure you pass down the `arg` param AND the `errorCb` so that any nested errors will be added to the error tree:
+- If you want to use an external nested validator-function for whatever reason, make sure you pass down the `arg` param AND the `options`/`errorCb` params so that any nested parse functions can receive the options/errors from the parent.<br/>
+
+In this example we needed to parse an address object. So we don't have to initialize the address schema twice we just wrap the `parseAddr` function and convert it to a test function (make it return a type-predicate): 
 ```ts
-import { parseObject, testNullishObject, TParseOnError } from 'jet-validators/utils';
+import { parseObject, testNullishObject, TParseOnError, IParseOptions } from 'jet-validators/utils';
+
+interface IAddress {
+  city: string;
+  zip: number;
+}
+
+const parseAddr = parseNullishObject({
+  city: isString,
+  zip: isNumber,
+});
+
+function newAddress(arg: unknown): IAddress {
+  return parseAddr(arg);
+}
 
 const parseUser = parseObject({
   id: isNumber,
   name: isString,
-  address: (arg: unknown, errorCb?: TParseOnError) => testAddr(arg, errCb),
-}, errors => { errArr = errors; });
-
-const testAddr = testNullishObject({
-  city: isString,
-  zip: isNumber,
+  address: (
+    arg: unknown,
+    optionsOrErrCb?: IParseOptions | TParseOnError,
+    errorCb?: TParseOnError,
+  ): arg is IAddress => !!parseAddr(arg, optionsOrErrCb, errorCb),
 });
 ```
 
@@ -705,6 +759,49 @@ const parseUser2 = customParse2<IUser>({
   // address: isString, // Will cause type error
 });
 ```
+
+
+#### Safety settings for parseObject <a name="parseObject-safety"></a>
+For `parseObject/testObject` you can control what happens if extra properties are found in the argument object. This is done by important functions suffixed with `loose` or `strict`. The default `parseObject/testObject` functions are configured with the `default` safety setting:
+
+- `loose`: Extra properties will not be purged or raise errors.
+- `default`: Extra properties will be purged but not raise errors.
+- `strict`: Extra properties will be purged and raise errors.
+
+
+Example of the `options` argument. If you need to pass an error callback too pass it as the third argument. Note that the highest level passed `options` object will overwrite any nested one:
+```ts
+import { isNumber, isString } from 'jet-validators';
+import { strictParseObject } from 'jet-validators/utils';
+
+const testUser = strictParseObject({
+  id: isString,
+  name: isNumber,
+}, errors => console.log(errors));
+
+testUser({ id: 1, name: 'a', city: 'seattle' }); // This will raise errors
+```
+
+If you're using nested parse/test functions make sure you use the right function on the nested object if you want it to match the parent's safety level:
+```ts
+import { isNumber, isString } from 'jet-validators';
+import { parseObject, strictParseObject } from 'jet-validators/utils';
+
+const testUser = strictParseObject({
+  id: isString,
+  name: isNumber,
+  address: { // Will still do 'strict' parsing
+    city: isString,
+    zip: isNumber,
+  },
+  country: parseObject({ // Will do 'default' parsing
+    name: isString,
+    code: isNumber
+  }),
+});
+
+```
+
 
 
 ### deepCompare and customDeepCompare <a name="deepCompare-fns"></a>

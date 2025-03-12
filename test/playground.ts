@@ -205,15 +205,6 @@ interface IUser {
   }
 }
 
-interface IUser2 {
-  id: number;
-  name: string;
-  address?: {
-    city: string;
-    zip: number;
-  }
-}
-
 // Wrap without generic
 const customParse = (schema: TSchema) => {
   return parseObject(schema);
@@ -244,6 +235,15 @@ const parseUser1 = customParse2<IUser>({
   }),
 });
 
+interface IUser2 {
+  id: number;
+  name: string;
+  address?: {
+    city: string;
+    zip: number;
+  }
+}
+
 const parseUser2 = customParse2<IUser2>({
   id: isNumber,
   name: isString,
@@ -264,6 +264,7 @@ const parseUser3 = customParse2<IUser2>({
   }),
 });
 
+// pick up here, nonNullable breaks it
 const parseUser4 = customParse2<IUser2>({
   id: isNumber,
   name: isString,
