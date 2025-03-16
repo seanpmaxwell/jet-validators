@@ -849,7 +849,7 @@ deepCompareAlt(user1, user3); // => true
 (key: string, val1: unknown, val2: unknown) => void;
 ```
 
-- The callback function provides the values that failed during the comparison will fire everytime a comparison fails:
+- The callback function provides the values that failed during the comparison and will fire everytime a comparison fails:
 ```typescript
 import { customDeepCompare } from 'jet-validators/util';
 
