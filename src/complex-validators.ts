@@ -254,45 +254,64 @@ function _isEnum(arg: unknown): arg is TEnum {
 
 // **** Is argument an Enum Value **** //
 
-export const isEnumVal = <T>(arg: T) => _isEnumVal<T, false, false>(arg, false, false);
-export const isOptionalEnumVal = <T>(arg: T) => _isEnumVal<T, true, false>(arg, true, false);
-export const isNullableEnumVal = <T>(arg: T) => _isEnumVal<T, false, true>(arg, false, true);
-export const isNullishEnumVal = <T>(arg: T) => _isEnumVal<T, true, true>(arg, true, true);
+export const isEnumVal = <T>(arg: T) => _isEnumVal<T, false, false, false>(arg, false, false, false);
+export const isOptionalEnumVal = <T>(arg: T) => _isEnumVal<T, true, false, false>(arg, true, false, false);
+export const isNullableEnumVal = <T>(arg: T) => _isEnumVal<T, false, true, false>(arg, false, true, false);
+export const isNullishEnumVal = <T>(arg: T) => _isEnumVal<T, true, true, false>(arg, true, true, false);
+export const isEnumValArray = <T>(arg: T) => _isEnumVal<T, false, false, true>(arg, false, false, true);
+export const isOptionalEnumValArray = <T>(arg: T) => _isEnumVal<T, true, false, true>(arg, true, false, true);
+export const isNullableEnumValArray = <T>(arg: T) => _isEnumVal<T, false, true, true>(arg, false, true, true);
+export const isNullishEnumValArray = <T>(arg: T) => _isEnumVal<T, true, true, true>(arg, true, true, true);
+
 
 /**
  * Check is value satisfies enum.
  */
 function _isEnumVal<T, 
   O extends boolean,
-  N extends boolean
+  N extends boolean,
+  A extends boolean,
 >(
   enumArg: T,
   optional: O,
   nullable: N,
-): ((arg: unknown) => arg is AddNullables<T[keyof T], O, N>) {
+  isArray: A,
+): ((arg: unknown) => arg is AddMods<T[keyof T], O, N, A>) {
   // Check is enum
   if (!isEnum(enumArg)) {
     throw Error('Item to check from must be an enum.');
   }
-  // Get keys
-  let resp = Object.keys(enumArg).reduce((arr: unknown[], key) => {
+  // Get enum vals
+  let enumVals = Object.keys(enumArg).reduce((arr: unknown[], key) => {
     if (!arr.includes(key)) {
       arr.push(enumArg[key]);
     }
     return arr;
   }, []);
   // Check if string or number enum
-  if (isNumber(enumArg[resp[0] as string])) {
-    resp = resp.map(item => enumArg[item as string]);
+  if (isNumber(enumArg[enumVals[0] as string])) {
+    enumVals = enumVals.map(item => enumArg[item as string]);
   }
+  const test = (arg: unknown) => enumVals.some(val => arg === val);
   // Return validator function
-  return (arg: unknown): arg is AddNullables<T[keyof T], O, N> => {
+  return (arg: unknown): arg is AddMods<T[keyof T], O, N, A> => {
     if (isUndef(arg)) {
       return !!optional;
     }
     if (isNull(arg)) {
       return !!nullable;
     }
-    return resp.some(val => arg === val);
+    if (isArray) {
+      if (!Array.isArray(arg)) {
+        return false;
+      }
+      for (const item of arg) {
+        if (!test(item)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    return test(arg);
   };
 }
