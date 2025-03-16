@@ -197,4 +197,8 @@ export {
   isOptionalEnumVal,
   isNullableEnumVal,
   isNullishEnumVal,
+  isEnumValArray,
+  isOptionalEnumValArray,
+  isNullableEnumValArray,
+  isNullishEnumValArray,
 } from './complex-validators';

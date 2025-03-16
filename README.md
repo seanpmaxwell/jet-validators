@@ -373,6 +373,10 @@ Check if the argument is a valid enum object. Unlike other complex validators, t
 - isOptionalEnumVal
 - isNullableEnumVal
 - isNullishEnumVal
+- isEnumValArray
+- isOptionalEnumValArray
+- isNullableEnumValArray
+- isNullishEnumValArray
 
 Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`:
 ```typescript

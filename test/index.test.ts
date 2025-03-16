@@ -104,6 +104,7 @@ import {
   isOptionalEnumVal,
   isNullableEnumVal,
   isNullishEnumVal,
+  isEnumValArray,
   TRecord,
 } from '../src';
 
@@ -530,7 +531,7 @@ test('test complex validators', () => {
   expect(isNullishEnum(null)).toStrictEqual(true);
   expect(isNullishEnum(undefined)).toStrictEqual(true);
 
-  // Is enums value
+  // Is enum value
   const testIsStringEnumVal = isEnumVal(StringEnum),
     testIsNumberEnumVal = isEnumVal(NumberEnum);
   expect(testIsStringEnumVal('foo')).toStrictEqual(true);
@@ -540,6 +541,11 @@ test('test complex validators', () => {
   expect(isNullableEnumVal(NumberEnum)(null)).toStrictEqual(true);
   expect(isNullishEnumVal(NumberEnum)(null)).toStrictEqual(true);
   expect(isNullishEnumVal(NumberEnum)(1)).toStrictEqual(true);
+
+  // Is enum value array
+  const testIsNumberEnumValArr = isEnumValArray(NumberEnum);
+  expect(testIsNumberEnumValArr([NumberEnum.Bar, 1234])).toStrictEqual(false);
+  expect(testIsNumberEnumValArr([NumberEnum.Bar, NumberEnum.Foo])).toStrictEqual(true);
 });
 
 
