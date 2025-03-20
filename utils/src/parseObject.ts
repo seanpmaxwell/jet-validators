@@ -1,6 +1,7 @@
 /* eslint-disable max-len */
 import { isFunction, isRecord, isString, isUndef } from '../../dist';
-import { TTransVldrFn } from './util-functions';
+import { ITransVldrFn } from './util-functions';
+
 
 // **** Variables **** //
 
@@ -44,11 +45,11 @@ export interface IParseObjectError {
 
 // **** Basic Types **** //
 
-export type TParseVldrFn<T> = (
-  arg: unknown,
-  onError?: TParseOnError 
-) => arg is T;
-
+export interface IParseVldrFn<T> {
+  (arg: unknown, onError?: TParseOnError): arg is T;
+  isTransFn?: true;
+}
+  
 type TValidatorFn<T> = (arg: unknown) => arg is T;
 
 
@@ -63,13 +64,13 @@ export type TSchema<T = unknown> = (
 export type TSchemaHelper<T> = Required<{
   [K in keyof T]: (
     T[K] extends Record<string, unknown> 
-    ? TParseVldrFn<T[K]> | TTransVldrFn<T[K]> | TSchemaHelper<T[K]>
-    : TParseVldrFn<T[K]> | TTransVldrFn<T[K]>
+    ? IParseVldrFn<T[K]> | ITransVldrFn<T[K]> | TSchemaHelper<T[K]>
+    : IParseVldrFn<T[K]> | ITransVldrFn<T[K]>
   )
 }>;
 
 interface IBasicSchema {
-  [key: string]: TTransVldrFn<unknown> | TParseVldrFn<unknown> | IBasicSchema;
+  [key: string]: ITransVldrFn<unknown> | IParseVldrFn<unknown> | IBasicSchema;
 }
 
 type TInferFromSchema<U, O, N, A, Schema = TInferFromSchemaHelper<U>> = AddMods<Schema, O, N, A>;
@@ -346,26 +347,13 @@ function _parseObjectHelperWithErrCb2(
   for (const key in schemaParentObj) {
     const schemaProp = schemaParentObj[key],
       val = argParentObj[key];
-    // Nested object
-    if (isRecord(schemaProp)) {
-      const childErrArr: IParseObjectError[] = [],
-        childVal = _parseObjectHelperWithErrCb2(schemaProp, val, childErrArr, 
-          safety);
-      if (childVal === false) {
-        errArr.push({
-          info: ERRORS.NestedValidation,
-          prop: key,
-          children: childErrArr,
-          ...(isUndef(index) ? {} : { index }),
-        });
-      }
     // Run validator
-    } else if (isFunction(schemaProp)) {
+    if (isFunction(schemaProp)) {
       try {
         let childErrors: IParseObjectError[] | undefined,
           passed = false,
           info: string = ERRORS.ValidatorFn;
-        if ('isTransFn' in schemaProp && schemaProp.isTransFn === true) {
+        if (schemaProp.isTransFn === true) {
           passed = schemaProp(val, tval => argParentObj[key] = tval);
         } else {
           passed = schemaProp(val, errors => {
@@ -403,6 +391,19 @@ function _parseObjectHelperWithErrCb2(
           prop: key,
           value: val,
           caught,
+          ...(isUndef(index) ? {} : { index }),
+        });
+      }
+    // Nested schema
+    } else {
+      const childErrArr: IParseObjectError[] = [],
+        childVal = _parseObjectHelperWithErrCb2(schemaProp, val, childErrArr, 
+          safety);
+      if (childVal === false) {
+        errArr.push({
+          info: ERRORS.NestedValidation,
+          prop: key,
+          children: childErrArr,
           ...(isUndef(index) ? {} : { index }),
         });
       }
@@ -489,17 +490,11 @@ function _parseObjectHelperWoErrCb2(
   for (const key in schemaParentObj) {
     const schemaProp = schemaParentObj[key],
       val = argParentObj[key];
-    // If nested object
-    if (isRecord(schemaProp)) {
-      const childVal = _parseObjectHelperWoErrCb2(schemaProp, val, safety);
-      if (childVal === false) {
-        return false;
-      }
-    // If validator function
-    } else if (isFunction(schemaProp)) {
+    // Validator function
+    if (isFunction(schemaProp)) {
       try {
         let passed = false;
-        if ('isTransFn' in schemaProp && schemaProp.isTransFn === true) {
+        if (schemaProp.isTransFn === true) {
           passed = schemaProp(val, tval => argParentObj[key] = tval);
         } else {
           passed = schemaProp(val);
@@ -508,6 +503,12 @@ function _parseObjectHelperWoErrCb2(
           return false;
         }
       } catch {
+        return false;
+      }
+    // Nested schema
+    } else {
+      const childVal = _parseObjectHelperWoErrCb2(schemaProp, val, safety);
+      if (childVal === false) {
         return false;
       }
     }

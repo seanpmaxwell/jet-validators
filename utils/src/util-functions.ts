@@ -1,15 +1,15 @@
 /* eslint-disable max-len */
 import { isNullish, isString } from '../../dist';
-import { TParseVldrFn, TParseOnError } from './parseObject';
+import { IParseVldrFn, TParseOnError } from './parseObject';
 
 
 // **** Types **** //
 
-export type TTransVldrFn<T> = (
-  arg: unknown,
-  cb?: (arg: T) => void,
-) => arg is T;
-
+export interface ITransVldrFn<T> {
+  (arg: unknown, cb?: (arg: T) => void): arg is T;
+  isTransFn?: true; 
+}
+  
 
 // **** Simple Util **** //
 
@@ -17,7 +17,7 @@ export type TTransVldrFn<T> = (
  * Extract null/undefined from a validator function. Have to provide an errCb in case
  * we are wrapping a nested schema function.
  */
-export function nonNullable<T>(cb: TParseVldrFn<T>) {
+export function nonNullable<T>(cb: IParseVldrFn<T>) {
   return (arg: unknown, onError?: TParseOnError): arg is NonNullable<T> => {
     if (isNullish(arg)) {
       return false;
@@ -33,7 +33,7 @@ export function nonNullable<T>(cb: TParseVldrFn<T>) {
 export function transform<T>(
   transFn: (arg: unknown) => T,
   vldt: ((arg: unknown) => arg is T),
-): TTransVldrFn<T> {
+): ITransVldrFn<T> {
   const retFn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
     if (arg !== undefined) {
       arg = transFn(arg);
