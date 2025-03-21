@@ -20,6 +20,7 @@ const ERRORS = {
   ValidatorFn: 'Validator-function returned false.',
   ErrorThrown: 'Validator function threw an error.',
   StrictSafety: 'strict-safety failed, prop not in schema.',
+  SchemaProp: 'Schema property must be a function or nested schema',
 } as const;
 
 
@@ -395,7 +396,7 @@ function _parseObjectHelperWithErrCb2(
         });
       }
     // Nested schema
-    } else {
+    } else if (isRecord(schemaProp) && Object.keys(schemaProp).length > 0) {
       const childErrArr: IParseObjectError[] = [],
         childVal = _parseObjectHelperWithErrCb2(schemaProp, val, childErrArr, 
           safety);
@@ -407,6 +408,9 @@ function _parseObjectHelperWithErrCb2(
           ...(isUndef(index) ? {} : { index }),
         });
       }
+    // Throw error if not function
+    } else {
+      throw new Error(ERRORS.SchemaProp);
     }
   }
   // Unless safety = "loose", filter extra keys
@@ -506,11 +510,14 @@ function _parseObjectHelperWoErrCb2(
         return false;
       }
     // Nested schema
-    } else {
+    } else if (isRecord(schemaProp) && Object.keys(schemaProp).length > 0) {
       const childVal = _parseObjectHelperWoErrCb2(schemaProp, val, safety);
       if (childVal === false) {
         return false;
       }
+    // Throw error if not function or nested schema
+    } else {
+      throw new Error(ERRORS.SchemaProp);
     }
   }
   // Unless safety = "loose", filter extra keys
