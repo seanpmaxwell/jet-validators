@@ -355,7 +355,13 @@ function _parseObjectHelperWithErrCb2(
           passed = false,
           info: string = ERRORS.ValidatorFn;
         if (schemaProp.isTransFn === true) {
-          passed = schemaProp(val, tval => argParentObj[key] = tval);
+          passed = schemaProp(val, tval => {
+            // Don't append "undefined" if the key is absent
+            if (tval === undefined && !(key in argParentObj)) {
+              return;
+            }
+            argParentObj[key] = tval;
+          });
         } else {
           passed = schemaProp(val, errors => {
             if (isParseObjectErrArr(errors)) {

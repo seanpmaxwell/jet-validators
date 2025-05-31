@@ -49,6 +49,7 @@ import {
   isNullableDate,
   isNullishDate,
   isValidDate,
+  isOptionalValidDate,
   isDateArray,
   isOptionalDateArray,
   isNullableDateArray,
@@ -1162,9 +1163,9 @@ test('Fix "transform" appending undefined properties to object', () => {
     birthdate?: Date;
   }
 
-  const transIsOptionalDate = transform<Date | undefined>(
-    (arg: unknown) => isUndef(arg) ? arg : new Date(arg as string),
-    isOptionalDate,
+  const transIsOptionalDate = transform(
+    arg => isUndef(arg) ? arg : new Date(arg as string),
+    (arg: unknown): arg is Date | undefined => isOptionalValidDate(arg),
   );
 
   const parseUser = parseObject<IUser>({
@@ -1200,5 +1201,12 @@ test('Fix "transform" appending undefined properties to object', () => {
     id: 3,
     name: 'jane',
     birthdate: new Date('2025-05-31T18:13:34.990Z'),
+  });
+  parseUser({
+    id: 2,
+    name: 'john',
+    birthdate: 'horse',
+  }, (errors) => {
+    expect(errors[0].prop).toStrictEqual('birthdate');
   });
 });
