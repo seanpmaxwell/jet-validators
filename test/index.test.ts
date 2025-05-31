@@ -1148,3 +1148,57 @@ test('test different safety options', () => {
     },
   ]);
 });
+
+
+/**
+ * Optional properties which are undefined are getting appended to the 
+ * response object.
+ */
+test('Fix "transform" appending undefined properties to object', () => {
+
+  interface IUser {
+    id: number;
+    name: string;
+    birthdate?: Date;
+  }
+
+  const transIsOptionalDate = transform<Date | undefined>(
+    (arg: unknown) => isUndef(arg) ? arg : new Date(arg as string),
+    isOptionalDate,
+  );
+
+  const parseUser = parseObject<IUser>({
+    id: isNumber,
+    name: isString,
+    birthdate: transIsOptionalDate,
+  });
+
+  const user: IUser = {
+    id: 1,
+    name: 'joe',
+  };
+
+  const user2: IUser = {
+    id: 2,
+    name: 'john',
+    birthdate: undefined,
+  };
+
+  const user3: IUser = {
+    id: 3,
+    name: 'jane',
+    birthdate: '2025-05-31T18:13:34.990Z' as unknown as Date,
+  };
+
+  // Run tests
+  const userResp = parseUser(user);
+  expect('birthdate' in userResp).toStrictEqual(false);
+  const userResp2 = parseUser(user2);
+  expect('birthdate' in userResp2).toStrictEqual(true);
+  const userResp3 = parseUser(user3);
+  expect(userResp3).toStrictEqual({
+    id: 3,
+    name: 'jane',
+    birthdate: new Date('2025-05-31T18:13:34.990Z'),
+  });
+});
