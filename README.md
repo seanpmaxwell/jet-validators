@@ -124,6 +124,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableNumberArray
 - isNullishNumberArray
 
+Positive Number
 - isPositiveNumber
 - isOptionalPositiveNumber
 - isNullablePositiveNumber
@@ -133,6 +134,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullablePositiveNumberArray
 - isNullishPositiveNumberArray
 
+Negative Number
 - isNegativeNumber
 - isOptionalNegativeNumber
 - isNullableNegativeNumber
@@ -142,6 +144,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableNegativeNumberArray
 - isNullishNegativeNumberArray
 
+Unsigned Number
 - isUnsignedNumber
 - isOptionalUnsignedNumber
 - isNullableUnsignedNumber
@@ -161,6 +164,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableIntegerArray
 - isNullishIntegerArray
 
+Positive Integer
 - isPositiveInteger
 - isOptionalPositiveInteger
 - isNullablePositiveInteger
@@ -170,6 +174,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullablePositiveIntegerArray
 - isNullishPositiveIntegerArray
 
+Negative Integer
 - isNegativeInteger
 - isOptionalNegativeInteger
 - isNullableNegativeInteger
@@ -179,6 +184,7 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isNullableNegativeIntegerArray
 - isNullishNegativeIntegerArray
 
+Unsigned Integer
 - isUnsignedInteger
 - isOptionalUnsignedInteger
 - isNullableUnsignedInteger
