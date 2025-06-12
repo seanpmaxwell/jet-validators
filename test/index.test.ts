@@ -107,6 +107,11 @@ import {
   isNullishEnumVal,
   isEnumValArray,
   TRecord,
+  isNullishPositiveNumber,
+  isNullablePositiveNumber,
+  isNullableNegativeInteger,
+  isUnsignedIntegerArray,
+  isNullableUnsignedIntegerArray,
 } from '../src';
 
 import {
@@ -366,7 +371,6 @@ test('test basic validators', () => {
   expect(isNullishRecord(undefined)).toStrictEqual(true);
 });
 
-
 /**
  * Test regular expression validators.
  */
@@ -432,7 +436,6 @@ test('test regexes', () => {
   expect(isNullishEmail(undefined)).toStrictEqual(true);
 });
 
-
 /**
  * Test overloading regexes from environment variables.
  */
@@ -455,7 +458,6 @@ test('test overloading regexes from environment variables', async () => {
   expect(src.isColor('ffffff')).toStrictEqual(true);
   expect(src.isColor('#ffffff')).toStrictEqual(false);
 });
-
 
 /**
  * Test complex-validators.
@@ -549,7 +551,6 @@ test('test complex validators', () => {
   expect(testIsNumberEnumValArr([NumberEnum.Bar, NumberEnum.Foo])).toStrictEqual(true);
 });
 
-
 /**
  * Test simple utilities.
  */
@@ -577,7 +578,6 @@ test('test simple utilities', () => {
   expect(parseBoolean('1')).toStrictEqual(true);
   expect(parseBoolean('0')).toStrictEqual(false);
 });
-
 
 /**
  * Test "parseObject" function
@@ -757,7 +757,6 @@ test('test "parseObject()" function', () => {
     { prop: 'name', value: 5, info: 'Validator-function returned false.' },
   ]);
 });
-
 
 /**
  * Test "testObject" function
@@ -977,7 +976,6 @@ test('test "deepCompare()" function basic', () => {
   expect(() => deepCompare4(User4, User5a)).toThrowError();
 });
 
-
 /**
  * Test "deepCompare" function overriding "rec" option.
  */
@@ -1042,7 +1040,6 @@ test('test "deepCompare()" function override "rec" option', () => {
   expect(deepCompare1(arr, arr2)).toBeTruthy();
   expect(deepCompare2(arr3, arr4)).toBeTruthy();
 });
-
 
 /**
  * Test different safety options
@@ -1150,7 +1147,6 @@ test('test different safety options', () => {
   ]);
 });
 
-
 /**
  * Optional properties which are undefined are getting appended to the 
  * response object.
@@ -1209,4 +1205,30 @@ test('Fix "transform" appending undefined properties to object', () => {
   }, (errors) => {
     expect(errors[0].prop).toStrictEqual('birthdate');
   });
+});
+
+/**
+ * Test additional number types
+ */
+test('additional number types', () => {
+
+  // Positive number
+  expect(isNullishPositiveNumber(null)).toStrictEqual(true);
+  expect(isNullishPositiveNumber(-3)).toStrictEqual(false);
+  expect(isNullishPositiveNumber(543.234)).toStrictEqual(true);
+  expect(isNullablePositiveNumber(undefined)).toStrictEqual(false);
+
+  // Negative integer
+  expect(isNullableNegativeInteger(-8.7)).toStrictEqual(false);
+  expect(isNullableNegativeInteger(-8)).toStrictEqual(true);
+  expect(isNullableNegativeInteger(null)).toStrictEqual(true);
+
+  // Unsigned integer array
+  expect(isUnsignedIntegerArray(-8.7)).toStrictEqual(false);
+  expect(isUnsignedIntegerArray(-8)).toStrictEqual(false);
+  expect(isUnsignedIntegerArray(null)).toStrictEqual(false);
+  expect(isNullableUnsignedIntegerArray(null)).toStrictEqual(true);
+  expect(isUnsignedIntegerArray([0, 1, 2])).toStrictEqual(true);
+  expect(isUnsignedIntegerArray([])).toStrictEqual(true);
+  expect(isNullableUnsignedIntegerArray([0, 1, undefined])).toStrictEqual(false);
 });

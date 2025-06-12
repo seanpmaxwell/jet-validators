@@ -46,6 +46,76 @@ export const isOptionalNumberArray = orOptional(isNumberArray);
 export const isNullableNumberArray = orNullable(isNumberArray);
 export const isNullishNumberArray = orNullable(isOptionalNumberArray);
 
+// Postive Number
+export const isPositiveNumber = _isPositiveNumber;
+export const isOptionalPositiveNumber = orOptional(isPositiveNumber);
+export const isNullablePositiveNumber = orNullable(isPositiveNumber);
+export const isNullishPositiveNumber = orNullable(isOptionalPositiveNumber);
+export const isPositiveNumberArray = _toArray(isPositiveNumber);
+export const isOptionalPositiveNumberArray = orOptional(isPositiveNumberArray);
+export const isNullablePositiveNumberArray = orNullable(isPositiveNumberArray);
+export const isNullishPositiveNumberArray = orNullable(isOptionalPositiveNumberArray);
+
+// Negative Number
+export const isNegativeNumber = _isNegativeNumber;
+export const isOptionalNegativeNumber = orOptional(isNegativeNumber);
+export const isNullableNegativeNumber = orNullable(isNegativeNumber);
+export const isNullishNegativeNumber = orNullable(isOptionalNegativeNumber);
+export const isNegativeNumberArray = _toArray(isNegativeNumber);
+export const isOptionalNegativeNumberArray = orOptional(isNegativeNumberArray);
+export const isNullableNegativeNumberArray = orNullable(isNegativeNumberArray);
+export const isNullishNegativeNumberArray = orNullable(isOptionalNegativeNumberArray);
+
+// Unsigned Number
+export const isUnsignedNumber = _isUnsignedNumber;
+export const isOptionalUnsignedNumber = orOptional(isUnsignedNumber);
+export const isNullableUnsignedNumber = orNullable(isUnsignedNumber);
+export const isNullishUnsignedNumber = orNullable(isOptionalUnsignedNumber);
+export const isUnsignedNumberArray = _toArray(isUnsignedNumber);
+export const isOptionalUnsignedNumberArray = orOptional(isUnsignedNumberArray);
+export const isNullableUnsignedNumberArray = orNullable(isUnsignedNumberArray);
+export const isNullishUnsignedNumberArray = orNullable(isOptionalUnsignedNumberArray);
+
+// Integer
+export const isInteger = _isInteger;
+export const isOptionalInteger = orOptional(isInteger);
+export const isNullableInteger = orNullable(isInteger);
+export const isNullishInteger = orNullable(isOptionalInteger);
+export const isIntegerArray = _toArray(isInteger);
+export const isOptionalIntegerArray = orOptional(isIntegerArray);
+export const isNullableIntegerArray = orNullable(isIntegerArray);
+export const isNullishIntegerArray = orNullable(isOptionalIntegerArray);
+
+// Postive Integer
+export const isPositiveInteger = _isPositiveInteger;
+export const isOptionalPositiveInteger = orOptional(isPositiveInteger);
+export const isNullablePositiveInteger = orNullable(isPositiveInteger);
+export const isNullishPositiveInteger = orNullable(isOptionalPositiveInteger);
+export const isPositiveIntegerArray = _toArray(isPositiveInteger);
+export const isOptionalPositiveIntegerArray = orOptional(isPositiveIntegerArray);
+export const isNullablePositiveIntegerArray = orNullable(isPositiveIntegerArray);
+export const isNullishPositiveIntegerArray = orNullable(isOptionalPositiveIntegerArray);
+
+// Negative Integer
+export const isNegativeInteger = _isNegativeInteger;
+export const isOptionalNegativeInteger = orOptional(isNegativeInteger);
+export const isNullableNegativeInteger = orNullable(isNegativeInteger);
+export const isNullishNegativeInteger = orNullable(isOptionalNegativeInteger);
+export const isNegativeIntegerArray = _toArray(isNegativeInteger);
+export const isOptionalNegativeIntegerArray = orOptional(isNegativeIntegerArray);
+export const isNullableNegativeIntegerArray = orNullable(isNegativeIntegerArray);
+export const isNullishNegativeIntegerArray = orNullable(isOptionalNegativeIntegerArray);
+
+// Unsigned Integer
+export const isUnsignedInteger = _isUnsignedInteger;
+export const isOptionalUnsignedInteger = orOptional(isUnsignedInteger);
+export const isNullableUnsignedInteger = orNullable(isUnsignedInteger);
+export const isNullishUnsignedInteger = orNullable(isOptionalUnsignedInteger);
+export const isUnsignedIntegerArray = _toArray(isUnsignedInteger);
+export const isOptionalUnsignedIntegerArray = orOptional(isUnsignedIntegerArray);
+export const isNullableUnsignedIntegerArray = orNullable(isUnsignedIntegerArray);
+export const isNullishUnsignedIntegerArray = orNullable(isOptionalUnsignedIntegerArray);
+
 // BigInt
 export const isBigInt = _checkType<bigint>('bigint');
 export const isOptionalBigInt = orOptional(isBigInt);
@@ -160,10 +230,59 @@ function _toArray<T>(cb: ((arg: unknown) => arg is T)) {
 }
 
 /**
- * Wrapper to check basic type.
+ * Check if number and not NaN (NaN is a number type).
  */
 function _isNumber(arg: unknown): arg is number {
   return typeof arg === 'number' && !isNaN(arg);
+}
+
+/**
+ * Check if number and positive.
+ */
+function _isPositiveNumber(arg: unknown): arg is number {
+  return _isNumber(arg) && arg > 0;
+}
+
+/**
+ * Check if number and positive.
+ */
+function _isNegativeNumber(arg: unknown): arg is number {
+  return _isNumber(arg) && arg < 0;
+}
+
+/**
+ * Check if number and positive.
+ */
+function _isUnsignedNumber(arg: unknown): arg is number {
+  return _isPositiveNumber(arg) || arg === 0;
+}
+
+/**
+ * Wrapper to check basic type.
+ */
+function _isInteger(arg: unknown): arg is number {
+  return Number.isInteger(arg);
+}
+
+/**
+ * Wrapper to check basic type.
+ */
+function _isPositiveInteger(arg: unknown): arg is number {
+  return _isInteger(arg) && arg > 0;
+}
+
+/**
+ * Wrapper to check basic type.
+ */
+function _isNegativeInteger(arg: unknown): arg is number {
+  return _isInteger(arg) && arg < 0;
+}
+
+/**
+ * Wrapper to check basic type.
+ */
+function _isUnsignedInteger(arg: unknown): arg is number {
+  return _isPositiveInteger(arg) || arg === 0;
 }
 
 /**

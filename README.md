@@ -11,6 +11,7 @@
   - [isBoolean](#is-noolean)
   - [isValidBoolean](#is-valid-boolean)
   - [isNumber](#is-number)
+  - [isInteger](#is-integer)
   - [isBigInt](#is-bigint)
   - [isValidNumber](#is-valid-number)
   - [isString](#is-string)
@@ -122,6 +123,70 @@ Is it a valid boolean after calling the `parseBoolean` utility function.
 - isOptionalNumberArray
 - isNullableNumberArray
 - isNullishNumberArray
+
+- isPositiveNumber
+- isOptionalPositiveNumber
+- isNullablePositiveNumber
+- isNullishPositiveNumber
+- isPositiveNumberArray
+- isOptionalPositiveNumberArray
+- isNullablePositiveNumberArray
+- isNullishPositiveNumberArray
+
+- isNegativeNumber
+- isOptionalNegativeNumber
+- isNullableNegativeNumber
+- isNullishNegativeNumber
+- isNegativeNumberArray
+- isOptionalNegativeNumberArray
+- isNullableNegativeNumberArray
+- isNullishNegativeNumberArray
+
+- isUnsignedNumber
+- isOptionalUnsignedNumber
+- isNullableUnsignedNumber
+- isNullishUnsignedNumber
+- isUnsignedNumberArray
+- isOptionalUnsignedNumberArray
+- isNullableUnsignedNumberArray
+- isNullishUnsignedNumberArray
+
+### `isInteger` <a name="is-integer"></a>
+- isInteger
+- isOptionalInteger
+- isNullableInteger
+- isNullishInteger
+- isIntegerArray
+- isOptionalIntegerArray
+- isNullableIntegerArray
+- isNullishIntegerArray
+
+- isPositiveInteger
+- isOptionalPositiveInteger
+- isNullablePositiveInteger
+- isNullishPositiveInteger
+- isPositiveIntegerArray
+- isOptionalPositiveIntegerArray
+- isNullablePositiveIntegerArray
+- isNullishPositiveIntegerArray
+
+- isNegativeInteger
+- isOptionalNegativeInteger
+- isNullableNegativeInteger
+- isNullishNegativeInteger
+- isNegativeIntegerArray
+- isOptionalNegativeIntegerArray
+- isNullableNegativeIntegerArray
+- isNullishNegativeIntegerArray
+
+- isUnsignedInteger
+- isOptionalUnsignedInteger
+- isNullableUnsignedInteger
+- isNullishUnsignedInteger
+- isUnsignedIntegerArray
+- isOptionalUnsignedIntegerArray
+- isNullableUnsignedIntegerArray
+- isNullishUnsignedIntegerArray
 
 ### `isBigInt` <a name="is-bigint"></a>
 - isBigInt
