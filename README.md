@@ -404,10 +404,7 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 - isOptionalKeyOf
 - isNullableKeyOf
 - isNullishKeyOf
-- isKeyOfArray
-- isOptionalKeyOfArray
-- isNullableKeyOfArray
-- isNullishKeyOfArray
+- Returns type-predicate: `param is keyof T`
 
 Checks if the argument is a key of the object. Note that this will not work for symbols:
 ```typescript
@@ -416,11 +413,26 @@ Checks if the argument is a key of the object. Note that this will not work for 
     bada: 'bing',
   } as const;
 
-  const isKeyofSomeObject = isKeyOf(someObject);
-  isKeyofSomeObject('foo'); // true
+  const isKeyOfSomeObject = isKeyOf(someObject);
+  isKeyOfSomeObject('foo'); // true
+```
 
-  const isKeyofSomeObjectArr = isNullableKeyOfArray(someObject);
-  isKeyofSomeObjectArr(['bada', 'foo']); // true
+### `isValueOf` <a name="is-value-of"></a>
+- isValueOf
+- isOptionalValueOf
+- isNullableValueOf
+- isNullishValueOf
+- Returns type-predicate: `param is T[keyof T]`
+
+Checks if the argument is a value in the object.
+```typescript
+  const someObject = {
+    foo: 'bar',
+    bada: 'bing',
+  } as const;
+
+  const isValueOfSomeObject = isValueOf(someObject);
+  isValueOfSomeObject('bar'); // true
 ```
 
 ### `isEnum` <a name="is-enum"></a>

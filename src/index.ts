@@ -245,10 +245,11 @@ export {
   isOptionalKeyOf,
   isNullableKeyOf,
   isNullishKeyOf,
-  isKeyOfArray,
-  isOptionalKeyOfArray,
-  isNullableKeyOfArray,
-  isNullishKeyOfArray,
+  // Is Value Of
+  isValueOf,
+  isOptionalValueOf,
+  isNullableValueOf,
+  isNullishValueOf,
   // Enum
   TEnum,
   isEnum,

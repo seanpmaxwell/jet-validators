@@ -152,21 +152,13 @@ function _initRangeFn(min: TRangeParam, max: TRangeParam): TRangeFn {
 // **** Is string a key of an object **** //
 
 export const isKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, false, false>(arg, false, false, false);
+  _isKeyOf<T, false, false>(arg, false, false);
 export const isOptionalKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, false, false>(arg, true, false, false);
+  _isKeyOf<T, true, false>(arg, true, false);
 export const isNullableKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, true, false>(arg, false, true, false);
+  _isKeyOf<T, false, true>(arg, false, true);
 export const isNullishKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, true, false>(arg, true, true, false);
-export const isKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, false, true>(arg, false, false, true);
-export const isOptionalKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, false, true>(arg, true, false, true);
-export const isNullableKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, true, true>(arg, false, true, true);
-export const isNullishKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, true, true>(arg, true, true, true);
+  _isKeyOf<T, true, true>(arg, true, true);
 
 /**
  * See if something is a key of an object.
@@ -175,13 +167,11 @@ function _isKeyOf<
   T extends object,
   O extends boolean,
   N extends boolean,
-  A extends boolean,
-  Ret = AddMods<keyof T, O, N, A>,
+  Ret = AddMods<keyof T, O, N, false>,
 >(
   obj: object,
   optional: boolean,
   nullable: boolean,
-  isArr: boolean,
 ): ((arg: unknown) => arg is Ret) {
   if (!isObject(obj)) {
     throw new Error('Item to check from must be a Record<string, unknown>.');
@@ -194,10 +184,47 @@ function _isKeyOf<
     if (arg === null) {
       return nullable;
     }
-    if (isArr) {
-      return Array.isArray(arg) && !arg.some(item => !isInKeys(item));
-    }
     return isInKeys(arg);
+  };
+}
+
+
+// **** Is param a value in an object **** //
+
+export const isValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, false, false>(arg, false, false);
+export const isOptionalValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, true, false>(arg, true, false);
+export const isNullableValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, false, true>(arg, false, true);
+export const isNullishValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, true, true>(arg, true, true);
+
+/**
+ * See if something is a value in an object.
+ */
+function _isValueOf<
+  T extends object,
+  O extends boolean,
+  N extends boolean,
+  Ret = AddMods<T[keyof T], O, N, false>,
+>(
+  obj: object,
+  optional: boolean,
+  nullable: boolean,
+): ((arg: unknown) => arg is Ret) {
+  if (!isObject(obj)) {
+    throw new Error('Item to check from must be a Record<string, unknown>.');
+  }
+  const isInValues = isInArray(Object.values(obj));
+  return (arg: unknown): arg is Ret => {
+    if (arg === undefined) {
+      return optional;
+    }
+    if (arg === null) {
+      return nullable;
+    }
+    return isInValues(arg);
   };
 }
 

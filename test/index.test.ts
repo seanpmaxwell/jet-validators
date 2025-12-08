@@ -100,7 +100,9 @@ import {
   isOptionalInRange,
   isNullishInRangeArray,
   isKeyOf,
-  isNullableKeyOfArray,
+  isNullableKeyOf,
+  isValueOf,
+  isNullishValueOf,
   isEnumVal,
   isOptionalEnumVal,
   isNullableEnumVal,
@@ -501,14 +503,25 @@ test('test complex validators', () => {
     foo: 'bar',
     bada: 'bing',
   } as const;
-  const isKeyofSomeObject = isKeyOf(someObject);
-  expect(isKeyofSomeObject('foo')).toStrictEqual(true);
-  expect(isKeyofSomeObject('bada')).toStrictEqual(true);
-  expect(isKeyofSomeObject('bing')).toStrictEqual(false);
-  const isKeyofSomeObjectArr = isNullableKeyOfArray(someObject);
-  expect(isKeyofSomeObjectArr(['bada', 'foo'])).toStrictEqual(true);
-  expect(isKeyofSomeObjectArr(null)).toStrictEqual(true);
-  expect(isKeyofSomeObjectArr(['bar', 'foo', 'bing'])).toStrictEqual(false);
+  const isKeyOfSomeObject = isKeyOf(someObject);
+  expect(isKeyOfSomeObject('foo')).toStrictEqual(true);
+  expect(isKeyOfSomeObject('bada')).toStrictEqual(true);
+  expect(isKeyOfSomeObject('bing')).toStrictEqual(false);
+  const isNullableKeyOfSomeObject = isNullableKeyOf(someObject);
+  expect(isNullableKeyOfSomeObject(null)).toStrictEqual(true);
+
+  // Check is value in an Object
+  const someOtherObject = {
+    foo: 'bar',
+    bada: 'bing',
+  } as const;
+  const isValueOfSomeObject = isValueOf(someOtherObject);
+  expect(isValueOfSomeObject('bar')).toStrictEqual(true);
+  expect(isValueOfSomeObject('bing')).toStrictEqual(true);
+  expect(isValueOfSomeObject('foo')).toStrictEqual(false);
+  const isNullishValueOfSomeObject = isNullishValueOf(someOtherObject);
+  expect(isNullishValueOfSomeObject(null)).toStrictEqual(true);
+  expect(isNullishValueOfSomeObject(undefined)).toStrictEqual(true);
 
   // Enums (NOTE: We cannot used mixed Enum types)
   // See: "eslint@typescript-eslint/no-mixed-enums"
