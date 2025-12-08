@@ -1,6 +1,12 @@
 /* eslint-disable max-len */
-import { isNull, isNumber, isObject, isRecord, isString, isUndef, isValidNumber } from './basic';
-import { orNullable, orOptional } from './common';
+import {
+  isNull,
+  isNumber,
+  isObject,
+  isString,
+  isUndef,
+  isValidNumber,
+} from './basic';
 
 // Add modifiers
 type AddNull<T, N> = (N extends true ? T | null : T);
@@ -152,21 +158,13 @@ function _initRangeFn(min: TRangeParam, max: TRangeParam): TRangeFn {
 // **** Is string a key of an object **** //
 
 export const isKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, false, false>(arg, false, false, false);
+  _isKeyOf<T, false, false>(arg, false, false);
 export const isOptionalKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, false, false>(arg, true, false, false);
+  _isKeyOf<T, true, false>(arg, true, false);
 export const isNullableKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, true, false>(arg, false, true, false);
+  _isKeyOf<T, false, true>(arg, false, true);
 export const isNullishKeyOf = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, true, false>(arg, true, true, false);
-export const isKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, false, true>(arg, false, false, true);
-export const isOptionalKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, false, true>(arg, true, false, true);
-export const isNullableKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, false, true, true>(arg, false, true, true);
-export const isNullishKeyOfArray = <T extends object>(arg: T) => 
-  _isKeyOf<T, true, true, true>(arg, true, true, true);
+  _isKeyOf<T, true, true>(arg, true, true);
 
 /**
  * See if something is a key of an object.
@@ -175,13 +173,11 @@ function _isKeyOf<
   T extends object,
   O extends boolean,
   N extends boolean,
-  A extends boolean,
-  Ret = AddMods<keyof T, O, N, A>,
+  Ret = AddMods<keyof T, O, N, false>,
 >(
   obj: object,
   optional: boolean,
   nullable: boolean,
-  isArr: boolean,
 ): ((arg: unknown) => arg is Ret) {
   if (!isObject(obj)) {
     throw new Error('Item to check from must be a Record<string, unknown>.');
@@ -194,124 +190,48 @@ function _isKeyOf<
     if (arg === null) {
       return nullable;
     }
-    if (isArr) {
-      return Array.isArray(arg) && !arg.some(item => !isInKeys(item));
-    }
     return isInKeys(arg);
   };
 }
 
 
-// **** Is value an Enum **** //
+// **** Is param a value in an object **** //
 
-export type TEnum = Record<string, string | number>;
-export const isEnum = _isEnum;
-export const isOptionalEnum = orOptional(_isEnum);
-export const isNullableEnum = orNullable(_isEnum);
-export const isNullishEnum = orNullable(isOptionalEnum);
+export type ValueOf<T extends object> = T[keyof T];
 
-/**
- * Check if unknown is a valid enum object.
- * NOTE: this does not work for mixed enums see: "eslint@typescript-eslint/no-mixed-enums"
- */
-function _isEnum(arg: unknown): arg is TEnum {
-  // Check is non-array object
-  if (!isRecord(arg)) {
-    return false;
-  }
-  // Check if string or number enum
-  const keys = Object.keys(arg),
-    middle = Math.floor(keys.length / 2);
-  // ** String Enum ** //
-  if (!isNumber(arg[keys[middle]])) {
-    const entries = Object.entries(arg);
-    for (const entry of entries) {
-      if (!(isString(entry[0]) && isString(entry[1]))) {
-        return false;
-      }
-    }
-    return true;
-  }
-  // ** Number Enum ** //
-  // Enum key length will always be even
-  if (keys.length % 2 !== 0) {
-    return false;
-  }
-  // Check key/values
-  for (let i = 0; i < middle; i++) {
-    const thisKey = keys[i],
-      thisVal = arg[thisKey],
-      thatKey = keys[i + middle],
-      thatVal = arg[thatKey];
-    if (!(thisVal === thatKey && thisKey === String(thatVal))) {
-      return false;
-    }
-  }
-  // Return
-  return true;
-}
-
-
-// **** Is argument an Enum Value **** //
-
-export const isEnumVal = <T>(arg: T) => _isEnumVal<T, false, false, false>(arg, false, false, false);
-export const isOptionalEnumVal = <T>(arg: T) => _isEnumVal<T, true, false, false>(arg, true, false, false);
-export const isNullableEnumVal = <T>(arg: T) => _isEnumVal<T, false, true, false>(arg, false, true, false);
-export const isNullishEnumVal = <T>(arg: T) => _isEnumVal<T, true, true, false>(arg, true, true, false);
-export const isEnumValArray = <T>(arg: T) => _isEnumVal<T, false, false, true>(arg, false, false, true);
-export const isOptionalEnumValArray = <T>(arg: T) => _isEnumVal<T, true, false, true>(arg, true, false, true);
-export const isNullableEnumValArray = <T>(arg: T) => _isEnumVal<T, false, true, true>(arg, false, true, true);
-export const isNullishEnumValArray = <T>(arg: T) => _isEnumVal<T, true, true, true>(arg, true, true, true);
-
+export const isValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, false, false>(arg, false, false);
+export const isOptionalValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, true, false>(arg, true, false);
+export const isNullableValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, false, true>(arg, false, true);
+export const isNullishValueOf = <T extends object>(arg: T) => 
+  _isValueOf<T, true, true>(arg, true, true);
 
 /**
- * Check is value satisfies enum.
+ * See if something is a value in an object.
  */
-function _isEnumVal<T, 
+function _isValueOf<
+  T extends object,
   O extends boolean,
   N extends boolean,
-  A extends boolean,
+  Ret = AddMods<ValueOf<T>, O, N, false>,
 >(
-  enumArg: T,
-  optional: O,
-  nullable: N,
-  isArray: A,
-): ((arg: unknown) => arg is AddMods<T[keyof T], O, N, A>) {
-  // Check is enum
-  if (!isEnum(enumArg)) {
-    throw Error('Item to check from must be an enum.');
+  obj: object,
+  optional: boolean,
+  nullable: boolean,
+): ((arg: unknown) => arg is Ret) {
+  if (!isObject(obj)) {
+    throw new Error('Item to check from must be a Record<string, unknown>.');
   }
-  // Get enum vals
-  let enumVals = Object.keys(enumArg).reduce((arr: unknown[], key) => {
-    if (!arr.includes(key)) {
-      arr.push(enumArg[key]);
+  const isInValues = isInArray(Object.values(obj));
+  return (arg: unknown): arg is Ret => {
+    if (arg === undefined) {
+      return optional;
     }
-    return arr;
-  }, []);
-  // Check if string or number enum
-  if (isNumber(enumArg[enumVals[0] as string])) {
-    enumVals = enumVals.map(item => enumArg[item as string]);
-  }
-  const test = (arg: unknown) => enumVals.some(val => arg === val);
-  // Return validator function
-  return (arg: unknown): arg is AddMods<T[keyof T], O, N, A> => {
-    if (isUndef(arg)) {
-      return !!optional;
+    if (arg === null) {
+      return nullable;
     }
-    if (isNull(arg)) {
-      return !!nullable;
-    }
-    if (isArray) {
-      if (!Array.isArray(arg)) {
-        return false;
-      }
-      for (const item of arg) {
-        if (!test(item)) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return test(arg);
+    return isInValues(arg);
   };
 }

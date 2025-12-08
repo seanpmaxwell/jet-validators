@@ -84,10 +84,6 @@ import {
   isNullishAlphaNumericString,
   isAlphabeticString,
   isUrl,
-  isEnum,
-  isOptionalEnum,
-  isNullableEnum,
-  isNullishEnum,
   isRecord,
   isOptionalRecord,
   isNullableRecord,
@@ -100,12 +96,10 @@ import {
   isOptionalInRange,
   isNullishInRangeArray,
   isKeyOf,
-  isNullableKeyOfArray,
-  isEnumVal,
-  isOptionalEnumVal,
-  isNullableEnumVal,
-  isNullishEnumVal,
-  isEnumValArray,
+  isNullableKeyOf,
+  isValueOf,
+  ValueOf,
+  isNullishValueOf,
   TRecord,
   isNullishPositiveNumber,
   isNullablePositiveNumber,
@@ -501,54 +495,27 @@ test('test complex validators', () => {
     foo: 'bar',
     bada: 'bing',
   } as const;
-  const isKeyofSomeObject = isKeyOf(someObject);
-  expect(isKeyofSomeObject('foo')).toStrictEqual(true);
-  expect(isKeyofSomeObject('bada')).toStrictEqual(true);
-  expect(isKeyofSomeObject('bing')).toStrictEqual(false);
-  const isKeyofSomeObjectArr = isNullableKeyOfArray(someObject);
-  expect(isKeyofSomeObjectArr(['bada', 'foo'])).toStrictEqual(true);
-  expect(isKeyofSomeObjectArr(null)).toStrictEqual(true);
-  expect(isKeyofSomeObjectArr(['bar', 'foo', 'bing'])).toStrictEqual(false);
+  const isKeyOfSomeObject = isKeyOf(someObject);
+  expect(isKeyOfSomeObject('foo')).toStrictEqual(true);
+  expect(isKeyOfSomeObject('bada')).toStrictEqual(true);
+  expect(isKeyOfSomeObject('bing')).toStrictEqual(false);
+  const isNullableKeyOfSomeObject = isNullableKeyOf(someObject);
+  expect(isNullableKeyOfSomeObject(null)).toStrictEqual(true);
 
-  // Enums (NOTE: We cannot used mixed Enum types)
-  // See: "eslint@typescript-eslint/no-mixed-enums"
-  enum StringEnum {
-    Foo = 'foo',
-    Bar = 'bar',
-  }
-  enum NumberEnum {
-    Foo,
-    Bar,
-  }
-  const NotAnEnum = {
-    Foo: 1,
-    Bar: 2,
-  };
-  expect(isEnum(StringEnum)).toStrictEqual(true);
-  expect(isEnum(NotAnEnum)).toStrictEqual(false);
-  expect(isOptionalEnum(NumberEnum)).toStrictEqual(true);
-  expect(isOptionalEnum(undefined)).toStrictEqual(true);
-  expect(isNullableEnum(StringEnum)).toStrictEqual(true);
-  expect(isNullableEnum(null)).toStrictEqual(true);
-  expect(isNullishEnum(StringEnum)).toStrictEqual(true);
-  expect(isNullishEnum(null)).toStrictEqual(true);
-  expect(isNullishEnum(undefined)).toStrictEqual(true);
-
-  // Is enum value
-  const testIsStringEnumVal = isEnumVal(StringEnum),
-    testIsNumberEnumVal = isEnumVal(NumberEnum);
-  expect(testIsStringEnumVal('foo')).toStrictEqual(true);
-  expect(testIsNumberEnumVal(1)).toStrictEqual(true);
-  expect(testIsNumberEnumVal(3)).toStrictEqual(false);
-  expect(isOptionalEnumVal(NumberEnum)(undefined)).toStrictEqual(true);
-  expect(isNullableEnumVal(NumberEnum)(null)).toStrictEqual(true);
-  expect(isNullishEnumVal(NumberEnum)(null)).toStrictEqual(true);
-  expect(isNullishEnumVal(NumberEnum)(1)).toStrictEqual(true);
-
-  // Is enum value array
-  const testIsNumberEnumValArr = isEnumValArray(NumberEnum);
-  expect(testIsNumberEnumValArr([NumberEnum.Bar, 1234])).toStrictEqual(false);
-  expect(testIsNumberEnumValArr([NumberEnum.Bar, NumberEnum.Foo])).toStrictEqual(true);
+  // Check is value in an Object
+  const someOtherObject = {
+    foo: 'bar',
+    bada: 'bing',
+  } as const;
+  const blah: ValueOf<typeof someOtherObject> = 'bing';
+  const isValueOfSomeObject = isValueOf(someOtherObject);
+  expect(isValueOfSomeObject('bar')).toStrictEqual(true);
+  expect(isValueOfSomeObject('bing')).toStrictEqual(true);
+  expect(isValueOfSomeObject('foo')).toStrictEqual(false);
+  expect(isValueOfSomeObject(blah)).toStrictEqual(true);
+  const isNullishValueOfSomeObject = isNullishValueOf(someOtherObject);
+  expect(isNullishValueOfSomeObject(null)).toStrictEqual(true);
+  expect(isNullishValueOfSomeObject(undefined)).toStrictEqual(true);
 });
 
 /**
