@@ -250,19 +250,5 @@ export {
   isOptionalValueOf,
   isNullableValueOf,
   isNullishValueOf,
-  // Enum
-  TEnum,
-  isEnum,
-  isOptionalEnum,
-  isNullableEnum,
-  isNullishEnum,
-  // Is Enum Value
-  isEnumVal,
-  isOptionalEnumVal,
-  isNullableEnumVal,
-  isNullishEnumVal,
-  isEnumValArray,
-  isOptionalEnumValArray,
-  isNullableEnumValArray,
-  isNullishEnumValArray,
+  ValueOf,
 } from './complex-validators';

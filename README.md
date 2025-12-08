@@ -33,8 +33,7 @@
   - [isInArray](#is-in-array)
   - [isInRange](#is-in-range)
   - [isKeyOf](#is-key-of)
-  - [isEnum](#is-enum)
-  - [isEnumVal](#is-enum-val)
+  - [isValueOf](#is-value-of)
 - [Utilities](#utilities)
   - [Simple Utilities](#simple-utilities)
     - [nonNullable](#non-nullable)
@@ -404,7 +403,6 @@ Will check if the argument (can be a `number-string` or a `number`) is in the pr
 - isOptionalKeyOf
 - isNullableKeyOf
 - isNullishKeyOf
-- Returns type-predicate: `param is keyof T`
 
 Checks if the argument is a key of the object. Note that this will not work for symbols:
 ```typescript
@@ -422,7 +420,7 @@ Checks if the argument is a key of the object. Note that this will not work for 
 - isOptionalValueOf
 - isNullableValueOf
 - isNullishValueOf
-- Returns type-predicate: `param is T[keyof T]`
+- ValueOf: utility type, returns tuple of an object's keys
 
 Checks if the argument is a value in the object.
 ```typescript
@@ -433,42 +431,7 @@ Checks if the argument is a value in the object.
 
   const isValueOfSomeObject = isValueOf(someObject);
   isValueOfSomeObject('bar'); // true
-```
-
-### `isEnum` <a name="is-enum"></a>
-- isEnum
-- isOptionalEnum
-- isNullableEnum
-- isNullishEnum
-- TEnum (type)
-
-Check if the argument is a valid enum object. Unlike other complex validators, this does not require an inialization step. Note this will not work for mixed enum types: see: `eslint@typescript-eslint/no-mixed-enums`:
-```typescript
-  enum StringEnum {
-    Foo = 'foo',
-    Bar = 'bar',
-  }
-  isEnum(StringEnum) // true
-```
-
-### `isEnumVal` <a name="is-enum-val"></a>
-- isEnumVal
-- isOptionalEnumVal
-- isNullableEnumVal
-- isNullishEnumVal
-- isEnumValArray
-- isOptionalEnumValArray
-- isNullableEnumValArray
-- isNullishEnumValArray
-
-Check if the argument is a value of the enum. You must initialize this with a valid non-mixed enum type: see: `eslint@typescript-eslint/no-mixed-enums`:
-```typescript
-  enum NumberEnum {
-    Foo,
-    Bar,
-  }
-  const isNumberEnumVal = isEnumVal(NumberEnum);
-  isNumberEnumVal(NumberEnum.Foo); // true
+  type keys = ValueOf<typeof someObject>; // 'bar' | 'bing'
 ```
 <br/><br/>
 
