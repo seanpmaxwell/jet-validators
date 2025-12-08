@@ -512,6 +512,7 @@ test('test complex validators', () => {
   expect(isValueOfSomeObject('bar')).toStrictEqual(true);
   expect(isValueOfSomeObject('bing')).toStrictEqual(true);
   expect(isValueOfSomeObject('foo')).toStrictEqual(false);
+  expect(isValueOfSomeObject(blah)).toStrictEqual(true);
   const isNullishValueOfSomeObject = isNullishValueOf(someOtherObject);
   expect(isNullishValueOfSomeObject(null)).toStrictEqual(true);
   expect(isNullishValueOfSomeObject(undefined)).toStrictEqual(true);
