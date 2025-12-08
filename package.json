@@ -1,6 +1,6 @@
 {
   "name": "jet-validators",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "A list common typescript validator-functions and some useful utilities to go with them.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
