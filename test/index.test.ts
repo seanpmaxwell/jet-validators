@@ -89,6 +89,9 @@ import {
 
 import {
   nonNullable,
+  makeOptional,
+  makeNullable,
+  makeNullish,
   parseBoolean,
   parseNullishObjectArray,
   parseObject,
@@ -393,6 +396,22 @@ test('test simple utilities', () => {
   expect(nonNullable(isNullableString)('asdf')).toStrictEqual(true);
   expect(nonNullable(isNullableString)(null)).toStrictEqual(false);
   expect(nonNullable(isNullableString)(undefined)).toStrictEqual(false);
+
+  const isAlphaNumeric = (arg: unknown): arg is string => {
+    return isString(arg) && /^[a-zA-Z0-9]*$/.test(arg);
+  };
+
+  const isOptionalAlphaNumeric = makeOptional(isAlphaNumeric);
+  const isNullableAlphaNumeric = makeNullable(isAlphaNumeric);
+  const isNullishAlphaNumeric = makeNullish(isAlphaNumeric);
+
+  expect(isAlphaNumeric('foo1234')).toStrictEqual(true);
+  expect(isAlphaNumeric('foo1-234')).toStrictEqual(false);
+  expect(isOptionalAlphaNumeric('foo1-234')).toStrictEqual(false);
+  expect(isOptionalAlphaNumeric(undefined)).toStrictEqual(true);
+  expect(isNullableAlphaNumeric(undefined)).toStrictEqual(false);
+  expect(isNullishAlphaNumeric(undefined)).toStrictEqual(true);
+  expect(isNullishAlphaNumeric('72naAD')).toStrictEqual(true);
 
   // Check "transform" and "parseJson" functions
   const isNumArrWithParse = transform(parseJson, isNumberArray);
