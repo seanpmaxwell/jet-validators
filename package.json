@@ -18,10 +18,10 @@
   "scripts": {
     "build": "npm run build:utils && npm run build:main",
     "build:main": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
-    "build:utils": "cd utils && rm -rf ./dist && tsc -p tsconfig.build.json && cd ..",
+    "build:utils": "cd utils && npm run build && cd ..",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "lint": "eslint --flag unstable_ts_config",
-    "playground": "ts-node ./test/playground.ts",
+    "playground": "npx ts-node ./test/playground.ts",
     "pre-publish": "mv README.md README-git && mv README-npm README.md",
     "post-publish": "mv README.md README-npm && mv README-git README.md",
     "test": "NODE_ENV=test vitest"
@@ -49,18 +49,15 @@
   },
   "homepage": "https://github.com/seanpmaxwell/jet-validators#readme",
   "devDependencies": {
-    "@eslint/js": "^9.11.1",
-    "@stylistic/eslint-plugin-ts": "^2.8.0",
-    "@types/eslint__js": "^8.42.3",
+    "@eslint/js": "^9.26.0",
+    "@stylistic/eslint-plugin": "^5.5.0",
     "@types/node": "^22.8.1",
-    "eslint": "^9.11.1",
-    "eslint-plugin-n": "^17.10.3",
-    "i": "^0.3.7",
+    "eslint": "^9.26.0",
+    "eslint-plugin-n": "^17.17.0",
     "jiti": "^2.3.3",
-    "ts-node": "^10.9.2",
     "tslib": "^2.8.0",
-    "typescript": "^5.6.3",
-    "typescript-eslint": "^8.8.0",
-    "vitest": "^2.1.4"
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.32.0",
+    "vitest": "^4.0.15"
   }
 }

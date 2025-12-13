@@ -1,13 +1,14 @@
 /* eslint-disable max-len */
-import {
-  isFunction,
+import { 
+  isFunction, 
+  isNonEmptyStringRecord,
   isString,
-  isStringArray,
+  isStringRecord,
   isUndef,
   type ValueOf,
-} from '../../dist';
+} from './helpers.js';
 
-import { type ITransformValidatorFn } from './simple-utils';
+import { type ITransformValidatorFn } from './simple-utils.js';
 
 
 // **** Variables **** //
@@ -58,7 +59,7 @@ export interface IParseObjectError {
 
 export interface IParseValidatorFn<T> {
   (arg: unknown, onError?: TParseOnError): arg is T;
-  isTransFn?: true;
+  isTransformFunction?: true;
 }
   
 type TValidatorFn<T> = (arg: unknown) => arg is T;
@@ -225,38 +226,6 @@ export const strictParseNullishObjectArray= <T, U extends TSchema<T> = TSchema<T
   onError?: TParseOnError,
 ) => _parseObject<U, true, true, true>(schema, true, true, true, SAFETY.Strict, onError);
 
-// **** Some helpers for the parse object functions **** //
-
-const isStringRecord = (arg: unknown): arg is Record<string, unknown> => {
-  return !!arg && typeof arg === 'object' && isStringArray(Object.keys(arg));
-};
-
-const isNonEmptyStringRecord = (arg: unknown): arg is Record<string, unknown> => {
-  if (!!arg && typeof arg === 'object') {
-    const keys = Object.keys(arg);
-    return keys.length > 0 && isStringArray(keys);
-  }
-  return false;
-};
-
-const hasTransformFn = (arg: unknown) => {
-  return (
-    arg && 
-    typeof arg === 'object' && 
-    'isTransformFn' in arg && 
-    arg.isTransformFn === true
-  );
-};
-
-const isParseObjectErrArr = (arg: unknown): arg is IParseObjectError[] => {
-  return (
-    Array.isArray(arg) &&
-    arg.length > 0 &&
-    'isParseObjectErrorArr' in arg &&
-    arg.isParseObjectErrorArr === true
-  );
-};
-
 /**
  * Validates an object schema, calls an error function is supplied one, returns 
  * "false" if the parse fails, and works recursively too. NOTE: this will 
@@ -396,7 +365,7 @@ function _parseObjectHelperWithErrorCb2(
         let childErrors: IParseObjectError[] | undefined,
           passed = false,
           info: string = ERRORS.ValidatorFn;
-        if (hasTransformFn(schemaProp)) {
+        if (schemaProp.isTransformFunction === true) {
           passed = schemaProp(val, tval => {
             // Don't append "undefined" if the key is absent
             if (tval === undefined && !(key in argParentObj)) {
@@ -406,7 +375,7 @@ function _parseObjectHelperWithErrorCb2(
           });
         } else {
           passed = schemaProp(val, errors => {
-            if (isParseObjectErrArr(errors)) {
+            if (isParseObjectErrorArray(errors)) {
               info = ERRORS.NestedValidation;
               childErrors = errors;
             }
@@ -546,7 +515,7 @@ function _parseObjectHelperWithoutErrorCb2(
     if (isFunction(schemaProp)) {
       try {
         let passed = false;
-        if (hasTransformFn(schemaProp)) {
+        if (schemaProp.isTransformFunction === true) {
           passed = schemaProp(val, tval => {
             // Don't append "undefined" if the key is absent
             if (tval === undefined && !(key in argParentObj)) {
@@ -589,6 +558,17 @@ function _parseObjectHelperWithoutErrorCb2(
   return argParentObj;
 }
 
+/**
+ * Check if the arg is an array of ParseError objects.
+ */
+function isParseObjectErrorArray(arg: unknown): arg is IParseObjectError[] {
+  return (
+    Array.isArray(arg) &&
+    arg.length > 0 &&
+    'isParseObjectErrorArr' in arg &&
+    arg.isParseObjectErrorArr === true
+  );
+}
 
 // **** testObject (just calls "parseObject" under the hood) **** //
 

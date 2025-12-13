@@ -6,7 +6,7 @@ import {
   isString,
   isUndef,
   isValidNumber,
-} from './basic';
+} from './basic.js';
 
 // Add modifiers
 type AddNull<T, N> = (N extends true ? T | null : T);
@@ -37,6 +37,7 @@ export function _isInArray<
   optional: O,
   nullable: N,
 ): (arg: unknown) => arg is AddNullables<T[number], O, N> {
+  const lookup = new Set(arr);
   return (arg: unknown): arg is AddNullables<T[number], O, N> => {
     if (isUndef(arg)) {
       return !!optional;
@@ -44,12 +45,7 @@ export function _isInArray<
     if (isNull(arg)) {
       return !!nullable;
     }
-    for (const item of arr) {
-      if (arg === item) {
-        return true;
-      }
-    }
-    return false;
+    return lookup.has(arg);
   };
 }
 
@@ -71,11 +67,6 @@ export const isNullishInRangeArray = _isInRange<true, true, true>(true, true, tr
 /**
  * Range will always determine if a number is >= the min and <= the max. If you want to 
  * leave off a range, just use null. 
- * 
- * Examples:
- * isRange(0, null) => "0 or any positive number"
- * isRange(100, null) => "greater than or equal to 100"
- * isRange(25, 75) => "between 25 and 75"
  */
 function _isInRange<
   O extends boolean,
@@ -97,7 +88,7 @@ function _isInRange<
         return nullable;
       }
       if (isArr) {
-        return Array.isArray(arg) && !arg.some(item => !_isInRangeHelper(item, rangeFn));
+        return Array.isArray(arg) && arg.every(item => _isInRangeHelper(item, rangeFn));
       }
       return _isInRangeHelper(arg, rangeFn);
     };

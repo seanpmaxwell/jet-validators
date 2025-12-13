@@ -1,25 +1,25 @@
 /* eslint-disable max-len */
-import { isNullish, isString } from '../../dist';
-import { type IParseValidatorFn, type TParseOnError } from './parseObject';
+import { type IParseValidatorFn, type TParseOnError } from './parseObject.js';
+import { isString } from './helpers.js';
 
 
 // **** Types **** //
 
 export interface ITransformValidatorFn<T> {
   (arg: unknown, cb?: (arg: T) => void): arg is T;
-  isTransformFn?: true; 
+  isTransformFunction?: true; 
 }
   
 
 // **** Simple Util **** //
 
 /**
- * Extract null/undefined from a validator function. Have to provide an errCb in case
+ * Extract null/undefined from a validator function. Have to provide an errorCb in case
  * we are wrapping a nested schema function.
  */
 export function nonNullable<T>(cb: IParseValidatorFn<T>) {
   return (arg: unknown, onError?: TParseOnError): arg is NonNullable<T> => {
-    if (isNullish(arg)) {
+    if (arg === null || arg === undefined) {
       return false;
     } else {
       return cb(arg, onError);
@@ -80,9 +80,14 @@ export function transform<T>(
     cb?.(arg as T);
     return validate(arg);
   };
-  Object.defineProperty(retFn, 'isTransFn', { value: true, writable: false });
+  Object.defineProperty(retFn, 'isTransformFunction', {
+    value: true,
+    writable: false,
+  });
   return retFn;
 }
+
+// **** ParseBoolean **** //
 
 /**
  * Convert all string/number boolean types to a boolean. If not a valid boolean
@@ -149,6 +154,8 @@ export function parseNullishBoolean(arg: unknown): boolean | null | undefined {
     return parseBoolean(arg, 'Argument must be a valid boolean | null | undefined.');
   }
 }
+
+// **** ParseJson **** //
 
 /**
  * Parse a JSON string.

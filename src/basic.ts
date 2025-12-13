@@ -1,5 +1,10 @@
 /* eslint-disable max-len */
-import { parseBoolean, makeNullable, makeOptional, makeNullish } from '../utils';
+import {
+  parseBoolean,
+  makeNullable,
+  makeOptional,
+  makeNullish,
+} from '../utils/src/simple-utils.js';
 
 
 // **** Functions **** //
@@ -208,7 +213,7 @@ export const isNullishFunctionArray = makeNullish(isFunctionArray);
  */
 function _toArray<T>(cb: ((arg: unknown) => arg is T)) {
   return (arg: unknown): arg is T[] => {
-    return Array.isArray(arg) && !arg.some(item => !cb(item));
+    return Array.isArray(arg) && arg.every(cb);
   };
 }
 

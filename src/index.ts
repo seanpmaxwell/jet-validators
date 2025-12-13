@@ -175,7 +175,7 @@ export {
   isOptionalFunctionArray,
   isNullableFunctionArray,
   isNullishFunctionArray,
-} from './basic';
+} from './basic.js';
 
 // Complex-validators
 export {
@@ -204,4 +204,4 @@ export {
   isNullableValueOf,
   isNullishValueOf,
   type ValueOf,
-} from './complex-validators';
+} from './complex-validators.js';

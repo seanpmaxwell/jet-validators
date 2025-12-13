@@ -1,10 +1,10 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
-import stylisticTs from '@stylistic/eslint-plugin-ts';
+import stylistic from '@stylistic/eslint-plugin';
 import nodePlugin from 'eslint-plugin-n';
+import { defineConfig } from 'eslint/config';
 
-
-export default tseslint.config(
+export default defineConfig(
   eslint.configs.recommended,
   nodePlugin.configs['flat/recommended-script'],
   ...tseslint.configs.strictTypeChecked,
@@ -26,8 +26,8 @@ export default tseslint.config(
     },
   },
   {
-    plugins: {
-      '@stylistic/ts': stylisticTs,
+    'plugins': {
+      '@stylistic': stylistic,
     },
   },
   {
@@ -55,7 +55,7 @@ export default tseslint.config(
           'code': 80,
         },
       ],
-      '@stylistic/ts/semi': ['warn'],
+      '@stylistic/semi': ['warn', 'always'],
       '@typescript-eslint/no-non-null-assertion': 0,
       '@typescript-eslint/no-unused-expressions': 'warn',
       'comma-dangle': ['warn', 'always-multiline'],

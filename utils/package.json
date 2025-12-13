@@ -1,6 +1,19 @@
 {
   "name": "jet-validators-utils",
-  "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts"
+  "version": "1.6.0",
+  "type": "module",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js", 
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json"
+  }
 }

@@ -12,7 +12,7 @@ export {
   parseOptionalJson,
   parseNullableJson,
   parseNullishJson,
-} from './simple-utils';
+} from './simple-utils.js';
 
 export {
   parseObject,
@@ -66,4 +66,4 @@ export {
   strictTestOptionalObjectArray,
   strictTestNullableObjectArray,
   strictTestNullishObjectArray,
-} from './parseObject';
+} from './parseObject.js';
