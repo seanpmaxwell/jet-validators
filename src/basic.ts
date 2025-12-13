@@ -1,6 +1,5 @@
 /* eslint-disable max-len */
-import { orNullable, orOptional } from './common';
-import { parseBoolean } from '../utils';
+import { parseBoolean, makeNullable, makeOptional, makeNullish } from '../utils';
 
 
 // **** Types **** //
@@ -14,208 +13,198 @@ export type TRecord = Record<string, unknown>;
 // Nullables
 export const isUndef = ((arg: unknown): arg is undefined => arg === undefined);
 export const isNull = ((arg: unknown): arg is null => arg === null);
-export const isNullish = orNullable(isUndef);
+export const isNullish = makeNullable(isUndef);
 
 // Boolean
 export const isBoolean = _checkType<boolean>('boolean');
-export const isOptionalBoolean = orOptional(isBoolean);
-export const isNullableBoolean = orNullable(isBoolean);
-export const isNullishBoolean = orNullable(isOptionalBoolean);
+export const isOptionalBoolean = makeOptional(isBoolean);
+export const isNullableBoolean = makeNullable(isBoolean);
+export const isNullishBoolean = makeNullish(isBoolean);
 export const isBooleanArray = _toArray(isBoolean);
-export const isOptionalBooleanArray = orOptional(isBooleanArray);
-export const isNullableBooleanArray = orNullable(isBooleanArray);
-export const isNullishBooleanArray = orNullable(isOptionalBooleanArray);
+export const isOptionalBooleanArray = makeOptional(isBooleanArray);
+export const isNullableBooleanArray = makeNullable(isBooleanArray);
+export const isNullishBooleanArray = makeNullish(isBooleanArray);
 
 // Is it a boolean after doing "parseBoolean"
 export const isValidBoolean = _isValidBoolean;
-export const isOptionalValidBoolean = orOptional(isValidBoolean);
-export const isNullableValidBoolean = orNullable(isValidBoolean);
-export const isNullishValidBoolean = orNullable(isOptionalValidBoolean);
+export const isOptionalValidBoolean = makeOptional(isValidBoolean);
+export const isNullableValidBoolean = makeNullable(isValidBoolean);
+export const isNullishValidBoolean = makeNullish(isValidBoolean);
 export const isValidBooleanArray = _toArray(isValidBoolean);
-export const isOptionalValidBooleanArray = orOptional(isValidBooleanArray);
-export const isNullableValidBooleanArray = orNullable(isValidBooleanArray);
-export const isNullishValidBooleanArray = orNullable(isOptionalValidBooleanArray);
+export const isOptionalValidBooleanArray = makeOptional(isValidBooleanArray);
+export const isNullableValidBooleanArray = makeNullable(isValidBooleanArray);
+export const isNullishValidBooleanArray = makeNullish(isValidBooleanArray);
 
 // Number
 export const isNumber = _isNumber;
-export const isOptionalNumber = orOptional(isNumber);
-export const isNullableNumber = orNullable(isNumber);
-export const isNullishNumber = orNullable(isOptionalNumber);
+export const isOptionalNumber = makeOptional(isNumber);
+export const isNullableNumber = makeNullable(isNumber);
+export const isNullishNumber = makeNullish(isNumber);
 export const isNumberArray = _toArray(isNumber);
-export const isOptionalNumberArray = orOptional(isNumberArray);
-export const isNullableNumberArray = orNullable(isNumberArray);
-export const isNullishNumberArray = orNullable(isOptionalNumberArray);
+export const isOptionalNumberArray = makeOptional(isNumberArray);
+export const isNullableNumberArray = makeNullable(isNumberArray);
+export const isNullishNumberArray = makeNullish(isNumberArray);
 
 // Postive Number
 export const isPositiveNumber = _isPositiveNumber;
-export const isOptionalPositiveNumber = orOptional(isPositiveNumber);
-export const isNullablePositiveNumber = orNullable(isPositiveNumber);
-export const isNullishPositiveNumber = orNullable(isOptionalPositiveNumber);
+export const isOptionalPositiveNumber = makeOptional(isPositiveNumber);
+export const isNullablePositiveNumber = makeNullable(isPositiveNumber);
+export const isNullishPositiveNumber = makeNullish(isPositiveNumber);
 export const isPositiveNumberArray = _toArray(isPositiveNumber);
-export const isOptionalPositiveNumberArray = orOptional(isPositiveNumberArray);
-export const isNullablePositiveNumberArray = orNullable(isPositiveNumberArray);
-export const isNullishPositiveNumberArray = orNullable(isOptionalPositiveNumberArray);
+export const isOptionalPositiveNumberArray = makeOptional(isPositiveNumberArray);
+export const isNullablePositiveNumberArray = makeNullable(isPositiveNumberArray);
+export const isNullishPositiveNumberArray = makeNullish(isPositiveNumberArray);
 
 // Negative Number
 export const isNegativeNumber = _isNegativeNumber;
-export const isOptionalNegativeNumber = orOptional(isNegativeNumber);
-export const isNullableNegativeNumber = orNullable(isNegativeNumber);
-export const isNullishNegativeNumber = orNullable(isOptionalNegativeNumber);
+export const isOptionalNegativeNumber = makeOptional(isNegativeNumber);
+export const isNullableNegativeNumber = makeNullable(isNegativeNumber);
+export const isNullishNegativeNumber = makeNullish(isNegativeNumber);
 export const isNegativeNumberArray = _toArray(isNegativeNumber);
-export const isOptionalNegativeNumberArray = orOptional(isNegativeNumberArray);
-export const isNullableNegativeNumberArray = orNullable(isNegativeNumberArray);
-export const isNullishNegativeNumberArray = orNullable(isOptionalNegativeNumberArray);
+export const isOptionalNegativeNumberArray = makeOptional(isNegativeNumberArray);
+export const isNullableNegativeNumberArray = makeNullable(isNegativeNumberArray);
+export const isNullishNegativeNumberArray = makeNullish(isNegativeNumberArray);
 
 // Unsigned Number
 export const isUnsignedNumber = _isUnsignedNumber;
-export const isOptionalUnsignedNumber = orOptional(isUnsignedNumber);
-export const isNullableUnsignedNumber = orNullable(isUnsignedNumber);
-export const isNullishUnsignedNumber = orNullable(isOptionalUnsignedNumber);
+export const isOptionalUnsignedNumber = makeOptional(isUnsignedNumber);
+export const isNullableUnsignedNumber = makeNullable(isUnsignedNumber);
+export const isNullishUnsignedNumber = makeNullish(isUnsignedNumber);
 export const isUnsignedNumberArray = _toArray(isUnsignedNumber);
-export const isOptionalUnsignedNumberArray = orOptional(isUnsignedNumberArray);
-export const isNullableUnsignedNumberArray = orNullable(isUnsignedNumberArray);
-export const isNullishUnsignedNumberArray = orNullable(isOptionalUnsignedNumberArray);
+export const isOptionalUnsignedNumberArray = makeOptional(isUnsignedNumberArray);
+export const isNullableUnsignedNumberArray = makeNullable(isUnsignedNumberArray);
+export const isNullishUnsignedNumberArray = makeNullish(isUnsignedNumberArray);
 
 // Integer
 export const isInteger = _isInteger;
-export const isOptionalInteger = orOptional(isInteger);
-export const isNullableInteger = orNullable(isInteger);
-export const isNullishInteger = orNullable(isOptionalInteger);
+export const isOptionalInteger = makeOptional(isInteger);
+export const isNullableInteger = makeNullable(isInteger);
+export const isNullishInteger = makeNullish(isInteger);
 export const isIntegerArray = _toArray(isInteger);
-export const isOptionalIntegerArray = orOptional(isIntegerArray);
-export const isNullableIntegerArray = orNullable(isIntegerArray);
-export const isNullishIntegerArray = orNullable(isOptionalIntegerArray);
+export const isOptionalIntegerArray = makeOptional(isIntegerArray);
+export const isNullableIntegerArray = makeNullable(isIntegerArray);
+export const isNullishIntegerArray = makeNullish(isIntegerArray);
 
 // Postive Integer
 export const isPositiveInteger = _isPositiveInteger;
-export const isOptionalPositiveInteger = orOptional(isPositiveInteger);
-export const isNullablePositiveInteger = orNullable(isPositiveInteger);
-export const isNullishPositiveInteger = orNullable(isOptionalPositiveInteger);
+export const isOptionalPositiveInteger = makeOptional(isPositiveInteger);
+export const isNullablePositiveInteger = makeNullable(isPositiveInteger);
+export const isNullishPositiveInteger = makeNullish(isPositiveInteger);
 export const isPositiveIntegerArray = _toArray(isPositiveInteger);
-export const isOptionalPositiveIntegerArray = orOptional(isPositiveIntegerArray);
-export const isNullablePositiveIntegerArray = orNullable(isPositiveIntegerArray);
-export const isNullishPositiveIntegerArray = orNullable(isOptionalPositiveIntegerArray);
+export const isOptionalPositiveIntegerArray = makeOptional(isPositiveIntegerArray);
+export const isNullablePositiveIntegerArray = makeNullable(isPositiveIntegerArray);
+export const isNullishPositiveIntegerArray = makeNullish(isPositiveIntegerArray);
 
 // Negative Integer
 export const isNegativeInteger = _isNegativeInteger;
-export const isOptionalNegativeInteger = orOptional(isNegativeInteger);
-export const isNullableNegativeInteger = orNullable(isNegativeInteger);
-export const isNullishNegativeInteger = orNullable(isOptionalNegativeInteger);
+export const isOptionalNegativeInteger = makeOptional(isNegativeInteger);
+export const isNullableNegativeInteger = makeNullable(isNegativeInteger);
+export const isNullishNegativeInteger = makeNullish(isNegativeInteger);
 export const isNegativeIntegerArray = _toArray(isNegativeInteger);
-export const isOptionalNegativeIntegerArray = orOptional(isNegativeIntegerArray);
-export const isNullableNegativeIntegerArray = orNullable(isNegativeIntegerArray);
-export const isNullishNegativeIntegerArray = orNullable(isOptionalNegativeIntegerArray);
+export const isOptionalNegativeIntegerArray = makeOptional(isNegativeIntegerArray);
+export const isNullableNegativeIntegerArray = makeNullable(isNegativeIntegerArray);
+export const isNullishNegativeIntegerArray = makeNullish(isNegativeIntegerArray);
 
 // Unsigned Integer
 export const isUnsignedInteger = _isUnsignedInteger;
-export const isOptionalUnsignedInteger = orOptional(isUnsignedInteger);
-export const isNullableUnsignedInteger = orNullable(isUnsignedInteger);
-export const isNullishUnsignedInteger = orNullable(isOptionalUnsignedInteger);
+export const isOptionalUnsignedInteger = makeOptional(isUnsignedInteger);
+export const isNullableUnsignedInteger = makeNullable(isUnsignedInteger);
+export const isNullishUnsignedInteger = makeNullish(isUnsignedInteger);
 export const isUnsignedIntegerArray = _toArray(isUnsignedInteger);
-export const isOptionalUnsignedIntegerArray = orOptional(isUnsignedIntegerArray);
-export const isNullableUnsignedIntegerArray = orNullable(isUnsignedIntegerArray);
-export const isNullishUnsignedIntegerArray = orNullable(isOptionalUnsignedIntegerArray);
+export const isOptionalUnsignedIntegerArray = makeOptional(isUnsignedIntegerArray);
+export const isNullableUnsignedIntegerArray = makeNullable(isUnsignedIntegerArray);
+export const isNullishUnsignedIntegerArray = makeNullish(isUnsignedIntegerArray);
 
 // BigInt
 export const isBigInt = _checkType<bigint>('bigint');
-export const isOptionalBigInt = orOptional(isBigInt);
-export const isNullableBigInt = orNullable(isBigInt);
-export const isNullishBigInt = orNullable(isOptionalBigInt);
+export const isOptionalBigInt = makeOptional(isBigInt);
+export const isNullableBigInt = makeNullable(isBigInt);
+export const isNullishBigInt = makeNullish(isBigInt);
 export const isBigIntArray = _toArray(isBigInt);
-export const isOptionalBigIntArray = orOptional(isBigIntArray);
-export const isNullableBigIntArray = orNullable(isBigIntArray);
-export const isNullishBigIntArr = orNullable(isOptionalBigIntArray);
+export const isOptionalBigIntArray = makeOptional(isBigIntArray);
+export const isNullableBigIntArray = makeNullable(isBigIntArray);
+export const isNullishBigIntArr = makeNullish(isBigIntArray);
 
 // Valid number (is it still a number after doing Number(arg))
 export const isValidNumber = _isValidNumber;
-export const isOptionalValidNumber = orOptional(isValidNumber);
-export const isNullableValidNumber = orNullable(isValidNumber);
-export const isNullishValidNumber = orNullable(isOptionalValidNumber);
+export const isOptionalValidNumber = makeOptional(isValidNumber);
+export const isNullableValidNumber = makeNullable(isValidNumber);
+export const isNullishValidNumber = makeNullish(isValidNumber);
 export const isValidNumberArray = _toArray(isValidNumber);
-export const isOptionalValidNumberArray = orOptional(isValidNumberArray);
-export const isNullableValidNumberArray = orNullable(isValidNumberArray);
-export const isNishValidNumArr = orNullable(isOptionalValidNumberArray);
+export const isOptionalValidNumberArray = makeOptional(isValidNumberArray);
+export const isNullableValidNumberArray = makeNullable(isValidNumberArray);
+export const isNishValidNumArr = makeNullish(isValidNumberArray);
 
 // String
 export const isString = _checkType<string>('string');
-export const isOptionalString = orOptional(isString);
-export const isNullableString = orNullable(isString);
-export const isNullishString = orNullable(isOptionalString);
+export const isOptionalString = makeOptional(isString);
+export const isNullableString = makeNullable(isString);
+export const isNullishString = makeNullish(isString);
 export const isStringArray = _toArray(isString);
-export const isOptionalStringArray = orOptional(isStringArray);
-export const isNullableStringArray = orNullable(isStringArray);
-export const isNullishStringArray = orNullable(isOptionalStringArray);
+export const isOptionalStringArray = makeOptional(isStringArray);
+export const isNullableStringArray = makeNullable(isStringArray);
+export const isNullishStringArray = makeNullish(isStringArray);
 
 // NeStr => "Non-Empty String"
 export const isNonEmptyString = _isNonEmptyString;
-export const isOptionalNonEmptyString = orOptional(isNonEmptyString);
-export const isNullableNonEmptyString = orNullable(isNonEmptyString);
-export const isNullishNonEmptyString = orNullable(isOptionalNonEmptyString);
+export const isOptionalNonEmptyString = makeOptional(isNonEmptyString);
+export const isNullableNonEmptyString = makeNullable(isNonEmptyString);
+export const isNullishNonEmptyString = makeNullish(isNonEmptyString);
 export const isNonEmptyStringArray = _toArray(isNonEmptyString);
-export const isOptionalNonEmptyStringArray = orOptional(isNonEmptyStringArray);
-export const isNullableNonEmptyStringArray = orNullable(isNonEmptyStringArray);
-export const isNullishNonEmptyStringArray = orNullable(isOptionalNonEmptyStringArray);
+export const isOptionalNonEmptyStringArray = makeOptional(isNonEmptyStringArray);
+export const isNullableNonEmptyStringArray = makeNullable(isNonEmptyStringArray);
+export const isNullishNonEmptyStringArray = makeNullish(isNonEmptyStringArray);
 
 // Symbol
 export const isSymbol = _checkType<symbol>('symbol');
-export const isOptionalSymbol = orOptional(isSymbol);
-export const isNullableSymbol = orNullable(isSymbol);
-export const isNullishSymbol = orNullable(isOptionalSymbol);
+export const isOptionalSymbol = makeOptional(isSymbol);
+export const isNullableSymbol = makeNullable(isSymbol);
+export const isNullishSymbol = makeNullish(isSymbol);
 export const isSymbolArray = _toArray(isSymbol);
-export const isOptionalSymbolArray = orOptional(isSymbolArray);
-export const isNullableSymbolArray = orNullable(isSymbolArray);
-export const isNullishSymbolArray = orNullable(isOptionalSymbolArray);
+export const isOptionalSymbolArray = makeOptional(isSymbolArray);
+export const isNullableSymbolArray = makeNullable(isSymbolArray);
+export const isNullishSymbolArray = makeNullish(isSymbolArray);
 
 // Date
 export const isDate = _isDate;
-export const isOptionalDate = orOptional(isDate);
-export const isNullableDate = orNullable(isDate);
-export const isNullishDate = orNullable(isOptionalDate);
+export const isOptionalDate = makeOptional(isDate);
+export const isNullableDate = makeNullable(isDate);
+export const isNullishDate = makeNullish(isDate);
 export const isDateArray = _toArray(isDate);
-export const isOptionalDateArray = orOptional(isDateArray);
-export const isNullableDateArray = orNullable(isDateArray);
-export const isNullishDateArray = orNullable(isOptionalDateArray);
+export const isOptionalDateArray = makeOptional(isDateArray);
+export const isNullableDateArray = makeNullable(isDateArray);
+export const isNullishDateArray = makeNullish(isDateArray);
 
 // Valid date (is it a valid date after calling "new Date()", could be a string or number)
 export const isValidDate = _isValidDate;
-export const isOptionalValidDate = orOptional(isValidDate);
-export const isNullableValidDate = orNullable(isValidDate);
-export const isNullishValidDate = orNullable(isOptionalValidDate);
+export const isOptionalValidDate = makeOptional(isValidDate);
+export const isNullableValidDate = makeNullable(isValidDate);
+export const isNullishValidDate = makeNullish(isValidDate);
 export const isValidDateArray = _toArray(isValidDate);
-export const isOptionalValidDateArray = orOptional(isValidDateArray);
-export const isNullableValidDateArray = orNullable(isValidDateArray);
-export const isNullishValidDateArray = orNullable(isOptionalValidDateArray);
+export const isOptionalValidDateArray = makeOptional(isValidDateArray);
+export const isNullableValidDateArray = makeNullable(isValidDateArray);
+export const isNullishValidDateArray = makeNullish(isValidDateArray);
 
 // Object
 export const isObject = _isObject;
-export const isOptionalObject = orOptional(isObject);
-export const isNullableObject = orNullable(isObject);
-export const isNullishObject = orNullable(isOptionalObject);
+export const isOptionalObject = makeOptional(isObject);
+export const isNullableObject = makeNullable(isObject);
+export const isNullishObject = makeNullish(isObject);
 export const isObjectArray = _toArray(isObject);
-export const isOptionalObjectArray = orOptional(isObjectArray);
-export const isNullableObjectArray = orNullable(isObjectArray);
-export const isNullishObjectArray = orNullable(isOptionalObjectArray);
-
-// Record (Record<string, unknown>)
-export const isRecord = _isRecord;
-export const isOptionalRecord = orOptional(isRecord);
-export const isNullableRecord = orNullable(isRecord);
-export const isNullishRecord = orNullable(isOptionalRecord);
-export const isRecordArray = _toArray(_isRecord);
-export const isOptionalRecordArray = orOptional(isRecordArray);
-export const isNullableRecordArray = orNullable(isRecordArray);
-export const isNullishRecordArray = orNullable(isOptionalRecordArray);
+export const isOptionalObjectArray = makeOptional(isObjectArray);
+export const isNullableObjectArray = makeNullable(isObjectArray);
+export const isNullishObjectArray = makeNullish(isObjectArray);
 
 // Function
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const isFunction = _checkType<(...args: any[]) => any>('function');
-export const isOptionalFunction = orOptional(isFunction);
-export const isNullableFunction = orNullable(isFunction);
-export const isNullishFunction = orNullable(isOptionalFunction);
+export const isOptionalFunction = makeOptional(isFunction);
+export const isNullableFunction = makeNullable(isFunction);
+export const isNullishFunction = makeNullish(isFunction);
 export const isFunctionArray = _toArray(isFunction);
-export const isOptionalFunctionArray = orOptional(isFunctionArray);
-export const isNullableFunctionArray = orNullable(isFunctionArray);
-export const isNullishFunctionArray = orNullable(isOptionalFunctionArray);
+export const isOptionalFunctionArray = makeOptional(isFunctionArray);
+export const isNullableFunctionArray = makeNullable(isFunctionArray);
+export const isNullishFunctionArray = makeNullish(isFunctionArray);
 
 
 // **** Helpers **** //
@@ -298,15 +287,6 @@ function _isValidNumber(arg: unknown): arg is string | number | boolean {
  */
 function _isObject(arg: unknown): arg is NonNullable<object> {
   return typeof arg === 'object' && (arg !== null);
-}
-
-/**
- * Is the object Record<string, unknown>. Note we don't need to loop through
- * the keys cause number keys are caste to strings and symbols are skipped when 
- * doing for..in loops. Must use Reflect.ownKeys to include symbols.
- */
-function _isRecord(arg: unknown): arg is TRecord {
-  return isObject(arg) && !Array.isArray(arg);
 }
 
 /**

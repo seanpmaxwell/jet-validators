@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import { isFunction, isRecord, isString, isUndef, ValueOf } from '../../dist';
-import { ITransVldrFn } from './util-functions';
+import { ITransVldrFn } from './simple-utils';
 
 
 // **** Variables **** //

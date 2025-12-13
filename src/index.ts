@@ -169,15 +169,6 @@ export {
   isOptionalObjectArray,
   isNullableObjectArray,
   isNullishObjectArray,
-  // Record
-  isRecord,
-  isOptionalRecord,
-  isNullableRecord,
-  isNullishRecord,
-  isRecordArray,
-  isOptionalRecordArray,
-  isNullableRecordArray,
-  isNullishRecordArray,
   // Function
   isFunction,
   isOptionalFunction,
@@ -188,41 +179,6 @@ export {
   isNullableFunctionArray,
   isNullishFunctionArray,
 } from './basic';
-
-// Regexes
-export {
-  // Types
-  TEmail,
-  TColor,
-  TURL,
-  TAlphaNumericStr,
-  TAlphabeticStr,
-  // Color
-  isColor,
-  isOptionalColor,
-  isNullableColor,
-  isNullishColor,
-  // Email
-  isEmail,
-  isOptionalEmail,
-  isNullableEmail,
-  isNullishEmail,
-  // URL
-  isUrl,
-  isOptionalUrl,
-  isNullableUrl,
-  isNullishUrl,
-  // Alpha-Numeric String
-  isAlphaNumericString,
-  isOptionalAlphaNumericString,
-  isNullableAlphaNumericString,
-  isNullishAlphaNumericString,
-  // Alphabetic String
-  isAlphabeticString,
-  isOptionalAlphabeticString,
-  isNullableAlphabeticString,
-  isNullishAlphabeticString,
-} from './regexes';
 
 // Complex-validators
 export {

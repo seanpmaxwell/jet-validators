@@ -1,8 +1,6 @@
 /* eslint-disable n/no-unsupported-features/node-builtins */
 /* eslint-disable max-len */
-import { expect, test, vi } from 'vitest';
-import dotenv from 'dotenv';
-import path from 'path';
+import { expect, test } from 'vitest';
 
 import {
   isUndef,
@@ -70,24 +68,6 @@ import {
   isOptionalFunctionArray,
   isNullableFunctionArray,
   isNullishFunctionArray,
-  isColor,
-  isOptionalColor,
-  isNullableColor,
-  isNullishColor,
-  isEmail,
-  isOptionalEmail,
-  isNullableEmail,
-  isNullishEmail,
-  isAlphaNumericString,
-  isOptionalAlphaNumericString,
-  isNullableAlphaNumericString,
-  isNullishAlphaNumericString,
-  isAlphabeticString,
-  isUrl,
-  isRecord,
-  isOptionalRecord,
-  isNullableRecord,
-  isNullishRecord,
   isInArray,
   isOptionalInArray,
   isNullishInArray,
@@ -100,7 +80,6 @@ import {
   isValueOf,
   ValueOf,
   isNullishValueOf,
-  TRecord,
   isNullishPositiveNumber,
   isNullablePositiveNumber,
   isNullableNegativeInteger,
@@ -119,8 +98,6 @@ import {
   testObject,
   transform,
   TSchema,
-  customDeepCompare,
-  deepCompare,
   IParseObjectError,
   testOptionalObject,
   testObjectArray,
@@ -340,117 +317,6 @@ test('test basic validators', () => {
   expect(isNullishFunctionArray([F1, F2, F3])).toStrictEqual(true);
   expect(isNullishFunctionArray(null)).toStrictEqual(true);
   expect(isNullishFunctionArray(undefined)).toStrictEqual(true);
-
-  // Test Record (TRecord => Record<string, unknown>)
-  // NOTE: number keys are caste to strings and symbols are skipped when 
-  // doing for..in loops.
-  const R1: TRecord = { foo: 1, bar: 'bar' },
-    R2: TRecord = { foo: 1, [1234]: 'bar' }, // numbers are converted to strings
-    R3: TRecord = { foo: 1, [Symbol(777)]: 'bar' };
-  // const blah: TRecord = {};
-  // if (isRecord(blah)) {
-  //   blah[1234];
-  // }
-  expect(isRecord(R1)).toStrictEqual(true);
-  expect(isRecord(R2)).toStrictEqual(true);
-  expect(isRecord(R3)).toStrictEqual(true);
-  expect(R2['1234']).toStrictEqual('bar');
-  expect(R2[1234]).toStrictEqual('bar');
-  expect(isOptionalRecord(O1)).toStrictEqual(true);
-  expect(isOptionalRecord(undefined)).toStrictEqual(true);
-  expect(isNullableRecord(O1)).toStrictEqual(true);
-  expect(isNullableRecord(null)).toStrictEqual(true);
-  expect(isNullishRecord(O1)).toStrictEqual(true);
-  expect(isNullishRecord(null)).toStrictEqual(true);
-  expect(isNullishRecord(undefined)).toStrictEqual(true);
-});
-
-/**
- * Test regular expression validators.
- */
-test('test regexes', () => {
-
-  // Color
-  expect(isColor('#ffffff')).toStrictEqual(true);
-  expect(isColor('asdf')).toStrictEqual(false);
-  expect(isOptionalColor('#ffffff')).toStrictEqual(true);
-  expect(isOptionalColor(undefined)).toStrictEqual(true);
-  expect(isNullableColor('#ffffff')).toStrictEqual(true);
-  expect(isNullableColor(null)).toStrictEqual(true);
-  expect(isOptionalColor('#ffffff')).toStrictEqual(true);
-  expect(isNullishColor(undefined)).toStrictEqual(true);
-  expect(isNullishColor(null)).toStrictEqual(true);
-  expect(isNullishColor(undefined)).toStrictEqual(true);
-
-  // Email
-  expect(isEmail('a@a.com')).toStrictEqual(true);
-  expect(isEmail('asdf')).toStrictEqual(false);
-  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
-  expect(isOptionalEmail(undefined)).toStrictEqual(true);
-  expect(isNullableEmail('a@a.com')).toStrictEqual(true);
-  expect(isNullableEmail(null)).toStrictEqual(true);
-  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
-  expect(isNullishEmail(undefined)).toStrictEqual(true);
-  expect(isNullishEmail(null)).toStrictEqual(true);
-  expect(isNullishEmail(undefined)).toStrictEqual(true);
-
-  // Is Alpha-Numeric String
-  expect(isAlphaNumericString('asdf1234')).toStrictEqual(true);
-  expect(isAlphaNumericString('#ffffff')).toStrictEqual(false);
-  expect(isOptionalAlphaNumericString('asdf1234')).toStrictEqual(true);
-  expect(isOptionalAlphaNumericString(undefined)).toStrictEqual(true);
-  expect(isNullableAlphaNumericString('asdf1234')).toStrictEqual(true);
-  expect(isNullableAlphaNumericString(null)).toStrictEqual(true);
-  expect(isOptionalAlphaNumericString('asdf1234')).toStrictEqual(true);
-  expect(isNullishAlphaNumericString(undefined)).toStrictEqual(true);
-  expect(isNullishAlphaNumericString(null)).toStrictEqual(true);
-  expect(isNullishAlphaNumericString(undefined)).toStrictEqual(true);
-
-  // Alphabetic string
-  expect(isAlphabeticString('faAdfASzcioPD')).toStrictEqual(true);
-  expect(isAlphabeticString('faAdfAS8cioPD')).toStrictEqual(false);
-
-  // URL
-  expect(isUrl('http://www.google.com')).toStrictEqual(true);
-  expect(isUrl('www.google.com')).toStrictEqual(true);
-  expect(isUrl('google.com')).toStrictEqual(true);
-  expect(isUrl('google.net')).toStrictEqual(true);
-  expect(isUrl('google')).toStrictEqual(false);
-
-  // Email
-  expect(isEmail('a@a.com')).toStrictEqual(true);
-  expect(isEmail('asdf')).toStrictEqual(false);
-  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
-  expect(isOptionalEmail(undefined)).toStrictEqual(true);
-  expect(isNullableEmail('a@a.com')).toStrictEqual(true);
-  expect(isNullableEmail(null)).toStrictEqual(true);
-  expect(isOptionalEmail('a@a.com')).toStrictEqual(true);
-  expect(isNullishEmail(undefined)).toStrictEqual(true);
-  expect(isNullishEmail(null)).toStrictEqual(true);
-  expect(isNullishEmail(undefined)).toStrictEqual(true);
-});
-
-/**
- * Test overloading regexes from environment variables.
- */
-test('test overloading regexes from environment variables', async () => {
-  vi.resetModules();
-
-  // Load environment file
-  const result = dotenv.config({
-    path: path.join(__dirname, '.env.vitest'),
-  });
-  if (result.error) {
-    // eslint-disable-next-line no-console
-    console.error(result);
-  }
-  const src = await import('../src/regexes.js');
-
-  // Email
-  // eslint-disable-next-line n/no-process-env
-  expect(process.env.JET_VALIDATORS_REGEX_COLOR).toStrictEqual('^([A-Fa-f0-9]{6})$');
-  expect(src.isColor('ffffff')).toStrictEqual(true);
-  expect(src.isColor('#ffffff')).toStrictEqual(false);
 });
 
 /**
@@ -856,156 +722,6 @@ test('test "testObject()" function', () => {
   };
   expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
   expect(testCombo2(testCombo2FailData)).toStrictEqual(false);
-});
-
-/**
- * Test "deepCompare" function
- */
-test('test "deepCompare()" function basic', () => {
-
-  const throwErrCb = (key: string, val1: unknown, val2: unknown) => {
-    throw new Error(`Unequal vals | Key: "${key}" Value1: ${String(val1)} Value2: ${String(val2)}`);
-  };
-
-  // Init deep comparison functions
-  const deepCompare2 = customDeepCompare(throwErrCb),
-    deepCompare3 = customDeepCompare({
-      convertToDateProps: 'created',
-      onlyCompareProps: ['id', 'name', 'created'],
-    }),
-    deepCompare4 = customDeepCompare({
-      disregardDateException: true,
-    }, throwErrCb);
-
-  const date1 = new Date('2012-6-17'),
-    date2 = new Date(date1),
-    date3 = date1.getTime();
-  (date2 as unknown as TRecord).cow = 'green';
-
-  // Init dummy data
-  const User1 = { id: 1, name: 'john' },
-    User2 = { id: 1, name: 'john' },
-    User3 = { id: 1, name: 'jane' },
-    User4 = { id: 1, name: 'john', created: date1 },
-    User5 = { id: 1, name: 'john', created: date3 },
-    User5a = { id: 1, name: 'john', created: date2};
-
-  const User6 = {
-      id: 1,
-      name: 'john',
-      address: {
-        street: 'foo',
-        zip: 1234,
-        unit: ['apt', 202],
-        created: date1,
-      },
-    },
-    User7 = {
-      id: 1,
-      name: 'john',
-      address: {
-        street: 'foo',
-        zip: 1234,
-        unit: ['apt', 202],
-        created: date2,
-      },
-    },
-    User8 = {
-      id: 1,
-      name: 'john',
-      address: {
-        street: 'foo',
-        zip: 1234,
-        created: date1,
-        city: 'seattle',
-      },
-    };
-
-  const arr1 = [ 'horse', 'cow', 2, User1, User8],
-    arr2 = [ 'horse', 'cow', 2, User1, User8 ],
-    arr3 = ['horse', User8, 2, User1, 'cow' ];
-
-  // Tests
-  expect(deepCompare(User1, User2)).toBeTruthy();
-  expect(() => deepCompare2(User1, User3)).toThrowError();
-  expect(deepCompare(User1, User3)).toBeFalsy();
-  expect(deepCompare(User1, User4)).toBeFalsy();
-  expect(() => deepCompare2(User1, User4)).toThrowError();
-  expect(deepCompare(User4, User5)).toBeFalsy();
-  expect(deepCompare3(User4, User5)).toBeTruthy();
-  expect(deepCompare(User6, User7)).toBeTruthy();
-  expect(deepCompare(User6, User8)).toBeFalsy();
-  expect(() => deepCompare2(User6, User8)).toThrowError();
-  expect(deepCompare3(User6, User8)).toBeTruthy();
-  expect(deepCompare(arr1, arr2)).toBeTruthy();
-  expect(deepCompare(arr1, arr3)).toBeFalsy();
-  expect(deepCompare(User4, User5a)).toBeTruthy();
-  expect(() => deepCompare4(User4, User5a)).toThrowError();
-});
-
-/**
- * Test "deepCompare" function overriding "rec" option.
- */
-test('test "deepCompare()" function override "rec" option', () => {
-
-  const deepCompare1 = customDeepCompare({
-      convertToDateProps: { rec: false, props: 'created' },
-      onlyCompareProps: ['id', 'name', 'address'],
-    }),
-    deepCompare2 = customDeepCompare({
-      onlyCompareProps: 'id',
-    // eslint-disable-next-line no-console
-    }, (...params) => console.log(...params));
-
-  const date1 = new Date('2012-6-17'),
-    date2 = new Date(date1),
-    date3 = date1.getTime();
-
-  const User1 = {
-      id: 1,
-      name: 'john',
-      address: {
-        street: 'foo',
-        zip: 1234,
-        unit: ['apt', 202],
-        created: date1,
-      },
-      foo: 'bar',
-    },
-    User2 = {
-      id: 1,
-      name: 'john',
-      address: {
-        street: 'foo',
-        zip: 1234,
-        unit: ['apt', 202],
-        created: date2,
-      },
-    },
-    User3 = {
-      id: 1,
-      name: 'john',
-      address: {
-        street: 'foo',
-        zip: 1234,
-        unit: ['apt', 202],
-        created: date3,
-      },
-    };
-
-  const Post1 = { id: 1, text: 'asdf' },
-    Post2 = { id: 2, text: 'ffff' },
-    Post3 = { id: 2, text: 'gggg' };
-
-  const arr = [ User1, User2, User3 ],
-    arr2 = structuredClone(arr),
-    arr3 = [ Post1, Post2 ],
-    arr4 = [ Post1, Post3 ];
-
-  expect(deepCompare1(User1, User2)).toBeTruthy();
-  expect(deepCompare1(User1, User3)).toBeFalsy();
-  expect(deepCompare1(arr, arr2)).toBeTruthy();
-  expect(deepCompare2(arr3, arr4)).toBeTruthy();
 });
 
 /**

@@ -1,5 +1,8 @@
 export {
   nonNullable,
+  makeOptional,
+  makeNullable,
+  makeNullish,
   transform,
   parseBoolean,
   parseOptionalBoolean,
@@ -9,12 +12,7 @@ export {
   parseOptionalJson,
   parseNullableJson,
   parseNullishJson,
-} from './util-functions';
-
-export {
-  deepCompare,
-  customDeepCompare,
-} from './deepCompare';
+} from './simple-utils';
 
 export {
   parseObject,

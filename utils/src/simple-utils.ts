@@ -28,6 +28,45 @@ export function nonNullable<T>(cb: IParseVldrFn<T>) {
 }
 
 /**
+ * Allow param to be undefined
+ */
+export function makeOptional<T>(cb: ((arg: unknown) => arg is T)) {
+  return (arg: unknown): arg is (T | undefined) => {
+    if (arg === undefined) {
+      return true;
+    } else {
+      return cb(arg);
+    }
+  };
+}
+
+/**
+ * Allow param to be undefined
+ */
+export function makeNullable<T>(cb: ((arg: unknown) => arg is T)) {
+  return (arg: unknown): arg is (T | null) => {
+    if (arg === null) {
+      return true;
+    } else {
+      return cb(arg);
+    }
+  };
+}
+
+/**
+ * Allow param to be undefined
+ */
+export function makeNullish<T>(cb: ((arg: unknown) => arg is T)) {
+  return (arg: unknown): arg is (T | null | undefined) => {
+    if (arg === null || arg === undefined) {
+      return true;
+    } else {
+      return cb(arg);
+    }
+  };
+}
+
+/**
  * Transform a value before checking it.
  */
 export function transform<T>(

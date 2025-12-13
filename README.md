@@ -20,15 +20,7 @@
   - [isDate](#is-date)
   - [isValidDate](#is-valid-date)
   - [isObject](#is-object)
-  - [isRecord](#is-record)
   - [isFunction](#is-function)
-- [Regular Expressions](#regular-expressions)
-  - [Overloading with environment variables](#overloading)
-  - [isColor](#is-color)
-  - [isEmail](#is-email)
-  - [isUrl](#is-url)
-  - [isAlphaNumericString](#is-alpha-numeric-string)
-  - [isAlphabeticString](#is-alphabetic-string)
 - [Complex Validators](#complex-validators)
   - [isInArray](#is-in-array)
   - [isInRange](#is-in-range)
@@ -37,6 +29,7 @@
 - [Utilities](#utilities)
   - [Simple Utilities](#simple-utilities)
     - [nonNullable](#non-nullable)
+    - [makeNullables](#make-nullables)
     - [transform](#transform)
     - [parseBoolean](#parse-boolean)
     - [parseJson](#parse-json)
@@ -47,9 +40,6 @@
     - [Custom Validators](#custom-validators)
     - [Wrapping Parse/Test](#wrapping-parse-test)
     - [Safety settings for parseObject](#parseObject-safety)
-  - [deepCompare and customDeepCompare](#deepCompare-fns)
-    - [deepCompare](#deepCompare)
-    - [customDeepCompare](#customDeepCompare)
 <br/>
 
 
@@ -60,21 +50,16 @@ A simple, but long, list of validator-functions commonly used when checking valu
 ```typescript
 import { isOptionalString, isRecord } from 'jet-validators';
 
-if (isOptionalString(val)) {
-  // val is string | undefined
-}
-
-if (isRecord(val)) {
-  val['foo'] = 'bar';
+if (isOptionalString(value)) { // value is string | undefined
+  ...do stuff...
 }
 ```
 
 ### Why jet-validators
 - Contains validator-functions for the vast majority of real world scenarios you will encounter.
 - For basic validators, there's no initialization step, you just import the validator-function and start using it.
-- Overload regular expressions using environment variables.
 - Contains some useful utilities for modifying values before validation.
-- Also has some utilities for simple object schema validation. 
+- Also has some utilities for object schema validation. 
 - Zero dependency!
 <br/>
 
@@ -276,18 +261,6 @@ Is argument a valid date after wrapping with `new Date()` (could be `Date`, `str
 - isNullableObjectArray
 - isNullishObjectArray
 
-### `isRecord` <a name="is-record"></a>
-Checks if the argument is a non-null non-array object. Type predicate is `Record<string, unknown>`.
-- isRecord
-- isOptionalRecord
-- isNullableRecord
-- isNullishRecord
-- isRecordArray
-- isOptionalRecordArray
-- isNullableRecordArray
-- isNullishRecordArray
-- TRecord (type)
-
 ### `isFunction` <a name="is-function"></a>
 - isFunction
 - isOptionalFunction
@@ -297,50 +270,6 @@ Checks if the argument is a non-null non-array object. Type predicate is `Record
 - isOptionalFunctionArray
 - isNullableFunctionArray
 - isNullishFunctionArray
-<br/><br/>
-
-
-## Regular Expressions <a name="regular-expressions"></a>
-Verifies the argument matches the regular-expression. Note than an empty string will validate to `true` for each function.
-
-### Overloading with environment variables <a name="overloading"></a>
-The regular expressions for each function below can be overwritten using the environment variables. To overload a regular expression create an environment variables with the format:<br/>
-- JET_VALIDATORS_REGEX_{name of the function in uppercase} (i.e. `JET_VALIDATORS_REGEX_EMAIL=^\S+@\S+\.\S+$`)
-
-### `isColor` <a name="is-color"></a>
-- isColor
-- isOptionalColor
-- isNullableColor
-- isNullishColor
-- TColor (type)
-
-### `isEmail` <a name="is-email"></a>
-- isEmail
-- isOptionalEmail
-- isNullableEmail
-- isNullishEmail
-- TEmail (type)
-
-### `isUrl` <a name="is-url"></a>
-- isUrl
-- isOptionalUrl
-- isNullableUrl
-- isNullishUrl
-- TURL (type)
-
-### `isAlphaNumericString` <a name="is-alpha-numeric-string"></a>
-- isAlphaNumericString
-- isOptionalAlphaNumericString
-- isNullableAlphaNumericString
-- isNullishAlphaNumericString
-- TAlphabeticStr (type)
-
-### `isAlphabeticString` <a name="is-alphabetic-string"></a>
-- isAlphabeticString
-- isOptionalAlphabeticString
-- isNullableAlphabeticString
-- isNullishAlphabeticString
-- TAlphaNumericStr (type)
 <br/><br/>
 
 
@@ -451,6 +380,25 @@ Remove `null`/`undefined` from type-predicates and runtime validation:
   const isString = nonNullable(isNullishString);
   isString(null); // false
   isString(undefined); // false
+```
+
+#### `Make Nullables` <a name="make-nullables"></a>
+If you have a custom validator function and want to add `null` or `undefined` to the type predicated, you can use one of the make nullables modifiers:
+- makeOptional
+- makeNullable
+- makeNullish
+```ts
+  import { makeNullish, isString } from 'jet-validators';
+
+  type TEmail = `${string}@${string}`;
+
+  // The custom validator-function
+  const isEmail = (arg: unknown): arg is TEmail => {
+    return isString(arg) && SomeEmailRegex.test(arg);
+  };
+
+  const isNullishEmail = makeNullish(isEmail);
+  isNullishEmail('foo'); // arg => TEmail | null | undefined
 ```
 
 #### `transform` <a name="transform"></a>
@@ -749,23 +697,25 @@ const parseUser = parseObject({
 
 
 #### Custom Validators <a name="custom-validators"></a>
-For `parseObject` and `testObject` you aren't restricted to the validator-functions in `jet-validators`. You can write your own validator-function, just make sure your argument is `unknown` and it returns a type predicate:
+For `parseObject` and `testObject` you aren't restricted to the validator-functions in `jet-validators`. You can write your own validator-function, just make sure your argument is `unknown` and it returns a type predicate.
 ```typescript
-  type TRelationalKey = number;
+  import { makeNullish, isString } from 'jet-validators';
+
+  type TEmail = `${string}@${string}`;
 
   interface IUser {
-    id: TRelationalKey;
-    name: string;
+    id: number;
+    email: TEmail;
   }
 
   // The custom validator-function
-  const isRelationalKey = (arg: unknown): arg is TRelationalKey => {
-    return isNumber(arg) && arg >= -1;
-  }
+  const isEmail = (arg: unknown): arg is TEmail => {
+    return isString(arg) && SomeEmailRegex.test(arg);
+  };
 
   const parseUser = parseObject({
-    id: isRelationalKey,
-    name: isString,
+    id: isNumber,
+    name: isEmail,
   });
 
   const user: IUser = parseUser({
@@ -850,66 +800,4 @@ const testUser = strictParseObject({
   }),
 });
 
-```
-
-
-
-### deepCompare and customDeepCompare <a name="deepCompare-fns"></a>
-
-#### `deepCompare` <a name="deepCompare"></a>
-Performs a deep comparison of two objects. I know there's a ton of object comparison options out there (i.e. `lodash.isEqual`) but this along with `customDeepCompare` is a little more versatile. If two values are both instances of `Date` then their epoch (`.getTime()`) will be used for comparison. This can be overriden with the `customDeepCompare` function.
-
-#### `customDeepCompare` <a name="customDeepCompare"></a>
-If you wish to access the values everytime a comparison fails or modify the behavior of the `deepCompare` function, you can use the `customDeepCompare` which receives a callback function and/or an options object. The value returned will be a custom `deepCompare` function with the parameters saved.
-
-> `customDeepCompare("callback or options")` or `customDeepCompare("options", "callback")`
-
-##### The `options` object
-```typescript
-disregardDateException?: boolean;
-onlyCompareProps?: string | string[];
-convertToDateProps?: string | string[] | { rec: boolean, props: string | string [] };
-```
-
-- `disregardDateException`: By default, date objects are compared using the epoch time value from `.getTime()` not the key value pairs on the object itself. If you wish to disregard this, set `disregardDateException: true`.
-- `onlyCompareProps`: If you want to compare some properties in two objects and not the full object, you can pass a string or an array of strings and only those keys will be used in the comparison. Note that this will not affect arrays, so that if you compare an array of objects the options will be passed down to those objects. This option is not recursive so will not affect any nested objects.
-- `convertToDateProps`: If you want a property or properties to be converted to a date object before comparison, you can pass a string or an array of strings and those properties with be converted to `Date` objects. By default this option IS recursive. If you wish to make it not recursive you can pass an object instead of an array or string array with `rec: false`. I find this option especially helpful if work a lot with IO objects were `Dates` often get stringified. 
-
-```typescript
-import { deepCompare, customDeepCompare } from 'jet-validators/util';
-
-const deepCompareAlt = customDeepCompare({
-  convertToDateProps: 'created',
-  onlyCompareProps: ['id', 'created'],
-});
-
-const date1 = new Date('2012-6-17'),
-  user1 = { id: 1, created: date1 },
-  user2 = { id: 1, created: date1.getTime() },
-  user3 = { id: 1, name: 'joe', created: date1 },
-
-deepCompare(user1, user2); // => false
-deepCompare(user1, user3); // => false
-deepCompareAlt(user1, user2); // => true
-deepCompareAlt(user1, user3); // => true
-```
-
-##### The `callback` function
-```typescript
-(key: string, val1: unknown, val2: unknown) => void;
-```
-
-- The callback function provides the values that failed during the comparison and will fire everytime a comparison fails:
-```typescript
-import { customDeepCompare } from 'jet-validators/utils';
-
-const deepCompare = customDeepCompare((key, val1, val2) =>
-  console.log(`Key: ${key}, Values: [${val1}, ${val2}]`)
-);
-
-deepCompare({ id: 1, name: 'joe' }, { id: 2, name: 'jane' });
-
-// Statement above will print out
-// Key: id, Values: [1, 2]
-// Key: name, Values: [joe, jane]
 ```
