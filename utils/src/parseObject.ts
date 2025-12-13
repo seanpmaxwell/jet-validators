@@ -1,6 +1,13 @@
 /* eslint-disable max-len */
-import { isFunction, isRecord, isString, isUndef, ValueOf } from '../../dist';
-import { ITransVldrFn } from './simple-utils';
+import {
+  isFunction,
+  isString,
+  isStringArray,
+  isUndef,
+  type ValueOf,
+} from '../../dist';
+
+import { type ITransformValidatorFn } from './simple-utils';
 
 
 // **** Variables **** //
@@ -49,7 +56,7 @@ export interface IParseObjectError {
 
 // **** Basic Types **** //
 
-export interface IParseVldrFn<T> {
+export interface IParseValidatorFn<T> {
   (arg: unknown, onError?: TParseOnError): arg is T;
   isTransFn?: true;
 }
@@ -68,13 +75,13 @@ export type TSchema<T = unknown> = (
 export type TSchemaHelper<T> = Required<{
   [K in keyof T]: (
     T[K] extends Record<string, unknown> 
-    ? IParseVldrFn<T[K]> | ITransVldrFn<T[K]> | TSchemaHelper<T[K]>
-    : IParseVldrFn<T[K]> | ITransVldrFn<T[K]>
+    ? IParseValidatorFn<T[K]> | ITransformValidatorFn<T[K]> | TSchemaHelper<T[K]>
+    : IParseValidatorFn<T[K]> | ITransformValidatorFn<T[K]>
   )
 }>;
 
 interface IBasicSchema {
-  [key: string]: ITransVldrFn<unknown> | IParseVldrFn<unknown> | IBasicSchema;
+  [key: string]: ITransformValidatorFn<unknown> | IParseValidatorFn<unknown> | IBasicSchema;
 }
 
 type TInferFromSchema<U, O, N, A, Schema = TInferFromSchemaHelper<U>> = AddMods<Schema, O, N, A>;
@@ -218,6 +225,38 @@ export const strictParseNullishObjectArray= <T, U extends TSchema<T> = TSchema<T
   onError?: TParseOnError,
 ) => _parseObject<U, true, true, true>(schema, true, true, true, SAFETY.Strict, onError);
 
+// **** Some helpers for the parse object functions **** //
+
+const isStringRecord = (arg: unknown): arg is Record<string, unknown> => {
+  return !!arg && typeof arg === 'object' && isStringArray(Object.keys(arg));
+};
+
+const isNonEmptyStringRecord = (arg: unknown): arg is Record<string, unknown> => {
+  if (!!arg && typeof arg === 'object') {
+    const keys = Object.keys(arg);
+    return keys.length > 0 && isStringArray(keys);
+  }
+  return false;
+};
+
+const hasTransformFn = (arg: unknown) => {
+  return (
+    arg && 
+    typeof arg === 'object' && 
+    'isTransformFn' in arg && 
+    arg.isTransformFn === true
+  );
+};
+
+const isParseObjectErrArr = (arg: unknown): arg is IParseObjectError[] => {
+  return (
+    Array.isArray(arg) &&
+    arg.length > 0 &&
+    'isParseObjectErrorArr' in arg &&
+    arg.isParseObjectErrorArr === true
+  );
+};
+
 /**
  * Validates an object schema, calls an error function is supplied one, returns 
  * "false" if the parse fails, and works recursively too. NOTE: this will 
@@ -243,7 +282,7 @@ function _parseObject<
   ) => {
     // If error callback provided
     if (!!onErrorLower || !!onError) {
-      return _parseObjectHelperWithErrCb<A>(
+      return _parseObjectHelperWithErrorCb<A>(
         !!optional,
         !!nullable,
         isArr, 
@@ -261,7 +300,7 @@ function _parseObject<
       ) as TInferFromSchema<U, O, N, A>;
     }
     // Not error callback provided
-    return _parseObjectHelperWoErrCb<A>(
+    return _parseObjectHelperWithoutErrorCb<A>(
       !!optional,
       !!nullable,
       isArr, 
@@ -275,7 +314,7 @@ function _parseObject<
 /**
  * Validate the schema. 
  */
-function _parseObjectHelperWithErrCb<A>(
+function _parseObjectHelperWithErrorCb<A>(
   optional: boolean,
   nullable: boolean,
   isArr: A,
@@ -310,7 +349,7 @@ function _parseObjectHelperWithErrCb<A>(
     }
     // Iterate array
     for (let i = 0; i < arg.length; i++) {
-      _parseObjectHelperWithErrCb2(schema, arg[i], errArr, safety, i);
+      _parseObjectHelperWithErrorCb2(schema, arg[i], errArr, safety, i);
     }
     if (errArr.length > 0) {
       onError(errArr);
@@ -320,7 +359,7 @@ function _parseObjectHelperWithErrCb<A>(
     return arg;
   }
   // If not an array
-  _parseObjectHelperWithErrCb2(schema, arg, errArr, safety);
+  _parseObjectHelperWithErrorCb2(schema, arg, errArr, safety);
   if (errArr.length > 0) {
     onError(errArr);
     return false;
@@ -332,7 +371,7 @@ function _parseObjectHelperWithErrCb<A>(
  * Iterate an object, apply a validator function to to each property in an 
  * object using the schema.
  */
-function _parseObjectHelperWithErrCb2(
+function _parseObjectHelperWithErrorCb2(
   schemaParentObj: IBasicSchema,
   argParentObj: unknown,
   errArr: IParseObjectError[],
@@ -340,7 +379,7 @@ function _parseObjectHelperWithErrCb2(
   index?: number,
 ): unknown {
   // Make sure is object
-  if (!isRecord(argParentObj)) {
+  if (!isStringRecord(argParentObj)) {
     errArr.push({
       info: ERRORS.NotObject,
       ...(isUndef(index) ? {} : { index }),
@@ -357,7 +396,7 @@ function _parseObjectHelperWithErrCb2(
         let childErrors: IParseObjectError[] | undefined,
           passed = false,
           info: string = ERRORS.ValidatorFn;
-        if (schemaProp.isTransFn === true) {
+        if (hasTransformFn(schemaProp)) {
           passed = schemaProp(val, tval => {
             // Don't append "undefined" if the key is absent
             if (tval === undefined && !(key in argParentObj)) {
@@ -405,9 +444,9 @@ function _parseObjectHelperWithErrCb2(
         });
       }
     // Nested schema
-    } else if (isRecord(schemaProp) && Object.keys(schemaProp).length > 0) {
+    } else if (isNonEmptyStringRecord(schemaProp)) {
       const childErrArr: IParseObjectError[] = [],
-        childVal = _parseObjectHelperWithErrCb2(schemaProp, val, childErrArr, 
+        childVal = _parseObjectHelperWithErrorCb2(schemaProp, val, childErrArr, 
           safety);
       if (childVal === false) {
         errArr.push({
@@ -448,7 +487,7 @@ function _parseObjectHelperWithErrCb2(
 /**
  * Validate the schema with no error callback passed.
  */
-function _parseObjectHelperWoErrCb<A>(
+function _parseObjectHelperWithoutErrorCb<A>(
   optional: boolean,
   nullable: boolean,
   isArr: A,
@@ -471,7 +510,7 @@ function _parseObjectHelperWoErrCb<A>(
     }
     // Iterate array
     for (const item of arg) {
-      const parsedItem = _parseObjectHelperWoErrCb2(schema, item, safety);
+      const parsedItem = _parseObjectHelperWithoutErrorCb2(schema, item, safety);
       if (parsedItem === false) {
         return false;
       }
@@ -479,7 +518,7 @@ function _parseObjectHelperWoErrCb<A>(
     return arg;
   }
   // If not an array
-  const resp = _parseObjectHelperWoErrCb2(schema, arg, safety);
+  const resp = _parseObjectHelperWithoutErrorCb2(schema, arg, safety);
   if (resp === false) {
     return false;
   }
@@ -490,13 +529,13 @@ function _parseObjectHelperWoErrCb<A>(
  * Iterate an object, apply a validator function to to each property in an 
  * object using the schema.
  */
-function _parseObjectHelperWoErrCb2(
+function _parseObjectHelperWithoutErrorCb2(
   schemaParentObj: IBasicSchema,
   argParentObj: unknown,
   safety: Safety,
 ): unknown {
   // Make sure is object
-  if (!isRecord(argParentObj)) {
+  if (!isStringRecord(argParentObj)) {
     return false;
   }
   // Iterate object properties
@@ -507,7 +546,7 @@ function _parseObjectHelperWoErrCb2(
     if (isFunction(schemaProp)) {
       try {
         let passed = false;
-        if (schemaProp.isTransFn === true) {
+        if (hasTransformFn(schemaProp)) {
           passed = schemaProp(val, tval => {
             // Don't append "undefined" if the key is absent
             if (tval === undefined && !(key in argParentObj)) {
@@ -525,8 +564,8 @@ function _parseObjectHelperWoErrCb2(
         return false;
       }
     // Nested schema
-    } else if (isRecord(schemaProp) && Object.keys(schemaProp).length > 0) {
-      const childVal = _parseObjectHelperWoErrCb2(schemaProp, val, safety);
+    } else if (isNonEmptyStringRecord(schemaProp)) {
+      const childVal = _parseObjectHelperWithoutErrorCb2(schemaProp, val, safety);
       if (childVal === false) {
         return false;
       }
@@ -548,18 +587,6 @@ function _parseObjectHelperWoErrCb2(
   }
   // Return
   return argParentObj;
-}
-
-/**
- * Check is a parsed object error array.
- */
-function isParseObjectErrArr(arg: unknown): arg is IParseObjectError[] {
-  return (
-    Array.isArray(arg) &&
-    arg.length > 0 &&
-    'isParseObjectErrorArr' in arg &&
-    arg.isParseObjectErrorArr === true
-  );
 }
 
 

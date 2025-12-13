@@ -2,18 +2,29 @@
   "name": "jet-validators",
   "version": "1.6.0",
   "description": "A list common typescript validator-functions and some useful utilities to go with them.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "./dist/cjs/index.cjs",
+  "module": "./dist/esm/index.js",
+  "browser": "./dist/esm/index.js", 
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.cjs",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
+  "files": ["dist"],
   "scripts": {
-    "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
-    "playground": "ts-node ./test/playground.ts",
-    "test": "NODE_ENV=test vitest",
-    "build:utils": "cd utils && rm -rf ./dist && tsc -p tsconfig.build.json && cd ..",
-    "build:main": "rm -rf ./dist && tsc -p tsconfig.build.json",
     "build": "npm run build:utils && npm run build:main",
+    "build:main": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
+    "build:utils": "cd utils && rm -rf ./dist && tsc -p tsconfig.build.json && cd ..",
+    "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "lint": "eslint --flag unstable_ts_config",
+    "playground": "ts-node ./test/playground.ts",
     "pre-publish": "mv README.md README-git && mv README-npm README.md",
-    "post-publish": "mv README.md README-npm && mv README-git README.md"
+    "post-publish": "mv README.md README-npm && mv README-git README.md",
+    "test": "NODE_ENV=test vitest"
   },
   "repository": {
     "type": "git",

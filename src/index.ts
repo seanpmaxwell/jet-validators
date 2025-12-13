@@ -1,8 +1,5 @@
 // Export Basic Stuff
 export {
-  // Types
-  TNonEmptyStr,
-  TRecord,
   // Nullables
   isUndef,
   isNull,
@@ -206,5 +203,5 @@ export {
   isOptionalValueOf,
   isNullableValueOf,
   isNullishValueOf,
-  ValueOf,
+  type ValueOf,
 } from './complex-validators';

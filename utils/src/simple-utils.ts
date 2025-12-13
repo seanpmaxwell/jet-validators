@@ -1,13 +1,13 @@
 /* eslint-disable max-len */
 import { isNullish, isString } from '../../dist';
-import { IParseVldrFn, TParseOnError } from './parseObject';
+import { type IParseValidatorFn, type TParseOnError } from './parseObject';
 
 
 // **** Types **** //
 
-export interface ITransVldrFn<T> {
+export interface ITransformValidatorFn<T> {
   (arg: unknown, cb?: (arg: T) => void): arg is T;
-  isTransFn?: true; 
+  isTransformFn?: true; 
 }
   
 
@@ -17,7 +17,7 @@ export interface ITransVldrFn<T> {
  * Extract null/undefined from a validator function. Have to provide an errCb in case
  * we are wrapping a nested schema function.
  */
-export function nonNullable<T>(cb: IParseVldrFn<T>) {
+export function nonNullable<T>(cb: IParseValidatorFn<T>) {
   return (arg: unknown, onError?: TParseOnError): arg is NonNullable<T> => {
     if (isNullish(arg)) {
       return false;
@@ -70,15 +70,15 @@ export function makeNullish<T>(cb: ((arg: unknown) => arg is T)) {
  * Transform a value before checking it.
  */
 export function transform<T>(
-  transFn: (arg: unknown) => T,
-  vldt: ((arg: unknown) => arg is T),
-): ITransVldrFn<T> {
+  transformFn: (arg: unknown) => T,
+  validate: ((arg: unknown) => arg is T),
+): ITransformValidatorFn<T> {
   const retFn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
     if (arg !== undefined) {
-      arg = transFn(arg);
+      arg = transformFn(arg);
     }
     cb?.(arg as T);
-    return vldt(arg);
+    return validate(arg);
   };
   Object.defineProperty(retFn, 'isTransFn', { value: true, writable: false });
   return retFn;

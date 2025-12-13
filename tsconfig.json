@@ -1,19 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "lib": [ "ES2020" ],   
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "target": "ES2022",
     "strict": true,
-    "skipLibCheck": true 
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true,
+
+    "noEmit": true,
+    "declaration": false
   },
-  "include": [
-    "./src",
-    "./test",
-    "eslint.config.ts"
-  ],
-  "exclude": [
-    "./node_modules"
-  ]
+  "include": ["src", "test"]
 }

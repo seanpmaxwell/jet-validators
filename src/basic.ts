@@ -2,12 +2,6 @@
 import { parseBoolean, makeNullable, makeOptional, makeNullish } from '../utils';
 
 
-// **** Types **** //
-
-export type TNonEmptyStr = `${string}`;
-export type TRecord = Record<string, unknown>;
-
-
 // **** Functions **** //
 
 // Nullables
@@ -331,6 +325,6 @@ function _isValidDate(arg: unknown): arg is Date | string | number {
 /**
  * Is it a string at least length 1.
  */
-function _isNonEmptyString(arg: unknown): arg is TNonEmptyStr {
+function _isNonEmptyString(arg: unknown): arg is `${string}` {
   return (isString(arg) && arg.length > 0);
 }
