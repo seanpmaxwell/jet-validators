@@ -1,7 +1,7 @@
 {
   "name": "jet-validators",
   "version": "1.6.1",
-  "description": "A list common typescript validator-functions and some useful utilities to go with them.",
+  "description": "Fast, zero-dependency TypeScript validators and utilities for runtime checks, parsing, and lightweight object schema validation.",
   "type": "module",
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
