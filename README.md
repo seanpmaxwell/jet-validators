@@ -6,7 +6,7 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/jet-validators?label=bundle&color=0f172a)](https://bundlephobia.com/package/jet-validators)
 [![license](https://img.shields.io/npm/l/jet-validators?label=license&color=334155)](LICENSE)
 
-> A comprehensive collection of TypeScript validator functions and utilities for common runtime checks.
+> A comprehensive collection of TypeScript validator functions and utilities for common compile and runtime checks.
 
 ## Table of Contents
 
