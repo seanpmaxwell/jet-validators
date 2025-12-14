@@ -1,803 +1,447 @@
-# jet-validators 🧑✈️
-> A list common TypeScript validator-functions and some useful utilities to go with them.
-<br/>
+# jet-validators ✈️
 
+[![npm](https://img.shields.io/npm/v/jet-validators?label=npm&color=0ea5e9)](https://www.npmjs.com/package/jet-validators)
+[![downloads](https://img.shields.io/npm/dm/jet-validators?label=downloads&color=38bdf8)](https://www.npmjs.com/package/jet-validators)
+[![CI](https://img.shields.io/github/actions/workflow/status/seanpmaxwell/jet-validators/ci.yml?branch=main&label=CI&color=64748b)](https://github.com/seanpmaxwell/jet-validators/actions)
+[![types](https://img.shields.io/npm/types/jet-validators?label=types&color=22c55e)](https://www.npmjs.com/package/jet-validators)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/jet-validators?label=bundle&color=0f172a)](https://bundlephobia.com/package/jet-validators)
+[![license](https://img.shields.io/npm/l/jet-validators?label=license&color=334155)](LICENSE)
+
+> A comprehensive collection of TypeScript validator functions and utilities for common runtime checks.
 
 ## Table of Contents
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Basic Validators](#basic-validators)
-  - [Nullables](#nullables)
-  - [isBoolean](#is-noolean)
-  - [isValidBoolean](#is-valid-boolean)
-  - [isNumber](#is-number)
-  - [isInteger](#is-integer)
-  - [isBigInt](#is-bigint)
-  - [isValidNumber](#is-valid-number)
-  - [isString](#is-string)
-  - [isNonEmptyString](#is-non-empty-string)
-  - [isSymbol](#is-symbol)
-  - [isDate](#is-date)
-  - [isValidDate](#is-valid-date)
-  - [isObject](#is-object)
-  - [isFunction](#is-function)
-- [Complex Validators](#complex-validators)
-  - [isInArray](#is-in-array)
-  - [isInRange](#is-in-range)
-  - [isKeyOf](#is-key-of)
-  - [isValueOf](#is-value-of)
-- [Utilities](#utilities)
-  - [Simple Utilities](#simple-utilities)
-    - [nonNullable](#non-nullable)
-    - [makeNullables](#make-nullables)
-    - [transform](#transform)
-    - [parseBoolean](#parse-boolean)
-    - [parseJson](#parse-json)
-  - [Validating object schemas](#validating-object-schemas)
-    - [parseObject](#parse-object)
-    - [testObject](#test-object)
-    - [Combining parseObject and testObject](#combining-test-parse)
-    - [Custom Validators](#custom-validators)
-    - [Wrapping Parse/Test](#wrapping-parse-test)
-    - [Safety settings for parseObject](#parseObject-safety)
+
+* [Introduction](#introduction)
+* [Installation](#installation)
+* [Basic Validators](#basic-validators)
+* [Complex Validators](#complex-validators)
+* [Utilities](#utilities)
+* [Object Schema Validation](#object-schema-validation)
+* [Safety Modes](#safety-modes)
+
 <br/>
 
-
 ## Introduction <a name="introduction"></a>
-A simple, but long, list of validator-functions commonly used when checking values in TypeScript. This is not meant to replace advanced schema validation libraries like `zod`, `valibot`, `jet-schema` etc. This is just a list of pre-defined validator-functions to save you time and boilerplate code in TypeScript.
+
+`jet-validators` is a large collection of small, composable validator functions commonly used when validating values in TypeScript.
+
+It is **not** intended to replace full-featured schema libraries like `zod`, `valibot`, or `ajv`. Instead, it focuses on:
+
+* Zero dependencies
+* Minimal boilerplate
+* Excellent type narrowing
+* Drop-in validators you can import and use immediately
 
 ### Quick Glance
-```typescript
-import { isOptionalString, isRecord } from 'jet-validators';
 
-if (isOptionalString(value)) { // value is string | undefined
-  ...do stuff...
+```ts
+import { isOptionalString } from 'jet-validators';
+
+if (isOptionalString(value)) {
+  // value is string | undefined
 }
 ```
 
-### Why jet-validators
-- Contains validator-functions for the vast majority of real world scenarios you will encounter.
-- For basic validators, there's no initialization step, you just import the validator-function and start using it.
-- Contains some useful utilities for modifying values before validation.
-- Also has some utilities for object schema validation. 
-- Zero dependency!
+### Why jet-validators?
+
+* Covers the vast majority of real-world validation needs
+* No initialization or schema definitions required for basic checks
+* Includes helpers for transforming values before validation
+* Lightweight object schema validation utilities
+* **Zero dependencies**
+
 <br/>
 
 ## Installation <a name="installation"></a>
+
 ```bash
-npm i -s jet-validators
+npm install jet-validators
 ```
+
 <br/>
 
 ## Basic Validators <a name="basic-validators"></a>
-These can be imported and used directly and don't require any configuration.
 
-### Nullables <a name="nullables"></a>
-- isUndef
-- isNull
-- isNullish (is `null` or `undefined`)
+Basic validators can be imported directly and used without configuration.
 
-### `isBoolean` <a name="is-boolean"></a>
-- isBoolean
-- isOptionalBoolean
-- isNullableBoolean
-- isNullishBoolean
-- isBooleanArray
-- isOptionalBooleanArray
-- isNullableBooleanArray
-- isNullishBooleanArray
+All validators follow consistent naming patterns:
 
-### `isValidBoolean` <a name="is-valid-boolean"></a>
-Is it a valid boolean after calling the `parseBoolean` utility function.
-- isValidBoolean
-- isOptionalValidBoolean
-- isNullableValidBoolean
-- isNullishValidBoolean
-- isValidBooleanArray
-- isOptionalValidBooleanArray
-- isNullableValidBooleanArray
-- isNullishValidBooleanArray
+* `isX`
+* `isOptionalX`
+* `isNullableX`
+* `isNullishX`
+* `isXArray` (and variants)
 
-### `isNumber` <a name="is-number"></a>
-- isNumber
-- isOptionalNumber
-- isNullableNumber
-- isNullishNumber
-- isNumberArray
-- isOptionalNumberArray
-- isNullableNumberArray
-- isNullishNumberArray
+### Nullables
 
-Positive Number
-- isPositiveNumber
-- isOptionalPositiveNumber
-- isNullablePositiveNumber
-- isNullishPositiveNumber
-- isPositiveNumberArray
-- isOptionalPositiveNumberArray
-- isNullablePositiveNumberArray
-- isNullishPositiveNumberArray
+* `isUndef`
+* `isNull`
+* `isNullish` (`null | undefined`)
 
-Negative Number
-- isNegativeNumber
-- isOptionalNegativeNumber
-- isNullableNegativeNumber
-- isNullishNegativeNumber
-- isNegativeNumberArray
-- isOptionalNegativeNumberArray
-- isNullableNegativeNumberArray
-- isNullishNegativeNumberArray
+---
 
-Unsigned Number
-- isUnsignedNumber
-- isOptionalUnsignedNumber
-- isNullableUnsignedNumber
-- isNullishUnsignedNumber
-- isUnsignedNumberArray
-- isOptionalUnsignedNumberArray
-- isNullableUnsignedNumberArray
-- isNullishUnsignedNumberArray
+### `isBoolean`
 
-### `isInteger` <a name="is-integer"></a>
-- isInteger
-- isOptionalInteger
-- isNullableInteger
-- isNullishInteger
-- isIntegerArray
-- isOptionalIntegerArray
-- isNullableIntegerArray
-- isNullishIntegerArray
+* `isBoolean`
+* `isOptionalBoolean`
+* `isNullableBoolean`
+* `isNullishBoolean`
+* `isBooleanArray` (+ variants)
 
-Positive Integer
-- isPositiveInteger
-- isOptionalPositiveInteger
-- isNullablePositiveInteger
-- isNullishPositiveInteger
-- isPositiveIntegerArray
-- isOptionalPositiveIntegerArray
-- isNullablePositiveIntegerArray
-- isNullishPositiveIntegerArray
+---
 
-Negative Integer
-- isNegativeInteger
-- isOptionalNegativeInteger
-- isNullableNegativeInteger
-- isNullishNegativeInteger
-- isNegativeIntegerArray
-- isOptionalNegativeIntegerArray
-- isNullableNegativeIntegerArray
-- isNullishNegativeIntegerArray
+### `isValidBoolean`
 
-Unsigned Integer
-- isUnsignedInteger
-- isOptionalUnsignedInteger
-- isNullableUnsignedInteger
-- isNullishUnsignedInteger
-- isUnsignedIntegerArray
-- isOptionalUnsignedIntegerArray
-- isNullableUnsignedIntegerArray
-- isNullishUnsignedIntegerArray
+Valid after running through `parseBoolean`.
 
-### `isBigInt` <a name="is-bigint"></a>
-- isBigInt
-- isOptionalBigInt
-- isNullableBigInt
-- isNullishBigInt
-- isBigIntArray
-- isOptionalBigIntArray
-- isNullableBigIntArray
-- isNullishBigIntArr
+* `isValidBoolean`
+* `isOptionalValidBoolean`
+* `isNullableValidBoolean`
+* `isNullishValidBoolean`
+* `isValidBooleanArray` (+ variants)
 
-### `isValidNumber` <a name="is-valid-number"></a>
-- isValidNumber
-- isOptionalValidNumber
-- isNullableValidNumber
-- isNullishValidNumber
-- isValidNumberArray
-- isOptionalValidNumberArray
-- isNullableValidNumberArray
-- isNishValidNumArr
+---
 
-### `isString` <a name="is-string"></a>
-- isString
-- isOptionalString
-- isNullableString
-- isNullishString
-- isStringArray
-- isOptionalStringArray
-- isNullableStringArray
-- isNullishStringArray
+### `isNumber`
 
-### `isNonEmptyString` <a name="is-non-empty-string"></a>
-- isNonEmptyString
-- isOptionalNonEmptyString
-- isNullableNonEmptyString
-- isNullishNonEmptyString
-- isNonEmptyStringArray
-- isOptionalNonEmptyStringArray
-- isNullableNonEmptyStringArray
-- isNullishNonEmptyStringArray
-- TNonEmptyStr
+* `isNumber` (+ optional / nullable / array variants)
 
-### `isSymbol` <a name="is-symbol"></a>
-- isSymbol
-- isOptionalSymbol
-- isNullableSymbol
-- isNullishSymbol
-- isSymbolArray
-- isOptionalSymbolArray
-- isNullableSymbolArray
-- isNullishSymbolArray
+Sub-categories:
 
-### `isDate` <a name="is-date"></a>
-Is argument an instance of `Date` with a valid time value: `"!isNaN(arg.getTime())" => true`
-- isDate
-- isOptionalDate
-- isNullableDate
-- isNullishDate
-- isDateArray
-- isOptionalDateArray
-- isNullableDateArray
-- isNullishDateArray
+* **Positive**
+* **Negative**
+* **Unsigned**
 
-### `isValidDate` <a name="is-valid-date"></a>
-Is argument a valid date after wrapping with `new Date()` (could be `Date`, `string`, `number`)
-- isValidDate
-- isOptionalValidDate
-- isNullableValidDate
-- isNullishValidDate
-- isValidDateArray
-- isOptionalValidDateArray
-- isNullableValidDateArray
-- isNullishValidDateArray
+Each includes the full optional / nullable / array variants.
 
-### `isObject` <a name="is-object"></a>
-- isObject
-- isOptionalObject
-- isNullableObject
-- isNullishObject
-- isObjectArray
-- isOptionalObjectArray
-- isNullableObjectArray
-- isNullishObjectArray
+---
 
-### `isFunction` <a name="is-function"></a>
-- isFunction
-- isOptionalFunction
-- isNullableFunction
-- isNullishFunction
-- isFunctionArray
-- isOptionalFunctionArray
-- isNullableFunctionArray
-- isNullishFunctionArray
-<br/><br/>
+### `isInteger`
 
+Same structure as `isNumber`, including:
+
+* Positive
+* Negative
+* Unsigned
+
+---
+
+### `isBigInt`
+
+* `isBigInt`
+* `isOptionalBigInt`
+* `isNullableBigInt`
+* `isNullishBigInt`
+* `isBigIntArray` (+ variants)
+
+---
+
+### `isValidNumber`
+
+Valid after numeric coercion.
+
+* `isValidNumber`
+* `isOptionalValidNumber`
+* `isNullableValidNumber`
+* `isNullishValidNumber`
+* `isValidNumberArray` (+ variants)
+
+---
+
+### `isString`
+
+* `isString` (+ optional / nullable / array variants)
+
+---
+
+### `isNonEmptyString`
+
+Ensures `.length > 0`.
+
+* `isNonEmptyString` (+ variants)
+* `TNonEmptyStr` utility type
+
+---
+
+### `isSymbol`
+
+* `isSymbol` (+ variants)
+
+---
+
+### `isDate`
+
+Checks for a `Date` instance with a valid timestamp.
+
+```ts
+!isNaN(date.getTime())
+```
+
+* `isDate` (+ variants)
+
+---
+
+### `isValidDate`
+
+Accepts `Date`, `string`, or `number` and validates via `new Date(...)`.
+
+* `isValidDate` (+ variants)
+
+---
+
+### `isObject`
+
+* `isObject` (+ variants)
+
+---
+
+### `isFunction`
+
+* `isFunction` (+ variants)
+
+<br/>
 
 ## Complex Validators <a name="complex-validators"></a>
-These require an initialization step which will return a validator function.
 
-### `isInArray` <a name="is-in-array"></a>
-- isInArray
-- isOptionalInArray
-- isNullableInArray
-- isNullishInArray
+These require an initialization step and return a validator function.
 
-Does the argument strictly equal any item in the array:
-```typescript
-  const isInArrTest = isInArray(['1', '2', '3']);
-  isInArrTest('1'); // => true
+---
+
+### `isInArray`
+
+```ts
+const isAllowed = isInArray(['a', 'b', 'c']);
+isAllowed('a'); // true
 ```
 
-### `isInRange` <a name="is-in-range"></a>
-- isInRange
-- isOptionalInRange
-- isNullableInRange
-- isNullishInRange
-- isInRangeArray
-- isOptionalInRangeArray
-- isNullableInRangeArray
-- isNullishInRangeArray
+Supports optional / nullable variants.
 
-Will check if the argument (can be a `number-string` or a `number`) is in the provided range. The function will check if the argument is *greater-than* the first param and *less-than* the second param. If you wish to include the min or max value in the range (i.e. *greater-than-or-equal-to*) wrap it in square brackets. If you wish to leave off a min or max pass an empty array `[]`. If you want to check if the number is not between two numbers, use the bigger number for the first param and the lesser number for the second:
-```typescript
-  // Between 0 and 100
-  const isBetween0And100 = isInRange(0, 100);
-  isBetween0And100(50); // false
-  isBetween0And100('100'); // false
-  isBetween0And100(0); // true
+---
 
-  // Is negative
-  const isNegative = isInRange([], 0);
-  isNegative(0); // false
-  isNegative(-.0001); // true
+### `isInRange`
 
-  const isOptPositive = isOptionalInRange(0, []);
-  isOptPositive(undefined); // true
-  isOptPositive(1_000_000_000); // true
+Checks whether a number (or numeric string) falls within a range.
 
-  // 0 to 100
-  const isFrom0to100 = isInRange([0], [100]);
-  isFrom0to100('50'); // true
-  isFrom0to100(100); // true
-  isFrom0to100(0); // true
+Rules:
 
-  // less than 50 or greater than 100
-  const lessThan50OrGreaterThan100 = isInRange(100, 50);
-  lessThan50OrGreaterThan100(75); // false
-  lessThan50OrGreaterThan100(101); // true
+* `(min, max)` → exclusive
+* `[min], [max]` → inclusive
+* `[]` → no bound
+* Reverse bounds → “outside range”
+
+```ts
+const between0and100 = isInRange([0], [100]);
+between0and100(50);   // true
+between0and100('100'); // true
 ```
 
-### `isKeyOf` <a name="is-key-of"></a>
-- isKeyOf
-- isOptionalKeyOf
-- isNullableKeyOf
-- isNullishKeyOf
-
-Checks if the argument is a key of the object. Note that this will not work for symbols:
-```typescript
-  const someObject = {
-    foo: 'bar',
-    bada: 'bing',
-  } as const;
-
-  const isKeyOfSomeObject = isKeyOf(someObject);
-  isKeyOfSomeObject('foo'); // true
+```ts
+const negative = isInRange([], 0);
+negative(-1); // true
 ```
 
-### `isValueOf` <a name="is-value-of"></a>
-- isValueOf
-- isOptionalValueOf
-- isNullableValueOf
-- isNullishValueOf
-- ValueOf: utility type, returns tuple of an object's keys
-
-Checks if the argument is a value in the object.
-```typescript
-  const someObject = {
-    foo: 'bar',
-    bada: 'bing',
-  } as const;
-
-  const isValueOfSomeObject = isValueOf(someObject);
-  isValueOfSomeObject('bar'); // true
-  type keys = ValueOf<typeof someObject>; // 'bar' | 'bing'
+```ts
+const outside = isInRange(100, 50);
+outside(101); // true
+outside(75);  // false
 ```
-<br/><br/>
 
+---
+
+### `isKeyOf`
+
+Checks whether a value is a key of an object.
+
+```ts
+const obj = { foo: 'bar', baz: 'qux' } as const;
+const isKey = isKeyOf(obj);
+
+isKey('foo'); // true
+```
+
+> Note: Does not support symbol keys.
+
+---
+
+### `isValueOf`
+
+Checks whether a value exists in an object.
+
+```ts
+const obj = { foo: 'bar', baz: 'qux' } as const;
+const isValue = isValueOf(obj);
+
+isValue('bar'); // true
+```
+
+Includes the `ValueOf<T>` utility type.
+
+<br/>
 
 ## Utilities <a name="utilities"></a>
-These complement the validator-functions and are useful if you need to modify a value before checking it or validate an object's schema. Utilities need to be imported using `/utils` at the end of the library name:
-```typescript
+
+Utilities are imported from:
+
+```ts
 import { parseObject } from 'jet-validators/utils';
 ```
 
+---
 
-### Simple Utilities <a name="simple-utilities"></a>
+### `nonNullable`
 
-#### `nonNullable` <a name="non-nullable"></a>
-Remove `null`/`undefined` from type-predicates and runtime validation:
-```typescript
-  const isString = nonNullable(isNullishString);
-  isString(null); // false
-  isString(undefined); // false
-```
-
-#### `Make Nullables` <a name="make-nullables"></a>
-If you have a custom validator function and want to add `null` or `undefined` to the type predicated, you can use one of the make nullables modifiers:
-- makeOptional
-- makeNullable
-- makeNullish
-```ts
-  import { makeNullish, isString } from 'jet-validators';
-
-  type TEmail = `${string}@${string}`;
-
-  // The custom validator-function
-  const isEmail = (arg: unknown): arg is TEmail => {
-    return isString(arg) && SomeEmailRegex.test(arg);
-  };
-
-  const isNullishEmail = makeNullish(isEmail);
-  isNullishEmail('foo'); // arg => TEmail | null | undefined
-```
-
-#### `transform` <a name="transform"></a>
-Accepts a transformation function for the first argument, a validator for the second, and returns a validator-function which calls the transform function before validating. The returned validator-function provides a callback as the second argument, if you need to access the transformed value. You should use `transform` if you need to modify a value when using `parseObject` or `testObject`:
-```typescript
-  const isNumArrWithParse = transform((arg: string) => JSON.parse(arg), isNumberArray);
-  isNumArrWithParse('[1,2,3]', val => {
-    isNumberArray(val); // true
-  })); // true
-```
-
-#### `parseBoolean` <a name="parse-boolean"></a>
-- parseBoolean
-- parseOptionalBoolean
-- parseNullableBoolean
-- parseNullishBoolean
-
-Converts the following values to a boolean. Note will also covert the string equivalents:
-- `"true" or true`: `true` (case insensitive i.e. `"TrUe" => true`)
-- `"false" or false`: `false` (case insensitive i.e. `"FaLsE" => false`)
-- `"1" or 1`: `true`
-- `"0" or 0`: `false`
-```typescript
-  parseBoolean('tRuE'); // true
-  parseBoolean(1) // true
-  parseBoolean('0') // false
-```
-
-#### `parseJson` <a name="parse-json"></a>
-- parseJson
-- parseOptionalJson
-- parseNullableJson
-- parseNullishJson
-
-Calls the `JSON.parse` function, if the argument is not a string an error will be thrown:
-```typescript
-  const numberArr = parseJson<number[]>('[1,2,3]');
-  isNumberArray(val); // true
-```
-
-### Validating object schemas <a name="validating-object-schemas"></a>
-If you need to validate an object schema, you can pass a validator object with the key being a property of the object and the value being any of the validator-functions in this library OR you can write your own validator-function (see the <a href="#custom-validators">Custom Validators</a> section).<br>
-
-> These functions aren't meant to replace full-fledged schema validation libraries (like zod, ajv, etc), they're just meant as simple object validating tools where using a separate schema validation library might be overkill.
-
-
-#### `parseObject` <a name="parse-object"></a>
-- `default` Extra properties will be purged but not raise errors.
-- parseObject
-- parseOptionalObject
-- parseNullableObject
-- parseNullishObject
-- parseObjectArray
-- parseOptionalObjectArray
-- parseNullableObjectArray
-- parseNullishObjectArray
-- `loose` Extra properties will not be purged or raise errors.
-- looseParseObject
-- looseParseOptionalObject
-- looseParseNullableObject
-- looseParseNullishObject
-- looseParseObjectArray
-- looseParseOptionalObjectArray
-- looseParseNullableObjectArray
-- looseParseNullishObjectArray
-- `strict` Extra properties will be purged and raise errors.
-- strictParseObject
-- strictParseOptionalObject
-- strictParseNullableObject
-- strictParseNullishObject
-- strictParseObjectArray
-- strictParseOptionalObjectArray
-- strictParseNullableObjectArray
-- strictParseNullishObjectArray
-
-This function iterates an object (and any nested objects) and runs the validator-functions against each property. If every validator-function passed, the argument will be returned while purging any properties not in the schema. If it does not pass, then the function returns `false`. You can optionally pass an  error-handler function as the second argument which will fire whenever a validator-function fails.<br/>
-
-The format for the `onError` callback function is as follows. If the validator-function throws an error, it will be passed to the `caughtErr` param (see below snippet):
-> (errorArray: IParseObjectError[]) => void;
+Removes `null` and `undefined` from a validator.
 
 ```ts
-// The IParseObjectError
-{
-  info: string;
-  prop?: string;
-  value?: unknown;
-  caught?: string;
-  index?: number;
-  children?: IParseObjectError[];
-}
+const isStrictString = nonNullable(isNullishString);
 ```
 
-Example of using `parseObject` with a custom error callback:
-```typescript
-  import { parseObject, IParseObjectError } from 'jet-validators/utils';
+---
 
-  interface IUser {
-    id: number;
-    name: string;
-    address: {
-      city: string;
-      zip: number;
-    }
-  }
+### `makeOptional / makeNullable / makeNullish`
 
-  const parseUser = parseObject<'pass "IUser" here if you want to enforce schema props'>({
-    id: transform(Number, isNumber),
-    name: isString,
-    address: {
-      city: isString,
-      zip: isNumber,
-    }
-  }, (errorArray: IParseObjectError[]) => {
-    console.error(JSON.stringify(errorArray, null, 2));
-  });
-
-  const user: IUser = parseUser({
-    id: '5',
-    name: 'john',
-    email: '--',
-    address: {
-      city: 'seattle',
-      zip: 99999,
-    }
-  });
-
-  // 'user' variable above:
-  // {
-  //   id: 5,
-  //   name: 'john',
-  //   address: {
-  //    city: 'seattle',
-  //    zip: 99999,
-  //   }
-  // }
-```
-
-- If you use the `parseObjectArray` the error callback handler will also pass the index of the object calling the error function:
-```typescript
-  const parseUserArrWithError = parseObjectArray({
-    id: isNumber,
-    name: isString,
-  }, errors => {
-    console.log(errors) // =>
-    // [
-    //   {
-    //     info: 'Validator-function returned false.',
-    //     prop: 'id',
-    //     value: '3',
-    //     index: 2
-    //   }
-    // ]
-  });
-
-  parseUserArrWithError([
-    { id: 1, name: '1' },
-    { id: 2, name: '2' },
-    { id: '3', name: '3' },
-  ]);
-```
-
-
-#### `testObject` <a name="test-object"></a>
-- `default` Extra properties will be purged but not raise errors.
-- testObject
-- testOptionalObject
-- testNullableObject
-- testNullishObject
-- testObjectArray
-- testOptionalObjectArray
-- testNullableObjectArray
-- testNullishObjectArray
-- `loose` Extra properties will not be purged or raise errors.
-- looseTestObject
-- looseTestOptionalObject
-- looseTestNullableObject
-- looseTestNullishObject
-- looseTestObjectArray
-- looseTestOptionalObjectArray
-- looseTestNullableObjectArray
-- looseTestNullishObjectArray,
-- `strict` Extra properties will be purged and raise errors.
-- strictTestObject
-- strictTestOptionalObject
-- strictTestNullableObject
-- strictTestNullishObject
-- strictTestObjectArray
-- strictTestOptionalObjectArray
-- strictTestNullableObjectArray
-- strictTestNullishObjectArray
-
-`testObject` is nearly identical to `parseObject` (it actually calls `parseObject` under-the-hood) but returns a type-predicate instead of the argument passed. Transformed values and purging non-schema keys will still happen as well:
-```typescript
-  const user: IUser = {
-    id: '5',
-    name: 'john',
-    email: '--',
-    address: {
-      city: 'seattle',
-      zip: 99999,
-    }
-  }
-  
-  const testUser = testObject(user);
-  if (testUser(user)) { // user is IUser
-    // 'user' variable above:
-    // {
-    //   id: 5,
-    //   name: 'john',
-    //   address: {
-    //    city: 'seattle',
-    //    zip: '99999',
-    //   }
-    // }
-  }
-```
-
-#### Combining `parseObject` and `testObject` <a name="combining-test-parse"></a>
-If you have nested objects on another parent object that you want to test or parse, you can add nested `testObject` functions to the parent one. Note that `parseObject` requires validator-functions in the schema (they must return a type-predicate), so you can only use `testObject` for nested schemas.
-
-> <b>IMPORTANT:</b> Due to the limitations with Typescript, if you do not add a generic to a nested schema, all required properties must still be there for typesafety; however, typesafety will not protect the nested schema from extra properties (see below):  
+Wrap custom validators to extend their accepted types.
 
 ```ts
-import { parseObject, testObject } from 'jet-validators/utils';
+const isEmail = (arg: unknown): arg is TEmail =>
+  isString(arg) && EMAIL_REGEX.test(arg);
 
-interface IUser {
-  id: number;
-  name: string;
-  address: {
-    city: string;
-    zip: number;
-  }
-}
+const isNullishEmail = makeNullish(isEmail);
+```
 
+---
+
+### `transform`
+
+Transforms a value before validation.
+
+```ts
+const isParsedArray = transform(JSON.parse, isNumberArray);
+```
+
+Supports callbacks for accessing transformed values.
+
+---
+
+### `parseBoolean`
+
+Converts common boolean representations:
+
+* `"true"`, `"false"` (case-insensitive)
+* `"1"`, `"0"`
+* `1`, `0`
+
+```ts
+parseBoolean('TrUe'); // true
+parseBoolean(0);      // false
+```
+
+---
+
+### `parseJson`
+
+Safely wraps `JSON.parse`.
+
+```ts
+const nums = parseJson<number[]>('[1,2,3]');
+```
+
+Throws if input is not a string.
+
+<br/>
+
+## Object Schema Validation <a name="object-schema-validation"></a>
+
+Lightweight schema validation for objects using validator functions.
+
+> These utilities are intentionally simpler than libraries like Zod or AJV.
+
+---
+
+### `parseObject`
+
+* Transforms values
+* Removes unknown keys (by default)
+* Returns parsed output or `false`
+* Optional error callback
+
+```ts
 const parseUser = parseObject<IUser>({
-  id: isNumber,
+  id: transform(Number, isNumber),
   name: isString,
-  address: {
-    city: isString,
-    zip: isNumber,
-    // foo: isString, // Causes type error
-  },
-});
-
-const parseUser1 = parseObject<IUser>({
-  id: isNumber,
-  name: isString,
-  address: testObject({
-    city: isString,
-    zip: isNumber,
-    foo: isString, // DOES NOT cause type error because of typescript limitations
-  }),
-});
-
-const parseUser3 = parseObject<IUser>({
-  id: isNumber,
-  name: isString,
-  address: testObject<IUser['address']>({
-    city: isString,
-    zip: isNumber,
-    // foo: isString, // Causes type error
-  }),
 });
 ```
 
-- If you want to use an external nested validator-function for whatever reason, make sure you pass down the `arg` param AND the `options`/`errorCb` params so that any nested parse functions can receive the options/errors from the parent.<br/>
+Supports:
 
-In this example we needed to parse an address object. So we don't have to initialize the address schema twice we just wrap the `parseAddr` function and convert it to a test function (make it return a type-predicate): 
+* optional / nullable
+* arrays
+* nested schemas
+* loose / strict modes
+
+---
+
+### `testObject`
+
+Same behavior as `parseObject`, but returns a **type predicate**.
+
 ```ts
-import { parseObject, testNullishObject, TParseOnError, IParseOptions } from 'jet-validators/utils';
-
-interface IAddress {
-  city: string;
-  zip: number;
+if (testUser(user)) {
+  // user is IUser
 }
-
-const parseAddr = parseNullishObject({
-  city: isString,
-  zip: isNumber,
-});
-
-function newAddress(arg: unknown): IAddress {
-  return parseAddr(arg);
-}
-
-const parseUser = parseObject({
-  id: isNumber,
-  name: isString,
-  address: (
-    arg: unknown,
-    optionsOrErrCb?: IParseOptions | TParseOnError,
-    errorCb?: TParseOnError,
-  ): arg is IAddress => !!parseAddr(arg, optionsOrErrCb, errorCb),
-});
 ```
 
+---
 
-#### Custom Validators <a name="custom-validators"></a>
-For `parseObject` and `testObject` you aren't restricted to the validator-functions in `jet-validators`. You can write your own validator-function, just make sure your argument is `unknown` and it returns a type predicate.
-```typescript
-  import { makeNullish, isString } from 'jet-validators';
+### Combining parse + test
 
-  type TEmail = `${string}@${string}`;
+Nested schemas may use `testObject` inside `parseObject`, with caveats around TypeScript inference. Supplying generics restores full type safety.
 
-  interface IUser {
-    id: number;
-    email: TEmail;
-  }
+---
 
-  // The custom validator-function
-  const isEmail = (arg: unknown): arg is TEmail => {
-    return isString(arg) && SomeEmailRegex.test(arg);
-  };
+### Custom Validators
 
-  const parseUser = parseObject({
-    id: isNumber,
-    name: isEmail,
-  });
+Any function of the form:
 
-  const user: IUser = parseUser({
-    id: 5,
-    name: 'joe',
-  });
-```
-
-
-#### Wrapping parseObject/testObject functions <a name="wrapping-parse-test"></a>
-If you want to wrap the `parseObject` or `testObject` functions cause for whatever reason, you need to import the `TSchema` type and have your generic extend it:
-```typescript
-import { isNumber, isString } from 'jet-validators';
-import { parseObject, TSchema } from 'jet-validators/utils';
-
-interface IUser {
-  id: number;
-  name: string;
-}
-
-// Wrap without generic
-const customParse = (schema: TSchema) => {
-  return parseObject(schema, errors => throw new YourCustomErrorObject(errors))
-}
-
-// Wrap with generic
-const customParse2 = <T>(schema: TSchema<T>) => {
-  return parseObject<T>(schema, errors => throw new YourCustomErrorObject(errors))
-}
-
-const parseUser = customParse({
-  id: isNumber,
-  name: isString,
-});
-
-const user: IUser = parseUser('...whatever...');
-
-const parseUser2 = customParse2<IUser>({
-  id: isNumber,
-  name: isString,
-  // address: isString, // Will cause type error
-});
-```
-
-
-#### Safety settings for parseObject <a name="parseObject-safety"></a>
-For `parseObject/testObject` you can control what happens if extra properties are found in the argument object. This is done by important functions suffixed with `loose` or `strict`. The default `parseObject/testObject` functions are configured with the `default` safety setting:
-
-- `loose`: Extra properties will not be purged or raise errors.
-- `default`: Extra properties will be purged but not raise errors.
-- `strict`: Extra properties will be purged and raise errors.
-
-
-Example of the `options` argument. If you need to pass an error callback too pass it as the third argument. Note that the highest level passed `options` object will overwrite any nested one:
 ```ts
-import { isNumber, isString } from 'jet-validators';
-import { strictParseObject } from 'jet-validators/utils';
-
-const testUser = strictParseObject({
-  id: isString,
-  name: isNumber,
-}, errors => console.log(errors));
-
-testUser({ id: 1, name: 'a', city: 'seattle' }); // This will raise errors
+(arg: unknown) => arg is T
 ```
 
-If you're using nested parse/test functions make sure you use the right function on the nested object if you want it to match the parent's safety level:
+can be used in schemas.
+
+---
+
+### Wrapping parse/test
+
+When wrapping these utilities, ensure your generics extend `TSchema<T>` to preserve type safety.
+
+---
+
+## Safety Modes <a name="safety-modes"></a>
+
+Control how extra object properties are handled:
+
+* **loose** – keep extra keys
+* **default** – remove extra keys (no error)
+* **strict** – remove extra keys and emit errors
+
 ```ts
-import { isNumber, isString } from 'jet-validators';
-import { parseObject, strictParseObject } from 'jet-validators/utils';
-
-const testUser = strictParseObject({
-  id: isString,
-  name: isNumber,
-  address: { // Will still do 'strict' parsing
-    city: isString,
-    zip: isNumber,
-  },
-  country: parseObject({ // Will do 'default' parsing
-    name: isString,
-    code: isNumber
-  }),
-});
-
+const strictUser = strictParseObject({...});
 ```
+
+Nested schemas inherit the parent mode unless overridden.
+
+---
+
+## Summary
+
+`jet-validators` is ideal when you want:
+
+* Fast runtime validation
+* Strong type narrowing
+* No heavy schema machinery
+* Simple, composable utilities
+
+Perfect for APIs, config parsing, and runtime safety without dependency bloat.
+
+---
