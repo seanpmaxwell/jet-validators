@@ -14,9 +14,9 @@
       "types": "./dist/types/index.d.ts"
     },
     "./utils": {
-      "import": "./dist/utils/esm/index.js",
-      "require": "./dist/utils/cjs/index.cjs",
-      "types": "./dist/utils/types/index.d.ts"
+      "import": "./dist/esm/utils/index.js",
+      "require": "./dist/cjs/utils/index.cjs",
+      "types": "./dist/types/utils/index.d.ts"
     }
   },
   "files": ["dist"],

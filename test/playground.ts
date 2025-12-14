@@ -15,7 +15,7 @@ import {
 } from '../src/utils';
 
 import { isString as isStringRelativeImport } from '../';
-import { parseBoolean as parseBooleanRelativeImport } from '../';
+// import { parseBoolean as parseBooleanRelativeImport } from '../utils';
 
 
 /******************************************************************************
