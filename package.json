@@ -32,7 +32,6 @@
   },
   "keywords": [
     "jet",
-    "jet-schema",
     "validator",
     "validators",
     "jet-validators",
@@ -40,7 +39,13 @@
     "function",
     "functions",
     "zod",
-    "schema"
+    "schema",
+    "parse",
+    "runtime-validation",
+    "compile-time validation",
+    "lightweight",
+    "npm",
+    "type-safety"
   ],
   "author": "sean maxwell",
   "license": "MIT",
