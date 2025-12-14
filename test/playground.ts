@@ -12,7 +12,10 @@ import {
   parseObjectArray,
   type TSchema,
   nonNullable,
-} from '../utils/src';
+} from '../src/utils';
+
+import { isString as isStringRelativeImport } from '../';
+import { parseBoolean as parseBooleanRelativeImport } from '../';
 
 
 /******************************************************************************
