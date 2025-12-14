@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
+import { isString } from '../basic.js';
 import { type IParseValidatorFn, type TParseOnError } from './parseObject.js';
-import { isString } from './helpers.js';
 
 
 // **** Types **** //
@@ -89,36 +89,29 @@ export function transform<T>(
 
 // **** ParseBoolean **** //
 
+const BOOLEAN_MAP: Record<string, boolean> = {
+  'true': true,
+  'false': false,
+  'yes': true,
+  'no': false,
+  '1': true,
+  '0': false,
+} as const;
+
 /**
  * Convert all string/number boolean types to a boolean. If not a valid boolean
  * return "undefined".
  */
 export function parseBoolean(arg: unknown, errMsg?: string): boolean {
-  if (typeof arg === 'string') {
-    arg = arg.toLowerCase();
-    if (arg === 'true') {
-      return true;
-    } else if (arg === 'false') {
-      return false;
-    } else if (arg === 'yes') {
-      return true;
-    } else if (arg === 'no') {
-      return false;
-    } else if (arg === '1') {
-      return true;
-    } else if (arg === '0') {
-      return false;
-    }
-  } else if (typeof arg === 'number') {
-    if (arg === 1) {
-      return true;
-    } else if (arg === 0) {
-      return false;
-    }
-  } else if (typeof arg === 'boolean') {
-    return arg;
+  if (typeof arg === 'boolean') return arg;
+  if (typeof arg === 'number') {
+    if (arg === 1) return true;
+    if (arg === 0) return false;
   }
-  // Default
+  if (typeof arg === 'string') {
+    const normalized = arg.toLowerCase();
+    if (normalized in BOOLEAN_MAP) return BOOLEAN_MAP[normalized];
+  }
   throw new Error(errMsg ?? 'Argument must be a valid boolean.');
 }
 

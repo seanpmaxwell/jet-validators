@@ -2,9 +2,9 @@
 import {
   parseBoolean,
   makeNullable,
-  makeOptional,
   makeNullish,
-} from '../utils/src/simple-utils.js';
+  makeOptional,
+} from './utils/index.js';
 
 
 // **** Functions **** //
@@ -330,6 +330,7 @@ function _isValidDate(arg: unknown): arg is Date | string | number {
 /**
  * Is it a string at least length 1.
  */
-function _isNonEmptyString(arg: unknown): arg is `${string}` {
+function _isNonEmptyString(arg: unknown): arg is string {
   return (isString(arg) && arg.length > 0);
 }
+

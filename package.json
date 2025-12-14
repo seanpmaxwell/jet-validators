@@ -1,6 +1,6 @@
 {
   "name": "jet-validators",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Fast, zero-dependency TypeScript validators and utilities for runtime checks, parsing, and lightweight object schema validation.",
   "type": "module",
   "main": "./dist/cjs/index.cjs",
@@ -12,13 +12,16 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.cjs",
       "types": "./dist/types/index.d.ts"
+    },
+    "./utils": {
+      "import": "./dist/utils/esm/index.js",
+      "require": "./dist/utils/cjs/index.cjs",
+      "types": "./dist/utils/types/index.d.ts"
     }
   },
-  "files": ["dist", "utils/dist"],
+  "files": ["dist"],
   "scripts": {
-    "build": "npm run build:utils && npm run build:main",
-    "build:main": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
-    "build:utils": "cd utils && npm run build && cd ..",
+    "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "lint": "eslint --flag unstable_ts_config",
     "playground": "npx ts-node ./test/playground.ts",

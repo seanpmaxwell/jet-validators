@@ -89,18 +89,6 @@ All validators follow consistent naming patterns:
 
 ---
 
-### `isValidBoolean`
-
-Valid after running through `parseBoolean`.
-
-* `isValidBoolean`
-* `isOptionalValidBoolean`
-* `isNullableValidBoolean`
-* `isNullishValidBoolean`
-* `isValidBooleanArray` (+ variants)
-
----
-
 ### `isNumber`
 
 * `isNumber` (+ optional / nullable / array variants)
@@ -334,6 +322,18 @@ Converts common boolean representations:
 parseBoolean('TrUe'); // true
 parseBoolean(0);      // false
 ```
+
+---
+
+### `isValidBoolean`
+
+Valid after running through `parseBoolean`.
+
+* `isValidBoolean`
+* `isOptionalValidBoolean`
+* `isNullableValidBoolean`
+* `isNullishValidBoolean`
+* `isValidBooleanArray` (+ variants)
 
 ---
 

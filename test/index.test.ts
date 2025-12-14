@@ -107,7 +107,7 @@ import {
   strictParseObject,
   looseParseObject,
   looseTestObject,
-} from '../utils/src';
+} from '../src/utils';
 
 
 /******************************************************************************

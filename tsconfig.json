@@ -11,5 +11,9 @@
     "noEmit": true,
     "declaration": false
   },
-  "include": ["src", "test", "eslint.config.ts"]
+  "include": [
+    "./src/**/*.ts",
+    "./test/**/*.ts",
+    "./eslint.config.ts"
+  ]
 }

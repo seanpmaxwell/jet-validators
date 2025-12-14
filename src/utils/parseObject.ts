@@ -1,13 +1,5 @@
 /* eslint-disable max-len */
-import { 
-  isFunction, 
-  isNonEmptyStringRecord,
-  isString,
-  isStringRecord,
-  isUndef,
-  type ValueOf,
-} from './helpers.js';
-
+import { isUndef, isFunction, isString, isStringArray } from '../basic.js';
 import { type ITransformValidatorFn } from './simple-utils.js';
 
 
@@ -19,7 +11,8 @@ const SAFETY = {
   Strict: 2,
 } as const;
 
-type Safety = ValueOf<typeof SAFETY>;
+
+type Safety = typeof SAFETY[keyof typeof SAFETY];
 
 
 const ERRORS = {
@@ -568,6 +561,21 @@ function isParseObjectErrorArray(arg: unknown): arg is IParseObjectError[] {
     'isParseObjectErrorArr' in arg &&
     arg.isParseObjectErrorArr === true
   );
+}
+
+
+function isStringRecord(arg: unknown): arg is Record<string, unknown> {
+  return !!arg && typeof arg === 'object' && isStringArray(Object.keys(arg));
+}
+
+function isNonEmptyStringRecord(
+  arg: unknown,
+): arg is Record<string, unknown> {
+  if (!!arg && typeof arg === 'object') {
+    const keys = Object.keys(arg);
+    return keys.length > 0 && isStringArray(keys);
+  }
+  return false;
 }
 
 // **** testObject (just calls "parseObject" under the hood) **** //

@@ -7,10 +7,10 @@ import {
   testOptionalObject,
   parseOptionalObject,
   testNullishObject,
-  TParseOnError,
-  IParseObjectError,
+  type TParseOnError,
+  type IParseObjectError,
   parseObjectArray,
-  TSchema,
+  type TSchema,
   nonNullable,
 } from '../utils/src';
 
