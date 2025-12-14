@@ -2,7 +2,6 @@
 
 [![npm](https://img.shields.io/npm/v/jet-validators?label=npm&color=0ea5e9)](https://www.npmjs.com/package/jet-validators)
 [![downloads](https://img.shields.io/npm/dm/jet-validators?label=downloads&color=38bdf8)](https://www.npmjs.com/package/jet-validators)
-[![CI](https://img.shields.io/github/actions/workflow/status/seanpmaxwell/jet-validators/ci.yml?branch=main&label=CI&color=64748b)](https://github.com/seanpmaxwell/jet-validators/actions)
 [![types](https://img.shields.io/npm/types/jet-validators?label=types&color=22c55e)](https://www.npmjs.com/package/jet-validators)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/jet-validators?label=bundle&color=0f172a)](https://bundlephobia.com/package/jet-validators)
 [![license](https://img.shields.io/npm/l/jet-validators?label=license&color=334155)](LICENSE)
