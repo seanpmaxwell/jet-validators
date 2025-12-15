@@ -3,7 +3,7 @@ import { isUndef, isFunction, isString, isStringArray } from '../basic.js';
 import { type ITransformValidatorFn } from './simple-utils.js';
 
 
-// **** Variables **** //
+// **** Constants **** //
 
 const SAFETY = {
   Loose: 0,
@@ -11,9 +11,7 @@ const SAFETY = {
   Strict: 2,
 } as const;
 
-
 type Safety = typeof SAFETY[keyof typeof SAFETY];
-
 
 const ERRORS = {
   NotObject: 'Parsed item was not an object.',
@@ -77,6 +75,8 @@ export type TSchemaHelper<T> = Required<{
 interface IBasicSchema {
   [key: string]: ITransformValidatorFn<unknown> | IParseValidatorFn<unknown> | IBasicSchema;
 }
+
+type TFlattenedSchema = Record<string, ITransformValidatorFn<unknown> | IParseValidatorFn<unknown>>;
 
 type TInferFromSchema<U, O, N, A, Schema = TInferFromSchemaHelper<U>> = AddMods<Schema, O, N, A>;
 
@@ -237,6 +237,10 @@ function _parseObject<
   safety: Safety,
   onErrorLower?: TParseOnError,
 ) {
+
+  // pick up here, do recursion before being passed the "arg"
+  const flattenedSchema = flattenSchema(schema, safety);
+
   // Return function
   return (
     arg: unknown,
@@ -244,11 +248,11 @@ function _parseObject<
   ) => {
     // If error callback provided
     if (!!onErrorLower || !!onError) {
-      return _parseObjectHelperWithErrorCb<A>(
+      return _checkBasicsWithErrorCallback<A>(
         !!optional,
         !!nullable,
         isArr, 
-        schema,
+        flattenedSchema,
         arg,
         safety,
         (errors: IParseObjectError[]) => {
@@ -274,13 +278,51 @@ function _parseObject<
 }
 
 /**
- * Validate the schema. 
+ * Make it to where a schema with nested objects is just one layer of 
+ * validator functions.
  */
-function _parseObjectHelperWithErrorCb<A>(
+function flattenSchema(
+  schema: IBasicSchema,
+  safety: Safety,
+): TFlattenedSchema {
+  for (const key in schema) {
+    const schemaProp = schema[key];
+    if (isFunction(schemaProp)) {
+      continue;
+    } else if (isNonEmptyStringRecord(schemaProp)) {
+      const flattenedSchema = flattenSchema(schemaProp, safety);
+
+      // pick up here
+      schema[key] = (arg: unknown, cb: (errors: IParseObjectError[]) => void) => {
+        const errArr: IParseObjectError[] = [];
+        const childVal = _parseFlattenedSchemaWithErrorCallback(flattenedSchema, 
+          arg, errArr, safety);
+        if (childVal === false) {
+          errArr.push({
+            info: ERRORS.NestedValidation,
+            prop: key,
+            children: errArr,
+          });
+        }
+        cb(errArr);
+        return childVal;
+      };
+
+    } else {
+      throw new Error(ERRORS.SchemaProp);
+    }
+  }
+  return schema as TFlattenedSchema;
+}
+
+/**
+ * Check major stuff like optional, nullable, is array.
+ */
+function _checkBasicsWithErrorCallback<A>(
   optional: boolean,
   nullable: boolean,
   isArr: A,
-  schema: IBasicSchema,
+  schema: TFlattenedSchema,
   arg: unknown,
   safety: Safety,
   onError: TParseOnError,
@@ -311,7 +353,7 @@ function _parseObjectHelperWithErrorCb<A>(
     }
     // Iterate array
     for (let i = 0; i < arg.length; i++) {
-      _parseObjectHelperWithErrorCb2(schema, arg[i], errArr, safety, i);
+      _parseFlattenedSchemaWithErrorCallback(schema, arg[i], errArr, safety, i);
     }
     if (errArr.length > 0) {
       onError(errArr);
@@ -321,7 +363,7 @@ function _parseObjectHelperWithErrorCb<A>(
     return arg;
   }
   // If not an array
-  _parseObjectHelperWithErrorCb2(schema, arg, errArr, safety);
+  _parseFlattenedSchemaWithErrorCallback(schema, arg, errArr, safety);
   if (errArr.length > 0) {
     onError(errArr);
     return false;
@@ -333,8 +375,8 @@ function _parseObjectHelperWithErrorCb<A>(
  * Iterate an object, apply a validator function to to each property in an 
  * object using the schema.
  */
-function _parseObjectHelperWithErrorCb2(
-  schemaParentObj: IBasicSchema,
+function _parseFlattenedSchemaWithErrorCallback(
+  schemaParentObj: TFlattenedSchema,
   argParentObj: unknown,
   errArr: IParseObjectError[],
   safety: Safety,
@@ -351,77 +393,84 @@ function _parseObjectHelperWithErrorCb2(
   // Iterate object properties
   for (const key in schemaParentObj) {
     const schemaProp = schemaParentObj[key],
-      val = argParentObj[key];
+      value = argParentObj[key];
     // Run validator
-    if (isFunction(schemaProp)) {
-      try {
-        let childErrors: IParseObjectError[] | undefined,
-          passed = false,
-          info: string = ERRORS.ValidatorFn;
-        if (schemaProp.isTransformFunction === true) {
-          passed = schemaProp(val, tval => {
-            // Don't append "undefined" if the key is absent
-            if (tval === undefined && !(key in argParentObj)) {
-              return;
-            }
-            argParentObj[key] = tval;
-          });
-        } else {
-          passed = schemaProp(val, errors => {
-            if (isParseObjectErrorArray(errors)) {
-              info = ERRORS.NestedValidation;
-              childErrors = errors;
-            }
-          });
-        }
-        // If not passed
-        if (!passed) {
-          errArr.push({
-            info,
-            prop: key,
-            ...((!!childErrors && childErrors.length > 0) ? {
-              children: childErrors,
-            } : {
-              value: val,
-            }),
-            ...(isUndef(index) ? {} : { index }),
-          });
-        }
+
+    // pick up here
+    // if (isFunction(schemaProp)) {
+    try {
+      let childErrors: IParseObjectError[] | undefined,
+        passed = false,
+        info: string = ERRORS.ValidatorFn;
+      if (schemaProp.isTransformFunction === true) {
+        passed = schemaProp(value, tval => {
+          // Don't append "undefined" if the key is absent
+          if (tval === undefined && !(key in argParentObj)) {
+            return;
+          }
+          argParentObj[key] = tval;
+        });
+      } else {
+        // pick up here
+        passed = schemaProp(value, errors => {
+          if (isParseObjectErrorArray(errors)) {
+            info = ERRORS.NestedValidation;
+            childErrors = errors;
+          }
+        });
+      }
+      // If not passed
+      if (!passed) {
+        errArr.push({
+          info,
+          prop: key,
+          ...((!!childErrors && childErrors.length > 0) ? {
+            children: childErrors,
+          } : {
+            value: value,
+          }),
+          ...(isUndef(index) ? {} : { index }),
+        });
+      }
       // Validator function threw an error
-      } catch (err) {
-        let caught;
-        if (err instanceof Error) {
-          caught = err.message;
-        } else if (isString(err)) {
-          caught = err;
-        } else {
-          caught = JSON.stringify(err);
-        }
-        errArr.push({
-          info: ERRORS.ErrorThrown,
-          prop: key,
-          value: val,
-          caught,
-          ...(isUndef(index) ? {} : { index }),
-        });
+    } catch (err) {
+      let caught;
+      if (err instanceof Error) {
+        caught = err.message;
+      } else if (isString(err)) {
+        caught = err;
+      } else {
+        caught = JSON.stringify(err);
       }
-    // Nested schema
-    } else if (isNonEmptyStringRecord(schemaProp)) {
-      const childErrArr: IParseObjectError[] = [],
-        childVal = _parseObjectHelperWithErrorCb2(schemaProp, val, childErrArr, 
-          safety);
-      if (childVal === false) {
-        errArr.push({
-          info: ERRORS.NestedValidation,
-          prop: key,
-          children: childErrArr,
-          ...(isUndef(index) ? {} : { index }),
-        });
-      }
-    // Throw error if not function
-    } else {
-      throw new Error(ERRORS.SchemaProp);
+      errArr.push({
+        info: ERRORS.ErrorThrown,
+        prop: key,
+        value: value,
+        caught,
+        ...(isUndef(index) ? {} : { index }),
+      });
     }
+
+    // pick up here, need to move this to the
+    // Nested schema
+    // } else if (isNonEmptyStringRecord(schemaProp)) {
+    // const childErrArr: IParseObjectError[] = [],
+    //   childVal = _parseFlattenedSchemaWithErrorCallback(schemaProp, value, 
+    //     childErrArr, safety);
+    // if (childVal === false) {
+    //   errArr.push({
+    //     info: ERRORS.NestedValidation,
+    //     prop: key,
+    //     children: childErrArr,
+    //     ...(isUndef(index) ? {} : { index }),
+    //   });
+    // }
+    // Throw error if not function
+    // } else {
+    //   throw new Error(ERRORS.SchemaProp);
+    // }
+
+
   }
   // Unless safety = "loose", filter extra keys
   if (safety !== SAFETY.Loose) {
