@@ -158,7 +158,6 @@ Valid after numeric coercion.
 Ensures `.length > 0`.
 
 * `isNonEmptyString` (+ variants)
-* `TNonEmptyStr` utility type
 
 ---
 
