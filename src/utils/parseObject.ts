@@ -246,7 +246,7 @@ function _parseObject<
     arg: unknown,
     onError?: TParseOnError,
   ) => {
-    // If error callback provided
+    // ** If error callback provided ** //
     if (!!onErrorLower || !!onError) {
       return _checkBasicsWithErrorCallback<A>(
         !!optional,
@@ -265,8 +265,8 @@ function _parseObject<
         },
       ) as TInferFromSchema<U, O, N, A>;
     }
-    // Not error callback provided
-    return _parseObjectHelperWithoutErrorCb<A>(
+    // ** Not error callback provided ** //
+    return _parseObjectHelper<A>(
       !!optional,
       !!nullable,
       isArr, 
@@ -289,25 +289,30 @@ function flattenSchema(
     const schemaProp = schema[key];
     if (isFunction(schemaProp)) {
       continue;
-    } else if (isNonEmptyStringRecord(schemaProp)) {
+    } else if (isStringRecord(schemaProp)) {
       const flattenedSchema = flattenSchema(schemaProp, safety);
-
       // pick up here
-      schema[key] = (arg: unknown, cb: (errors: IParseObjectError[]) => void) => {
-        const errArr: IParseObjectError[] = [];
-        const childVal = _parseFlattenedSchemaWithErrorCallback(flattenedSchema, 
-          arg, errArr, safety);
-        if (childVal === false) {
-          errArr.push({
-            info: ERRORS.NestedValidation,
-            prop: key,
-            children: errArr,
-          });
+      schema[key] = (arg: unknown, cb?: (errors: IParseObjectError[]) => void) => {
+        let passed;
+        if (!!cb) {
+          const errArr: IParseObjectError[] | undefined = [];
+          passed = _parseFlattenedSchemaWithErrorCallback(flattenedSchema, 
+            arg, errArr, safety);
+          if (passed) {
+            errArr.push({
+              info: ERRORS.NestedValidation,
+              prop: key,
+              children: errArr,
+            });
+          }
+          cb?.(errArr);
+        } else {
+          passed = _parseObjectHelper2(flattenedSchema, arg, safety);
         }
-        cb(errArr);
-        return childVal;
-      };
 
+        // double check, not sure if this is right
+        return passed;
+      };
     } else {
       throw new Error(ERRORS.SchemaProp);
     }
@@ -403,19 +408,19 @@ function _parseFlattenedSchemaWithErrorCallback(
         passed = false,
         info: string = ERRORS.ValidatorFn;
       if (schemaProp.isTransformFunction === true) {
-        passed = schemaProp(value, tval => {
+        passed = schemaProp(value, transformedValue => {
           // Don't append "undefined" if the key is absent
-          if (tval === undefined && !(key in argParentObj)) {
+          if (transformedValue === undefined && !(key in argParentObj)) {
             return;
           }
-          argParentObj[key] = tval;
+          argParentObj[key] = transformedValue;
         });
       } else {
         // pick up here
         passed = schemaProp(value, errors => {
           if (isParseObjectErrorArray(errors)) {
-            info = ERRORS.NestedValidation;
             childErrors = errors;
+            info = ERRORS.NestedValidation;
           }
         });
       }
@@ -498,7 +503,7 @@ function _parseFlattenedSchemaWithErrorCallback(
 /**
  * Validate the schema with no error callback passed.
  */
-function _parseObjectHelperWithoutErrorCb<A>(
+function _parseObjectHelper<A>(
   optional: boolean,
   nullable: boolean,
   isArr: A,
@@ -521,7 +526,7 @@ function _parseObjectHelperWithoutErrorCb<A>(
     }
     // Iterate array
     for (const item of arg) {
-      const parsedItem = _parseObjectHelperWithoutErrorCb2(schema, item, safety);
+      const parsedItem = _parseObjectHelper2(schema, item, safety);
       if (parsedItem === false) {
         return false;
       }
@@ -529,7 +534,7 @@ function _parseObjectHelperWithoutErrorCb<A>(
     return arg;
   }
   // If not an array
-  const resp = _parseObjectHelperWithoutErrorCb2(schema, arg, safety);
+  const resp = _parseObjectHelper2(schema, arg, safety);
   if (resp === false) {
     return false;
   }
@@ -540,7 +545,7 @@ function _parseObjectHelperWithoutErrorCb<A>(
  * Iterate an object, apply a validator function to to each property in an 
  * object using the schema.
  */
-function _parseObjectHelperWithoutErrorCb2(
+function _parseObjectHelper2(
   schemaParentObj: IBasicSchema,
   argParentObj: unknown,
   safety: Safety,
@@ -575,8 +580,8 @@ function _parseObjectHelperWithoutErrorCb2(
         return false;
       }
     // Nested schema
-    } else if (isNonEmptyStringRecord(schemaProp)) {
-      const childVal = _parseObjectHelperWithoutErrorCb2(schemaProp, val, safety);
+    } else if (isStringRecord(schemaProp)) {
+      const childVal = _parseObjectHelper2(schemaProp, val, safety);
       if (childVal === false) {
         return false;
       }
@@ -612,19 +617,11 @@ function isParseObjectErrorArray(arg: unknown): arg is IParseObjectError[] {
   );
 }
 
-
+/**
+ * Check if type is Record<string, unknown>
+ */
 function isStringRecord(arg: unknown): arg is Record<string, unknown> {
   return !!arg && typeof arg === 'object' && isStringArray(Object.keys(arg));
-}
-
-function isNonEmptyStringRecord(
-  arg: unknown,
-): arg is Record<string, unknown> {
-  if (!!arg && typeof arg === 'object') {
-    const keys = Object.keys(arg);
-    return keys.length > 0 && isStringArray(keys);
-  }
-  return false;
 }
 
 // **** testObject (just calls "parseObject" under the hood) **** //
