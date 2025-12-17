@@ -1,15 +1,12 @@
-/* eslint-disable max-len */
 import { isString } from '../basic.js';
 import { type IParseValidatorFn, type TParseOnError } from './parseObject.js';
-
 
 // **** Types **** //
 
 export interface ITransformValidatorFn<T> {
   (arg: unknown, cb?: (arg: T) => void): arg is T;
-  isTransformFunction?: true; 
+  isTransformFunction?: true;
 }
-  
 
 // **** Simple Util **** //
 
@@ -30,8 +27,8 @@ export function nonNullable<T>(cb: IParseValidatorFn<T>) {
 /**
  * Allow param to be undefined
  */
-export function makeOptional<T>(cb: ((arg: unknown) => arg is T)) {
-  return (arg: unknown): arg is (T | undefined) => {
+export function makeOptional<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is T | undefined => {
     if (arg === undefined) {
       return true;
     } else {
@@ -43,8 +40,8 @@ export function makeOptional<T>(cb: ((arg: unknown) => arg is T)) {
 /**
  * Allow param to be undefined
  */
-export function makeNullable<T>(cb: ((arg: unknown) => arg is T)) {
-  return (arg: unknown): arg is (T | null) => {
+export function makeNullable<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is T | null => {
     if (arg === null) {
       return true;
     } else {
@@ -56,8 +53,8 @@ export function makeNullable<T>(cb: ((arg: unknown) => arg is T)) {
 /**
  * Allow param to be undefined
  */
-export function makeNullish<T>(cb: ((arg: unknown) => arg is T)) {
-  return (arg: unknown): arg is (T | null | undefined) => {
+export function makeNullish<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is T | null | undefined => {
     if (arg === null || arg === undefined) {
       return true;
     } else {
@@ -71,7 +68,7 @@ export function makeNullish<T>(cb: ((arg: unknown) => arg is T)) {
  */
 export function transform<T>(
   transformFn: (arg: unknown) => T,
-  validate: ((arg: unknown) => arg is T),
+  validate: (arg: unknown) => arg is T,
 ): ITransformValidatorFn<T> {
   const retFn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
     if (arg !== undefined) {
@@ -90,10 +87,10 @@ export function transform<T>(
 // **** ParseBoolean **** //
 
 const BOOLEAN_MAP: Record<string, boolean> = {
-  'true': true,
-  'false': false,
-  'yes': true,
-  'no': false,
+  true: true,
+  false: false,
+  yes: true,
+  no: false,
   '1': true,
   '0': false,
 } as const;
@@ -144,7 +141,10 @@ export function parseNullishBoolean(arg: unknown): boolean | null | undefined {
   if (arg === null || arg === undefined) {
     return arg;
   } else {
-    return parseBoolean(arg, 'Argument must be a valid boolean | null | undefined.');
+    return parseBoolean(
+      arg,
+      'Argument must be a valid boolean | null | undefined.',
+    );
   }
 }
 
