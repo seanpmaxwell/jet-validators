@@ -256,10 +256,7 @@ function _parseObject<
         arg,
         safety,
         (errors: IParseObjectError[]) => {
-          Object.defineProperty(errors, 'isParseObjectErrorArr', {
-            value: true,
-            writable: false,
-          });
+          setIsParseErrorArray(errors);
           onErrorLower?.(errors);
           onError?.(errors);
         },
@@ -291,28 +288,19 @@ function flattenSchema(
       continue;
     } else if (isStringRecord(schemaProp)) {
       const flattenedSchema = flattenSchema(schemaProp, safety);
-      // pick up here
-      schema[key] = (arg: unknown, cb?: (errors: IParseObjectError[]) => void) => {
-        let passed;
+      const wrapperFn = (arg: unknown, cb?: ((errors: IParseObjectError[]) => void)) => {
+        let passed: unknown = false;
         if (!!cb) {
-          const errArr: IParseObjectError[] | undefined = [];
-          passed = _parseFlattenedSchemaWithErrorCallback(flattenedSchema, 
-            arg, errArr, safety);
-          if (passed) {
-            errArr.push({
-              info: ERRORS.NestedValidation,
-              prop: key,
-              children: errArr,
-            });
-          }
-          cb?.(errArr);
+          const errorArray: IParseObjectError[] | undefined = setIsParseErrorArray([]);
+          passed = _parseFlattenedSchemaWithErrorCallback(flattenedSchema, arg, 
+            errorArray, safety);
+          cb?.(errorArray);
         } else {
           passed = _parseObjectHelper2(flattenedSchema, arg, safety);
         }
-
-        // double check, not sure if this is right
         return passed;
       };
+      schema[key] = wrapperFn as IBasicSchema[keyof IBasicSchema];
     } else {
       throw new Error(ERRORS.SchemaProp);
     }
@@ -400,9 +388,6 @@ function _parseFlattenedSchemaWithErrorCallback(
     const schemaProp = schemaParentObj[key],
       value = argParentObj[key];
     // Run validator
-
-    // pick up here
-    // if (isFunction(schemaProp)) {
     try {
       let childErrors: IParseObjectError[] | undefined,
         passed = false,
@@ -416,7 +401,6 @@ function _parseFlattenedSchemaWithErrorCallback(
           argParentObj[key] = transformedValue;
         });
       } else {
-        // pick up here
         passed = schemaProp(value, errors => {
           if (isParseObjectErrorArray(errors)) {
             childErrors = errors;
@@ -455,27 +439,6 @@ function _parseFlattenedSchemaWithErrorCallback(
         ...(isUndef(index) ? {} : { index }),
       });
     }
-
-    // pick up here, need to move this to the
-    // Nested schema
-    // } else if (isNonEmptyStringRecord(schemaProp)) {
-    // const childErrArr: IParseObjectError[] = [],
-    //   childVal = _parseFlattenedSchemaWithErrorCallback(schemaProp, value, 
-    //     childErrArr, safety);
-    // if (childVal === false) {
-    //   errArr.push({
-    //     info: ERRORS.NestedValidation,
-    //     prop: key,
-    //     children: childErrArr,
-    //     ...(isUndef(index) ? {} : { index }),
-    //   });
-    // }
-    // Throw error if not function
-    // } else {
-    //   throw new Error(ERRORS.SchemaProp);
-    // }
-
-
   }
   // Unless safety = "loose", filter extra keys
   if (safety !== SAFETY.Loose) {
@@ -603,6 +566,17 @@ function _parseObjectHelper2(
   }
   // Return
   return argParentObj;
+}
+
+/**
+ * 
+ */
+function setIsParseErrorArray(errors: IParseObjectError[]): IParseObjectError[] {
+  Object.defineProperty(errors, 'isParseObjectErrorArr', {
+    value: true,
+    writable: false,
+  });
+  return errors;
 }
 
 /**

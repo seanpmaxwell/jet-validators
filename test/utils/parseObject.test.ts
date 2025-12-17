@@ -8,6 +8,8 @@ import {
   isNumber,
   isString,
   isOptionalValidDate,
+  isUnsignedInteger,
+  isOptionalString,
 } from '../../src';
 
 import {
@@ -509,3 +511,102 @@ test('Fix "transform" appending undefined properties to object', () => {
   });
 });
 
+
+/**
+ * 12/16/2025 add the flatten function to remove recursion for the schema 
+ * holding the validator functions.
+ */
+test.only('Test for update which removed recursion', () => {
+  interface IUser {
+    id: number;
+    name: string;
+    address: {
+      street: string;
+      city: string;
+      // country?: { // <-- Cannot use undefined for nested schemas unless using parse/testObject function
+      country: {
+        code: number;
+        name: string;
+      }
+    },
+    email?: string;
+  }
+
+  const parseUser = parseObject<IUser>({
+    id: isUnsignedInteger,
+    name: isString,
+    address: {
+      street: isString,
+      city: isString,
+      country: {
+        code: isNumber,
+        name: isString,
+      },
+    },
+    email: isOptionalString,
+  });
+
+  // ** Test 1 ** //
+  const user: IUser = {
+    id: 1,
+    name: 'sean',
+    address: {
+      street: '123 fake st',
+      city: 'seattle',
+      country: {
+        code: 1,
+        name: 'USA',
+      },
+    },
+  };
+
+  const result = parseUser(user);
+  expect(result).toStrictEqual(user);
+
+  const user2: IUser = {
+    id: 1,
+    name: 'sean',
+    address: {
+      street: '123 fake st',
+      city: 1234 as unknown as string,
+      country: {
+        code: '123' as unknown as number,
+        name: 'USA',
+      },
+    },
+    email: 123 as unknown as string,
+  };
+
+  parseUser(user2, errors => {
+    expect(errors).toStrictEqual([
+      {
+        prop: 'address',
+        info: 'Nested validation failed.',
+        children: [
+          {
+            info: 'Validator-function returned false.',
+            prop: 'city',
+            value: 1234,
+          },
+          {
+            prop: 'country',
+            info: 'Nested validation failed.',
+            children: [
+              {
+                info: 'Validator-function returned false.',
+                prop: 'code',
+                value: '123',
+              },
+            ],
+          },
+        ],
+      },
+      {
+        info: 'Validator-function returned false.',
+        prop: 'email',
+        value: 123,
+      },
+    ]);
+  });
+
+});
