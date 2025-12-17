@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import { expect, test } from 'vitest';
 
 import {
@@ -81,7 +80,6 @@ import {
  * Test all the basic validators
  */
 test('test basic validators', () => {
-  
   // Nullables
   expect(isUndef(undefined)).toStrictEqual(true);
   expect(isNull(null)).toStrictEqual(true);
@@ -143,7 +141,7 @@ test('test basic validators', () => {
   expect(isNumberArray([1, 2, 3])).toStrictEqual(true);
   expect(isNumberArray([false, true, '123'])).toStrictEqual(false);
   expect(isNumberArray(123)).toStrictEqual(false);
-  expect(isOptionalNumberArray([1, 2 ,3])).toStrictEqual(true);
+  expect(isOptionalNumberArray([1, 2, 3])).toStrictEqual(true);
   expect(isOptionalNumber(undefined)).toStrictEqual(true);
   expect(isNullableNumberArray([1, 2, 3])).toStrictEqual(true);
   expect(isNullableNumberArray(null)).toStrictEqual(true);
@@ -222,9 +220,12 @@ test('test basic validators', () => {
   expect(isValidDate(12341234123412342)).toStrictEqual(false);
 
   // Date Arrays
-  const D2 = new Date(), D3 = new Date();
+  const D2 = new Date(),
+    D3 = new Date();
   expect(isDateArray([D1, D2, D3])).toStrictEqual(true);
-  expect(isDateArray([D1, D2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
+  expect(isDateArray([D1, D2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(
+    false,
+  );
   expect(isDateArray(D1)).toStrictEqual(false);
   expect(isOptionalDateArray([D1, D2, D3])).toStrictEqual(true);
   expect(isOptionalDateArray(undefined)).toStrictEqual(true);
@@ -247,9 +248,12 @@ test('test basic validators', () => {
   expect(isNullishObject(undefined)).toStrictEqual(true);
 
   // Object Arrays
-  const O2 = { val: 2 }, O3 = { val: 3 };
+  const O2 = { val: 2 },
+    O3 = { val: 3 };
   expect(isObjectArray([O1, O2, O3])).toStrictEqual(true);
-  expect(isObjectArray([O1, O2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
+  expect(isObjectArray([O1, O2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(
+    false,
+  );
   expect(isObjectArray(O1)).toStrictEqual(false);
   expect(isOptionalObjectArray([O1, O2, O3])).toStrictEqual(true);
   expect(isOptionalObjectArray(undefined)).toStrictEqual(true);
@@ -272,9 +276,12 @@ test('test basic validators', () => {
   expect(isNullishFunction(undefined)).toStrictEqual(true);
 
   // Function Arrays
-  const F2 = () => 2, F3 = () => 3;
+  const F2 = () => 2,
+    F3 = () => 3;
   expect(isFunctionArray([F1, F2, F3])).toStrictEqual(true);
-  expect(isFunctionArray([F1, F2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(false);
+  expect(isFunctionArray([F1, F2, '2024-10-30T20:08:36.838Z'])).toStrictEqual(
+    false,
+  );
   expect(isFunctionArray(F1)).toStrictEqual(false);
   expect(isOptionalFunctionArray([F1, F2, F3])).toStrictEqual(true);
   expect(isOptionalFunctionArray(undefined)).toStrictEqual(true);
@@ -289,7 +296,6 @@ test('test basic validators', () => {
  * Test additional number types
  */
 test('additional number types', () => {
-
   // Positive number
   expect(isNullishPositiveNumber(null)).toStrictEqual(true);
   expect(isNullishPositiveNumber(-3)).toStrictEqual(false);
@@ -308,5 +314,7 @@ test('additional number types', () => {
   expect(isNullableUnsignedIntegerArray(null)).toStrictEqual(true);
   expect(isUnsignedIntegerArray([0, 1, 2])).toStrictEqual(true);
   expect(isUnsignedIntegerArray([])).toStrictEqual(true);
-  expect(isNullableUnsignedIntegerArray([0, 1, undefined])).toStrictEqual(false);
+  expect(isNullableUnsignedIntegerArray([0, 1, undefined])).toStrictEqual(
+    false,
+  );
 });

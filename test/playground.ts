@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { isNumber, isOptionalString, isString } from '../src';
 
 import {
@@ -17,7 +19,6 @@ import {
 import { isString as isStringRelativeImport } from '../';
 // import { parseBoolean as parseBooleanRelativeImport } from '../utils';
 
-
 /******************************************************************************
                                 Run
 ******************************************************************************/
@@ -25,7 +26,6 @@ import { isString as isStringRelativeImport } from '../';
 // console.log(isString('horse'))
 // console.log(transform(Number, isNumber)('5'))
 // console.log(isBoolean(false))
-
 
 // **** Basic parseObject test **** //
 
@@ -52,7 +52,6 @@ import { isString as isStringRelativeImport } from '../';
 //   id: isNumber,
 //   name: isString,
 // });
-
 
 // **** Test multi-layered schema and generic on child parse function **** //
 
@@ -113,7 +112,6 @@ import { isString as isStringRelativeImport } from '../';
 
 // console.log(userArrBad)
 
-
 // **** Test making nest function external **** //
 
 // let errArr: IParseObjectError[] = [];
@@ -150,7 +148,6 @@ import { isString as isStringRelativeImport } from '../';
 
 // console.log(JSON.stringify(errArr, null, 2));
 
-
 // **** Debug Parse Object Array **** //
 
 // const parseUserArr = parseObjectArray({
@@ -165,7 +162,6 @@ import { isString as isStringRelativeImport } from '../';
 //   { id: 2, name: '2' },
 //   { id: '3', name: '3' },
 // ]);
-
 
 // **** Debug Type Error Wrap Multiple Layers **** //
 
@@ -193,9 +189,7 @@ import { isString as isStringRelativeImport } from '../';
 //   getUser1: parseReq({ user: testUser }),
 // } as const;
 
-
 // const user: { user: IUser } = Validators.getUser1('asdf');
-
 
 // **** Test Wrapping **** //
 
@@ -205,7 +199,7 @@ interface IUser {
   address: {
     city: string;
     zip: number;
-  }
+  };
 }
 
 // Wrap without generic
@@ -244,7 +238,7 @@ interface IUser2 {
   address?: {
     city: string;
     zip: number;
-  }
+  };
 }
 
 const parseUser2 = customParse2<IUser2>({
@@ -271,19 +265,23 @@ const parseUser3 = customParse2<IUser2>({
 const parseUser4 = customParse2<IUser2>({
   id: isNumber,
   name: isString,
-  address: nonNullable(testOptionalObject<IUser2['address']>({
-    city: isString,
-    zip: isNumber,
-    // foo: isString, // Causes type error
-  })),
+  address: nonNullable(
+    testOptionalObject<IUser2['address']>({
+      city: isString,
+      zip: isNumber,
+      // foo: isString, // Causes type error
+    }),
+  ),
 });
 
-parseUser4({
-  id: 1,
-  name: 'john',
-  address: {
-    city: 'b',
-    zip: '123',
+parseUser4(
+  {
+    id: 1,
+    name: 'john',
+    address: {
+      city: 'b',
+      zip: '123',
+    },
   },
-}, errors => console.log(JSON.stringify(errors, null, 2)));
-
+  (errors) => console.log(JSON.stringify(errors, null, 2)),
+);

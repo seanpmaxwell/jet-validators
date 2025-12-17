@@ -1,5 +1,3 @@
-/* eslint-disable n/no-unsupported-features/node-builtins */
-/* eslint-disable max-len */
 import { expect, test } from 'vitest';
 
 import {
@@ -28,7 +26,6 @@ import {
   looseTestObject,
 } from '../../src/utils';
 
-
 /******************************************************************************
                                  Tests
 ******************************************************************************/
@@ -37,7 +34,6 @@ import {
  * Test "parseObject" function
  */
 test('test "parseObject()" function', () => {
-
   interface IUser {
     id: number;
     name: string;
@@ -139,27 +135,33 @@ test('test "parseObject()" function', () => {
   expect(userWithAddrBad).toBe(false);
 
   // ** Test parse "onError" function ** //
-  const parseUserWithError = parseObject({
-    id: isNumber,
-    name: isString,
-  }, err => {
-    expect(err[0].prop).toStrictEqual('id');
-    expect(err[0].value).toStrictEqual('5');
-  });
+  const parseUserWithError = parseObject(
+    {
+      id: isNumber,
+      name: isString,
+    },
+    (err) => {
+      expect(err[0].prop).toStrictEqual('id');
+      expect(err[0].value).toStrictEqual('5');
+    },
+  );
   parseUserWithError({
     id: '5',
     name: 'john',
   });
 
   // ** Test parseObj "onError" function for array argument ** //
-  const parseUserArrWithError = parseObjectArray({
-    id: isNumber,
-    name: isString,
-  }, err => {
-    expect(err[0].prop).toStrictEqual('id');
-    expect(err[0].value).toStrictEqual('3');
-    expect(err[0].index).toStrictEqual(2);
-  });
+  const parseUserArrWithError = parseObjectArray(
+    {
+      id: isNumber,
+      name: isString,
+    },
+    (err) => {
+      expect(err[0].prop).toStrictEqual('id');
+      expect(err[0].value).toStrictEqual('3');
+      expect(err[0].index).toStrictEqual(2);
+    },
+  );
   parseUserArrWithError([
     { id: 1, name: '1' },
     { id: 2, name: '2' },
@@ -175,37 +177,45 @@ test('test "parseObject()" function', () => {
       throw new Error('Value was not a valid string.');
     }
   };
-  const parseUserHandleErr = parseObject({
-    id: isNumber,
-    name: isStrWithErr,
-  }, err => {
-    expect(err[0].prop).toStrictEqual('name');
-    expect(err[0].value).toStrictEqual(null);
-    expect(err[0].caught).toStrictEqual('Value was not a valid string.');
-  });
+  const parseUserHandleErr = parseObject(
+    {
+      id: isNumber,
+      name: isStrWithErr,
+    },
+    (err) => {
+      expect(err[0].prop).toStrictEqual('name');
+      expect(err[0].value).toStrictEqual(null);
+      expect(err[0].caught).toStrictEqual('Value was not a valid string.');
+    },
+  );
   parseUserHandleErr({
     id: 5,
     name: null,
   });
 
   // ** Wrap parseObject ** //
-  const customParse = <U extends TSchema>(schema: U) => 
-    parseObject(schema, err => {
+  const customParse = <U extends TSchema>(schema: U) =>
+    parseObject(schema, (err) => {
       throw new Error(JSON.stringify(err));
     });
   const parseUserAlt = customParse({ id: isNumber, name: isString });
-  expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({ id: 5, name: 'joe' });
+  expect(parseUserAlt({ id: 5, name: 'joe' })).toStrictEqual({
+    id: 5,
+    name: 'joe',
+  });
   expect(() => parseUserAlt('horse')).toThrowError();
-
 
   // ** Test onError for multiple properties ** //
   let errArr: IParseObjectError[] = [];
-  parseObject({
-    id: isNumber,
-    name: isString,
-  }, err => {
-    errArr = err;
-  })({ id: 'joe', name: 5 });
+  parseObject(
+    {
+      id: isNumber,
+      name: isString,
+    },
+    (err) => {
+      errArr = err;
+    },
+  )({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
     { prop: 'id', value: 'joe', info: 'Validator-function returned false.' },
     { prop: 'name', value: 5, info: 'Validator-function returned false.' },
@@ -216,7 +226,6 @@ test('test "parseObject()" function', () => {
  * Test "testObject" function
  */
 test('test "testObject()" function', () => {
-
   // Do basic test
   const testUser = testObject({
     id: isNumber,
@@ -235,21 +244,26 @@ test('test "testObject()" function', () => {
     },
   });
   expect(result).toStrictEqual(true);
-  
+
   // Test combination of "parseObject" and "testObject"
   let errArr: IParseObjectError[] = [];
-  const testCombo = parseObject({
-    id: isNumber,
-    name: isString,
-    address: testObject({
-      city: isString,
-      zip: transform(Number, isNumber),
-      country: testOptionalObject({
-        name: isString,
-        code: isNumber,
+  const testCombo = parseObject(
+    {
+      id: isNumber,
+      name: isString,
+      address: testObject({
+        city: isString,
+        zip: transform(Number, isNumber),
+        country: testOptionalObject({
+          name: isString,
+          code: isNumber,
+        }),
       }),
-    }),
-  }, errors => { errArr = errors; });
+    },
+    (errors) => {
+      errArr = errors;
+    },
+  );
   const user = testCombo({
     id: 5,
     name: 'john',
@@ -341,7 +355,9 @@ test('test "testObject()" function', () => {
       },
     ],
   };
-  expect(testCombo2(testCombo2GoodData)).toStrictEqual(testCombo2GoodDataResult);
+  expect(testCombo2(testCombo2GoodData)).toStrictEqual(
+    testCombo2GoodDataResult,
+  );
   expect(testCombo2(testCombo2FailData)).toStrictEqual(false);
 });
 
@@ -349,7 +365,6 @@ test('test "testObject()" function', () => {
  * Test different safety options
  */
 test('test different safety options', () => {
-
   // Default
   const defaultParseUser = parseObject({
     id: isNumber,
@@ -364,7 +379,7 @@ test('test different safety options', () => {
     id: 1,
     name: 'joe',
   });
-  
+
   // Loose
   const looseParseUser = looseParseObject({
     id: isNumber,
@@ -383,40 +398,52 @@ test('test different safety options', () => {
 
   // Strict
   let errArr: IParseObjectError[] = [];
-  const strictParseUser = strictParseObject({
-    id: isNumber,
-    name: isString,
-  }, errors => { errArr = errors; });
+  const strictParseUser = strictParseObject(
+    {
+      id: isNumber,
+      name: isString,
+    },
+    (errors) => {
+      errArr = errors;
+    },
+  );
   const resp3 = strictParseUser({
     id: 1,
     name: 'joe',
     address: 'blah',
   });
   expect(resp3).toStrictEqual(false);
-  expect(errArr).toStrictEqual([{
-    info: 'strict-safety failed, prop not in schema.',
-    prop: 'address',
-  }]);
+  expect(errArr).toStrictEqual([
+    {
+      info: 'strict-safety failed, prop not in schema.',
+      prop: 'address',
+    },
+  ]);
 
   // Combo
   let errArr2: IParseObjectError[] = [];
 
-  const comboParse = strictParseObject({
-    id: isNumber,
-    name: isString,
-    address: {
-      street: isString,
-      zip: isNumber,
-    },
-    country: testObject({
+  const comboParse = strictParseObject(
+    {
+      id: isNumber,
       name: isString,
-      code: isNumber,
-    }),
-    education: looseTestObject({
-      collegeName: isString,
-      completedHighschool: isBoolean,
-    }),
-  }, errors => { errArr2 = errors; });
+      address: {
+        street: isString,
+        zip: isNumber,
+      },
+      country: testObject({
+        name: isString,
+        code: isNumber,
+      }),
+      education: looseTestObject({
+        collegeName: isString,
+        completedHighschool: isBoolean,
+      }),
+    },
+    (errors) => {
+      errArr2 = errors;
+    },
+  );
 
   const resp4 = comboParse({
     id: 1,
@@ -437,26 +464,27 @@ test('test different safety options', () => {
       completedCollege: false, // should not raise error
     },
   });
-  
+
   expect(resp4).toStrictEqual(false);
   expect(errArr2).toStrictEqual([
     {
       info: 'Nested validation failed.',
       prop: 'address',
-      children: [{
-        info: 'strict-safety failed, prop not in schema.',
-        prop: 'city',
-      }],
+      children: [
+        {
+          info: 'strict-safety failed, prop not in schema.',
+          prop: 'city',
+        },
+      ],
     },
   ]);
 });
 
 /**
- * Optional properties which are undefined are getting appended to the 
+ * Optional properties which are undefined are getting appended to the
  * response object.
  */
 test('Fix "transform" appending undefined properties to object', () => {
-
   interface IUser {
     id: number;
     name: string;
@@ -464,7 +492,7 @@ test('Fix "transform" appending undefined properties to object', () => {
   }
 
   const transIsOptionalDate = transform(
-    arg => isUndef(arg) ? arg : new Date(arg as string),
+    (arg) => (isUndef(arg) ? arg : new Date(arg as string)),
     (arg: unknown): arg is Date | undefined => isOptionalValidDate(arg),
   );
 
@@ -502,18 +530,20 @@ test('Fix "transform" appending undefined properties to object', () => {
     name: 'jane',
     birthdate: new Date('2025-05-31T18:13:34.990Z'),
   });
-  parseUser({
-    id: 2,
-    name: 'john',
-    birthdate: 'horse',
-  }, (errors) => {
-    expect(errors[0].prop).toStrictEqual('birthdate');
-  });
+  parseUser(
+    {
+      id: 2,
+      name: 'john',
+      birthdate: 'horse',
+    },
+    (errors) => {
+      expect(errors[0].prop).toStrictEqual('birthdate');
+    },
+  );
 });
 
-
 /**
- * 12/16/2025 add the flatten function to remove recursion for the schema 
+ * 12/16/2025 add the flatten function to remove recursion for the schema
  * holding the validator functions.
  */
 test.only('Test for update which removed recursion', () => {
@@ -527,8 +557,8 @@ test.only('Test for update which removed recursion', () => {
       country: {
         code: number;
         name: string;
-      }
-    },
+      };
+    };
     email?: string;
   }
 
@@ -577,7 +607,7 @@ test.only('Test for update which removed recursion', () => {
     email: 123 as unknown as string,
   };
 
-  parseUser(user2, errors => {
+  parseUser(user2, (errors) => {
     expect(errors).toStrictEqual([
       {
         prop: 'address',
@@ -608,5 +638,4 @@ test.only('Test for update which removed recursion', () => {
       },
     ]);
   });
-
 });

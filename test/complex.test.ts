@@ -1,7 +1,6 @@
 import { expect, test } from 'vitest';
 
 import {
-
   isInArray,
   isOptionalInArray,
   isNullishInArray,
@@ -24,7 +23,6 @@ import {
  * Test complex-validators.
  */
 test('test complex validators', () => {
-
   // This will make the type '1' | '2' | '3' instead of just string[]
   const arr = ['1', '2', '3'] as const,
     isInArrTest = isInArray(arr);
@@ -46,7 +44,7 @@ test('test complex validators', () => {
   expect(isNullishPos(null)).toStrictEqual(true);
   const isOptionalNeg = isOptionalInRange([], 0);
   expect(isOptionalNeg(-1_000_000)).toStrictEqual(true);
-  expect(isOptionalNeg(.01)).toStrictEqual(false);
+  expect(isOptionalNeg(0.01)).toStrictEqual(false);
   expect(isOptionalNeg(undefined)).toStrictEqual(true);
   expect(isOptionalNeg(null)).toStrictEqual(false);
   const isValidNums = isNullishInRangeArray([-1], 10);

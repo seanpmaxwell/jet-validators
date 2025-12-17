@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import {
   isNull,
   isNumber,
@@ -9,20 +8,23 @@ import {
 } from './basic.js';
 
 // Add modifiers
-type AddNull<T, N> = (N extends true ? T | null : T);
-type AddNullables<T, O, N> = (O extends true ? AddNull<T, N> | undefined  : AddNull<T, N>);
-type AddMods<T, O, N, A> = A extends true ? AddNullables<T[], O, N> : AddNullables<T, O, N>;
-
+type AddNull<T, N> = N extends true ? T | null : T;
+type AddNullables<T, O, N> = O extends true
+  ? AddNull<T, N> | undefined
+  : AddNull<T, N>;
+type AddMods<T, O, N, A> = A extends true
+  ? AddNullables<T[], O, N>
+  : AddNullables<T, O, N>;
 
 // **** Is in Array **** //
 
-export const isInArray = <T extends readonly unknown[]>(arg: T) => 
+export const isInArray = <T extends readonly unknown[]>(arg: T) =>
   _isInArray<T, false, false>(arg, false, false);
-export const isOptionalInArray = <T extends readonly unknown[]>(arg: T) => 
+export const isOptionalInArray = <T extends readonly unknown[]>(arg: T) =>
   _isInArray<T, true, false>(arg, true, false);
-export const isNullableInArray = <T extends readonly unknown[]>(arg: T) => 
+export const isNullableInArray = <T extends readonly unknown[]>(arg: T) =>
   _isInArray<T, false, true>(arg, false, true);
-export const isNullishInArray = <T extends readonly unknown[]>(arg: T) => 
+export const isNullishInArray = <T extends readonly unknown[]>(arg: T) =>
   _isInArray<T, true, true>(arg, true, true);
 
 /**
@@ -31,7 +33,7 @@ export const isNullishInArray = <T extends readonly unknown[]>(arg: T) =>
 export function _isInArray<
   T extends readonly unknown[],
   O extends boolean,
-  N extends boolean 
+  N extends boolean,
 >(
   arr: T,
   optional: O,
@@ -49,24 +51,51 @@ export function _isInArray<
   };
 }
 
-
 // **** In Range **** //
 
 type TRangeParam = number | [number] | [];
 type TRangeFn = (arg: number) => boolean;
 
 export const isInRange = _isInRange<false, false, false>(false, false, false);
-export const isOptionalInRange = _isInRange<true, false, false>(true, false, false);
-export const isNullableInRange = _isInRange<false, true, false>(false, true, false);
-export const isNullishInRange = _isInRange<true, true, false>(true, true, false);
-export const isInRangeArray = _isInRange<false, false, true>(false, false, true);
-export const isOptionalInRangeArray = _isInRange<true, false, true>(true, false, true);
-export const isNullableInRangeArray = _isInRange<false, true, true>(false, true, true);
-export const isNullishInRangeArray = _isInRange<true, true, true>(true, true, true);
+export const isOptionalInRange = _isInRange<true, false, false>(
+  true,
+  false,
+  false,
+);
+export const isNullableInRange = _isInRange<false, true, false>(
+  false,
+  true,
+  false,
+);
+export const isNullishInRange = _isInRange<true, true, false>(
+  true,
+  true,
+  false,
+);
+export const isInRangeArray = _isInRange<false, false, true>(
+  false,
+  false,
+  true,
+);
+export const isOptionalInRangeArray = _isInRange<true, false, true>(
+  true,
+  false,
+  true,
+);
+export const isNullableInRangeArray = _isInRange<false, true, true>(
+  false,
+  true,
+  true,
+);
+export const isNullishInRangeArray = _isInRange<true, true, true>(
+  true,
+  true,
+  true,
+);
 
 /**
- * Range will always determine if a number is >= the min and <= the max. If you want to 
- * leave off a range, just use null. 
+ * Range will always determine if a number is >= the min and <= the max. If you want to
+ * leave off a range, just use null.
  */
 function _isInRange<
   O extends boolean,
@@ -77,8 +106,11 @@ function _isInRange<
   optional: boolean,
   nullable: boolean,
   isArr: boolean,
-): (min: TRangeParam, max: TRangeParam) => ((arg: unknown) => arg is Ret) {
-  return (min: TRangeParam, max: TRangeParam): ((arg: unknown) => arg is Ret) => {
+): (min: TRangeParam, max: TRangeParam) => (arg: unknown) => arg is Ret {
+  return (
+    min: TRangeParam,
+    max: TRangeParam,
+  ): ((arg: unknown) => arg is Ret) => {
     const rangeFn = _initRangeFn(min, max);
     return (arg: unknown): arg is Ret => {
       if (arg === undefined) {
@@ -88,7 +120,10 @@ function _isInRange<
         return nullable;
       }
       if (isArr) {
-        return Array.isArray(arg) && arg.every(item => _isInRangeHelper(item, rangeFn));
+        return (
+          Array.isArray(arg) &&
+          arg.every((item) => _isInRangeHelper(item, rangeFn))
+        );
       }
       return _isInRangeHelper(arg, rangeFn);
     };
@@ -117,44 +152,58 @@ function _isInRangeHelper(arg: unknown, rangeFn: TRangeFn): boolean {
  */
 function _initRangeFn(min: TRangeParam, max: TRangeParam): TRangeFn {
   // arg >= min && arg <= max
-  if (Array.isArray(min) && min.length === 1 && Array.isArray(max) && max.length === 1) {
-    return ((arg: number) => arg >= min[0] && arg <= max[0]);
-  // arg >= min
-  } else if (Array.isArray(min) && min.length === 1 && Array.isArray(max) && max.length === 0) {
-    return ((arg: number) => arg >= min[0]);
-  // arg > min
+  if (
+    Array.isArray(min) &&
+    min.length === 1 &&
+    Array.isArray(max) &&
+    max.length === 1
+  ) {
+    return (arg: number) => arg >= min[0] && arg <= max[0];
+    // arg >= min
+  } else if (
+    Array.isArray(min) &&
+    min.length === 1 &&
+    Array.isArray(max) &&
+    max.length === 0
+  ) {
+    return (arg: number) => arg >= min[0];
+    // arg > min
   } else if (!Array.isArray(min) && Array.isArray(max) && max.length === 0) {
-    return ((arg: number) => arg > min);
-  // arg >= min && arg < max
+    return (arg: number) => arg > min;
+    // arg >= min && arg < max
   } else if (Array.isArray(min) && min.length === 1 && !Array.isArray(max)) {
-    return ((arg: number) => arg >= min[0] && arg < max);
-  // arg <= max
-  } else if (Array.isArray(min) && min.length === 0 && Array.isArray(max) && max.length === 1) {
-    return ((arg: number) => arg <= max[0]);
-  // arg < max
+    return (arg: number) => arg >= min[0] && arg < max;
+    // arg <= max
+  } else if (
+    Array.isArray(min) &&
+    min.length === 0 &&
+    Array.isArray(max) &&
+    max.length === 1
+  ) {
+    return (arg: number) => arg <= max[0];
+    // arg < max
   } else if (Array.isArray(min) && min.length === 0 && !Array.isArray(max)) {
-    return ((arg: number) => arg < max);
-  // arg > min && arg <= max
+    return (arg: number) => arg < max;
+    // arg > min && arg <= max
   } else if (!Array.isArray(min) && Array.isArray(max) && max.length === 1) {
-    return ((arg: number) => arg > min && arg <= max[0]);
-  // arg > min && arg < max
+    return (arg: number) => arg > min && arg <= max[0];
+    // arg > min && arg < max
   } else if (!Array.isArray(min) && !Array.isArray(max)) {
-    return ((arg: number) => arg > min && arg < max);
+    return (arg: number) => arg > min && arg < max;
   }
   // Shouldn't reach this point.
   throw new Error('min and max must be number, [number], or []');
-}  
-
+}
 
 // **** Is string a key of an object **** //
 
-export const isKeyOf = <T extends object>(arg: T) => 
+export const isKeyOf = <T extends object>(arg: T) =>
   _isKeyOf<T, false, false>(arg, false, false);
-export const isOptionalKeyOf = <T extends object>(arg: T) => 
+export const isOptionalKeyOf = <T extends object>(arg: T) =>
   _isKeyOf<T, true, false>(arg, true, false);
-export const isNullableKeyOf = <T extends object>(arg: T) => 
+export const isNullableKeyOf = <T extends object>(arg: T) =>
   _isKeyOf<T, false, true>(arg, false, true);
-export const isNullishKeyOf = <T extends object>(arg: T) => 
+export const isNullishKeyOf = <T extends object>(arg: T) =>
   _isKeyOf<T, true, true>(arg, true, true);
 
 /**
@@ -169,7 +218,7 @@ function _isKeyOf<
   obj: object,
   optional: boolean,
   nullable: boolean,
-): ((arg: unknown) => arg is Ret) {
+): (arg: unknown) => arg is Ret {
   if (!isObject(obj)) {
     throw new Error('Item to check from must be a Record<string, unknown>.');
   }
@@ -185,18 +234,17 @@ function _isKeyOf<
   };
 }
 
-
 // **** Is param a value in an object **** //
 
 export type ValueOf<T extends object> = T[keyof T];
 
-export const isValueOf = <T extends object>(arg: T) => 
+export const isValueOf = <T extends object>(arg: T) =>
   _isValueOf<T, false, false>(arg, false, false);
-export const isOptionalValueOf = <T extends object>(arg: T) => 
+export const isOptionalValueOf = <T extends object>(arg: T) =>
   _isValueOf<T, true, false>(arg, true, false);
-export const isNullableValueOf = <T extends object>(arg: T) => 
+export const isNullableValueOf = <T extends object>(arg: T) =>
   _isValueOf<T, false, true>(arg, false, true);
-export const isNullishValueOf = <T extends object>(arg: T) => 
+export const isNullishValueOf = <T extends object>(arg: T) =>
   _isValueOf<T, true, true>(arg, true, true);
 
 /**
@@ -211,7 +259,7 @@ function _isValueOf<
   obj: object,
   optional: boolean,
   nullable: boolean,
-): ((arg: unknown) => arg is Ret) {
+): (arg: unknown) => arg is Ret {
   if (!isObject(obj)) {
     throw new Error('Item to check from must be a Record<string, unknown>.');
   }

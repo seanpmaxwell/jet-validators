@@ -1,4 +1,3 @@
-/* eslint-disable max-len */
 import {
   parseBoolean,
   makeNullable,
@@ -6,12 +5,11 @@ import {
   makeOptional,
 } from './utils/index.js';
 
-
 // **** Functions **** //
 
 // Nullables
-export const isUndef = ((arg: unknown): arg is undefined => arg === undefined);
-export const isNull = ((arg: unknown): arg is null => arg === null);
+export const isUndef = (arg: unknown): arg is undefined => arg === undefined;
+export const isNull = (arg: unknown): arg is null => arg === null;
 export const isNullish = makeNullable(isUndef);
 
 // Boolean
@@ -50,8 +48,12 @@ export const isOptionalPositiveNumber = makeOptional(isPositiveNumber);
 export const isNullablePositiveNumber = makeNullable(isPositiveNumber);
 export const isNullishPositiveNumber = makeNullish(isPositiveNumber);
 export const isPositiveNumberArray = _toArray(isPositiveNumber);
-export const isOptionalPositiveNumberArray = makeOptional(isPositiveNumberArray);
-export const isNullablePositiveNumberArray = makeNullable(isPositiveNumberArray);
+export const isOptionalPositiveNumberArray = makeOptional(
+  isPositiveNumberArray,
+);
+export const isNullablePositiveNumberArray = makeNullable(
+  isPositiveNumberArray,
+);
 export const isNullishPositiveNumberArray = makeNullish(isPositiveNumberArray);
 
 // Negative Number
@@ -60,8 +62,12 @@ export const isOptionalNegativeNumber = makeOptional(isNegativeNumber);
 export const isNullableNegativeNumber = makeNullable(isNegativeNumber);
 export const isNullishNegativeNumber = makeNullish(isNegativeNumber);
 export const isNegativeNumberArray = _toArray(isNegativeNumber);
-export const isOptionalNegativeNumberArray = makeOptional(isNegativeNumberArray);
-export const isNullableNegativeNumberArray = makeNullable(isNegativeNumberArray);
+export const isOptionalNegativeNumberArray = makeOptional(
+  isNegativeNumberArray,
+);
+export const isNullableNegativeNumberArray = makeNullable(
+  isNegativeNumberArray,
+);
 export const isNullishNegativeNumberArray = makeNullish(isNegativeNumberArray);
 
 // Unsigned Number
@@ -70,8 +76,12 @@ export const isOptionalUnsignedNumber = makeOptional(isUnsignedNumber);
 export const isNullableUnsignedNumber = makeNullable(isUnsignedNumber);
 export const isNullishUnsignedNumber = makeNullish(isUnsignedNumber);
 export const isUnsignedNumberArray = _toArray(isUnsignedNumber);
-export const isOptionalUnsignedNumberArray = makeOptional(isUnsignedNumberArray);
-export const isNullableUnsignedNumberArray = makeNullable(isUnsignedNumberArray);
+export const isOptionalUnsignedNumberArray = makeOptional(
+  isUnsignedNumberArray,
+);
+export const isNullableUnsignedNumberArray = makeNullable(
+  isUnsignedNumberArray,
+);
 export const isNullishUnsignedNumberArray = makeNullish(isUnsignedNumberArray);
 
 // Integer
@@ -90,9 +100,15 @@ export const isOptionalPositiveInteger = makeOptional(isPositiveInteger);
 export const isNullablePositiveInteger = makeNullable(isPositiveInteger);
 export const isNullishPositiveInteger = makeNullish(isPositiveInteger);
 export const isPositiveIntegerArray = _toArray(isPositiveInteger);
-export const isOptionalPositiveIntegerArray = makeOptional(isPositiveIntegerArray);
-export const isNullablePositiveIntegerArray = makeNullable(isPositiveIntegerArray);
-export const isNullishPositiveIntegerArray = makeNullish(isPositiveIntegerArray);
+export const isOptionalPositiveIntegerArray = makeOptional(
+  isPositiveIntegerArray,
+);
+export const isNullablePositiveIntegerArray = makeNullable(
+  isPositiveIntegerArray,
+);
+export const isNullishPositiveIntegerArray = makeNullish(
+  isPositiveIntegerArray,
+);
 
 // Negative Integer
 export const isNegativeInteger = _isNegativeInteger;
@@ -100,9 +116,15 @@ export const isOptionalNegativeInteger = makeOptional(isNegativeInteger);
 export const isNullableNegativeInteger = makeNullable(isNegativeInteger);
 export const isNullishNegativeInteger = makeNullish(isNegativeInteger);
 export const isNegativeIntegerArray = _toArray(isNegativeInteger);
-export const isOptionalNegativeIntegerArray = makeOptional(isNegativeIntegerArray);
-export const isNullableNegativeIntegerArray = makeNullable(isNegativeIntegerArray);
-export const isNullishNegativeIntegerArray = makeNullish(isNegativeIntegerArray);
+export const isOptionalNegativeIntegerArray = makeOptional(
+  isNegativeIntegerArray,
+);
+export const isNullableNegativeIntegerArray = makeNullable(
+  isNegativeIntegerArray,
+);
+export const isNullishNegativeIntegerArray = makeNullish(
+  isNegativeIntegerArray,
+);
 
 // Unsigned Integer
 export const isUnsignedInteger = _isUnsignedInteger;
@@ -110,9 +132,15 @@ export const isOptionalUnsignedInteger = makeOptional(isUnsignedInteger);
 export const isNullableUnsignedInteger = makeNullable(isUnsignedInteger);
 export const isNullishUnsignedInteger = makeNullish(isUnsignedInteger);
 export const isUnsignedIntegerArray = _toArray(isUnsignedInteger);
-export const isOptionalUnsignedIntegerArray = makeOptional(isUnsignedIntegerArray);
-export const isNullableUnsignedIntegerArray = makeNullable(isUnsignedIntegerArray);
-export const isNullishUnsignedIntegerArray = makeNullish(isUnsignedIntegerArray);
+export const isOptionalUnsignedIntegerArray = makeOptional(
+  isUnsignedIntegerArray,
+);
+export const isNullableUnsignedIntegerArray = makeNullable(
+  isUnsignedIntegerArray,
+);
+export const isNullishUnsignedIntegerArray = makeNullish(
+  isUnsignedIntegerArray,
+);
 
 // BigInt
 export const isBigInt = _checkType<bigint>('bigint');
@@ -150,8 +178,12 @@ export const isOptionalNonEmptyString = makeOptional(isNonEmptyString);
 export const isNullableNonEmptyString = makeNullable(isNonEmptyString);
 export const isNullishNonEmptyString = makeNullish(isNonEmptyString);
 export const isNonEmptyStringArray = _toArray(isNonEmptyString);
-export const isOptionalNonEmptyStringArray = makeOptional(isNonEmptyStringArray);
-export const isNullableNonEmptyStringArray = makeNullable(isNonEmptyStringArray);
+export const isOptionalNonEmptyStringArray = makeOptional(
+  isNonEmptyStringArray,
+);
+export const isNullableNonEmptyStringArray = makeNullable(
+  isNonEmptyStringArray,
+);
 export const isNullishNonEmptyStringArray = makeNullish(isNonEmptyStringArray);
 
 // Symbol
@@ -205,13 +237,12 @@ export const isOptionalFunctionArray = makeOptional(isFunctionArray);
 export const isNullableFunctionArray = makeNullable(isFunctionArray);
 export const isNullishFunctionArray = makeNullish(isFunctionArray);
 
-
 // **** Helpers **** //
 
 /**
  * Check array counterpart for validator item.
  */
-function _toArray<T>(cb: ((arg: unknown) => arg is T)) {
+function _toArray<T>(cb: (arg: unknown) => arg is T) {
   return (arg: unknown): arg is T[] => {
     return Array.isArray(arg) && arg.every(cb);
   };
@@ -285,7 +316,7 @@ function _isValidNumber(arg: unknown): arg is string | number | boolean {
  * Wrapper to check basic type.
  */
 function _isObject(arg: unknown): arg is NonNullable<object> {
-  return typeof arg === 'object' && (arg !== null);
+  return typeof arg === 'object' && arg !== null;
 }
 
 /**
@@ -331,6 +362,5 @@ function _isValidDate(arg: unknown): arg is Date | string | number {
  * Is it a string at least length 1.
  */
 function _isNonEmptyString(arg: unknown): arg is string {
-  return (isString(arg) && arg.length > 0);
+  return isString(arg) && arg.length > 0;
 }
-

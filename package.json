@@ -5,7 +5,7 @@
   "type": "module",
   "main": "./dist/cjs/index.cjs",
   "module": "./dist/esm/index.js",
-  "browser": "./dist/esm/index.js", 
+  "browser": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
@@ -19,11 +19,14 @@
       "types": "./dist/types/utils/index.d.ts"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
-    "lint": "eslint --flag unstable_ts_config",
+    "lint": "eslint .",
+    "format": "eslint --fix .",
     "playground": "npx ts-node ./test/playground.ts",
     "pre-publish": "mv README.md README-git && mv README-npm README.md",
     "post-publish": "mv README.md README-npm && mv README-git README.md",
@@ -58,14 +61,17 @@
   "homepage": "https://github.com/seanpmaxwell/jet-validators#readme",
   "devDependencies": {
     "@eslint/js": "^9.26.0",
-    "@stylistic/eslint-plugin": "^5.5.0",
+    "@stylistic/eslint-plugin": "^5.6.1",
     "@types/node": "^22.8.1",
     "eslint": "^9.26.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-n": "^17.17.0",
+    "eslint-plugin-prettier": "^5.5.4",
     "jiti": "^2.3.3",
+    "prettier": "^3.7.4",
     "tslib": "^2.8.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.32.0",
+    "typescript-eslint": "^8.50.0",
     "vitest": "^4.0.15"
   }
 }

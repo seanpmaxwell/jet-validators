@@ -1,10 +1,6 @@
 import { expect, test } from 'vitest';
 
-import {
-  isNumberArray,
-  isString,
-  isNullableString,
-} from '../../src';
+import { isNumberArray, isString, isNullableString } from '../../src';
 
 import {
   nonNullable,
@@ -24,7 +20,6 @@ import {
  * Test simple utilities.
  */
 test('test simple utilities', () => {
-
   // Non-Nullable
   expect(nonNullable(isNullableString)('asdf')).toStrictEqual(true);
   expect(nonNullable(isNullableString)(null)).toStrictEqual(false);
@@ -48,9 +43,11 @@ test('test simple utilities', () => {
 
   // Check "transform" and "parseJson" functions
   const isNumArrWithParse = transform(parseJson, isNumberArray);
-  expect(isNumArrWithParse('[1,2,3]', val => {
-    expect(isNumberArray(val)).toStrictEqual(true);
-  })).toStrictEqual(true);
+  expect(
+    isNumArrWithParse('[1,2,3]', (val) => {
+      expect(isNumberArray(val)).toStrictEqual(true);
+    }),
+  ).toStrictEqual(true);
 
   // Check parse boolean function
   expect(parseBoolean(false)).toStrictEqual(false);

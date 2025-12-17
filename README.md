@@ -24,8 +24,6 @@
 
 `jet-validators` is a large collection of small, composable validator functions commonly used when validating values in TypeScript.
 
-It is **not** intended to replace full-featured schema libraries like `zod`, `valibot`, or `ajv`. Instead, it focuses on:
-
 * Zero dependencies
 * Minimal boilerplate
 * Excellent type narrowing
