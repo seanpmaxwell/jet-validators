@@ -116,41 +116,45 @@ function validateParamWithTree(
   root: ParentValidatorLeaf,
   safety: TSafety,
 ): (false | Record<string, unknown>) {
-  let currentLeaf: ParentValidatorLeaf = root;
-  currentLeaf.valueObject = param;
-  currentLeaf.seen = {};
+  let parentLeaf: ParentValidatorLeaf = root,
+    returnValueObject = param;
+  parentLeaf.valueObject = param;
+  parentLeaf.seen = {};
   // Start the loop
-  for (let i = 0; currentLeaf.children.length; i++) {
-    const child = currentLeaf.children[i]
-    const valueItem = currentLeaf.valueObject![child.key];
+  for (let i = 0; i < parentLeaf.children.length; i++) {
+    const child = parentLeaf.children[i]
+    const valueItem = parentLeaf.valueObject![child.key];
     // Run validator function
     if (isNonParentLeaf(child)) {
       const passes = child.validatorFn(valueItem);
+      parentLeaf.seen[child.key] = true; 
       if (!passes) return false; 
     // Go down the tree
     } else {
       if (!isObject(valueItem)) {
         return false;
       }
-      currentLeaf.valueObject = valueItem;
+      parentLeaf.valueObject = valueItem;
       child.seen = {};
-      currentLeaf = child;
+      parentLeaf = child;
       continue;
     }
-    // Go back up the tree
-    if ((i + 1) === currentLeaf.children.length) {
-      if (!sanitize(currentLeaf, safety)) {
+    // When reaching the last index, go back up the tree
+    if ((i + 1) === parentLeaf.children.length) {
+      if (!sanitize(parentLeaf, safety)) {
         return false;
       }
-      if (!!currentLeaf.parentLeaf) {
-        currentLeaf = currentLeaf.parentLeaf;
+      i = parentLeaf.index + 1;
+      if (!!parentLeaf.parentLeaf) { // end of the root leaf reached
+        parentLeaf = parentLeaf.parentLeaf;
       } else {
+        returnValueObject = parentLeaf.valueObject!;
         break;
       }
     }
   }
   // Return
-  return currentLeaf.valueObject!;
+  return returnValueObject;
 }
 
 /**
@@ -163,19 +167,20 @@ function sanitize(leaf: ParentValidatorLeaf, safety: TSafety) {
   };
   // Sanitize/clone the value object, throw error for strict mode if there
   // are extra fields
-  const cleanValueObject: Record<string, unknown> = {};
   for (const key in leaf.valueObject) {
-    if (!leaf.seen[key] && safety === SAFETY.Strict) {
-      return false;
-    } else {
-      cleanValueObject[key] = leaf.valueObject[key]
+    if (!leaf.seen[key]) {
+      if (safety === SAFETY.Strict) {
+        return false;
+      } else {
+        delete leaf.valueObject[key]
+      }
     }
   }
-  leaf.valueObject = cleanValueObject;
-  // Preserve references in return values
-  const parentValueObject = leaf.parentLeaf?.valueObject;
-  if (!!parentValueObject) {
-    parentValueObject[leaf.key] = leaf.valueObject;
+  // Preserve references in return values and make sure the parent of the 
+  // parent marks this leaf as seen.
+  if (!!leaf.parentLeaf) {
+    leaf.parentLeaf.valueObject![leaf.key] = leaf.valueObject;
+    leaf.parentLeaf.seen[leaf.key] = true;
   }
   // Return
   return true;
