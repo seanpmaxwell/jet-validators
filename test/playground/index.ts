@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { isNumber, isOptionalString, isString } from '../src';
+import { isNumber, isOptionalString, isString } from '../../src';
 
 import {
   transform,
@@ -14,9 +14,9 @@ import {
   parseObjectArray,
   type TSchema,
   nonNullable,
-} from '../src/utils';
+} from '../../src/utils';
 
-import { isString as isStringRelativeImport } from '../';
+import { isString as isStringRelativeImport } from '../../src';
 // import { parseBoolean as parseBooleanRelativeImport } from '../utils';
 
 /******************************************************************************

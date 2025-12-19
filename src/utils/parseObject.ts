@@ -102,7 +102,7 @@ export const parseObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, false, false>(
+  parseObjectHelper<U, false, false, false>(
     schema,
     false,
     false,
@@ -115,7 +115,7 @@ export const parseOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, false, false>(
+  parseObjectHelper<U, true, false, false>(
     schema,
     true,
     false,
@@ -128,7 +128,7 @@ export const parseNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, true, false>(
+  parseObjectHelper<U, false, true, false>(
     schema,
     false,
     true,
@@ -141,7 +141,7 @@ export const parseNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, true, false>(
+  parseObjectHelper<U, true, true, false>(
     schema,
     true,
     true,
@@ -154,7 +154,7 @@ export const parseObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, false, true>(
+  parseObjectHelper<U, false, false, true>(
     schema,
     false,
     false,
@@ -167,7 +167,7 @@ export const parseOptionalObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, false, true>(
+  parseObjectHelper<U, true, false, true>(
     schema,
     true,
     false,
@@ -180,7 +180,7 @@ export const parseNullableObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, true, true>(
+  parseObjectHelper<U, false, true, true>(
     schema,
     false,
     true,
@@ -193,7 +193,7 @@ export const parseNullishObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, true, true>(
+  parseObjectHelper<U, true, true, true>(
     schema,
     true,
     true,
@@ -208,7 +208,7 @@ export const looseParseObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, false, false>(
+  parseObjectHelper<U, false, false, false>(
     schema,
     false,
     false,
@@ -221,7 +221,7 @@ export const looseParseOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, false, false>(
+  parseObjectHelper<U, true, false, false>(
     schema,
     true,
     false,
@@ -234,7 +234,7 @@ export const looseParseNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, true, false>(
+  parseObjectHelper<U, false, true, false>(
     schema,
     false,
     true,
@@ -247,7 +247,7 @@ export const looseParseNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, true, false>(
+  parseObjectHelper<U, true, true, false>(
     schema,
     true,
     true,
@@ -260,7 +260,7 @@ export const looseParseObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, false, true>(
+  parseObjectHelper<U, false, false, true>(
     schema,
     false,
     false,
@@ -276,7 +276,7 @@ export const looseParseOptionalObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, false, true>(
+  parseObjectHelper<U, true, false, true>(
     schema,
     true,
     false,
@@ -292,7 +292,7 @@ export const looseParseNullableObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, true, true>(
+  parseObjectHelper<U, false, true, true>(
     schema,
     false,
     true,
@@ -308,7 +308,7 @@ export const looseParseNullishObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, true, true>(
+  parseObjectHelper<U, true, true, true>(
     schema,
     true,
     true,
@@ -323,7 +323,7 @@ export const strictParseObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, false, false>(
+  parseObjectHelper<U, false, false, false>(
     schema,
     false,
     false,
@@ -336,7 +336,7 @@ export const strictParseOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, false, false>(
+  parseObjectHelper<U, true, false, false>(
     schema,
     true,
     false,
@@ -349,7 +349,7 @@ export const strictParseNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, true, false>(
+  parseObjectHelper<U, false, true, false>(
     schema,
     false,
     true,
@@ -362,7 +362,7 @@ export const strictParseNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, true, false>(
+  parseObjectHelper<U, true, true, false>(
     schema,
     true,
     true,
@@ -375,7 +375,7 @@ export const strictParseObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, false, true>(
+  parseObjectHelper<U, false, false, true>(
     schema,
     false,
     false,
@@ -391,7 +391,7 @@ export const strictParseOptionalObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, false, true>(
+  parseObjectHelper<U, true, false, true>(
     schema,
     true,
     false,
@@ -407,7 +407,7 @@ export const strictParseNullableObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, false, true, true>(
+  parseObjectHelper<U, false, true, true>(
     schema,
     false,
     true,
@@ -423,7 +423,7 @@ export const strictParseNullishObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _parseObject<U, true, true, true>(
+  parseObjectHelper<U, true, true, true>(
     schema,
     true,
     true,
@@ -437,7 +437,7 @@ export const strictParseNullishObjectArray = <
  * "false" if the parse fails, and works recursively too. NOTE: this will
  * purge all keys not part of the schema.
  */
-function _parseObject<
+function parseObjectHelper<
   U extends IBasicSchema,
   O extends boolean = boolean,
   N extends boolean = boolean,
@@ -446,7 +446,7 @@ function _parseObject<
   schema: U,
   optional: O,
   nullable: N,
-  isArr: A,
+  isArray: A,
   safety: Safety,
   onErrorLower?: TParseOnError,
 ) {
@@ -460,7 +460,7 @@ function _parseObject<
       return _checkBasicsWithErrorCallback<A>(
         !!optional,
         !!nullable,
-        isArr,
+        isArray,
         flattenedSchema,
         arg,
         safety,
@@ -475,7 +475,7 @@ function _parseObject<
     return _parseObjectHelper<A>(
       !!optional,
       !!nullable,
-      isArr,
+      isArray,
       schema,
       arg,
       safety,
@@ -510,7 +510,7 @@ function flattenSchema(schema: IBasicSchema, safety: Safety): TFlattenedSchema {
           );
           cb?.(errorArray);
         } else {
-          passed = _parseObjectHelper2(flattenedSchema, arg, safety);
+          passed = parseObjectHelper2(flattenedSchema, arg, safety);
         }
         return passed;
       };
@@ -705,7 +705,7 @@ function _parseObjectHelper<A>(
     }
     // Iterate array
     for (const item of arg) {
-      const parsedItem = _parseObjectHelper2(schema, item, safety);
+      const parsedItem = parseObjectHelper2(schema, item, safety);
       if (parsedItem === false) {
         return false;
       }
@@ -713,7 +713,7 @@ function _parseObjectHelper<A>(
     return arg;
   }
   // If not an array
-  const resp = _parseObjectHelper2(schema, arg, safety);
+  const resp = parseObjectHelper2(schema, arg, safety);
   if (resp === false) {
     return false;
   }
@@ -724,7 +724,7 @@ function _parseObjectHelper<A>(
  * Iterate an object, apply a validator function to to each property in an
  * object using the schema.
  */
-function _parseObjectHelper2(
+function parseObjectHelper2(
   schemaParentObj: IBasicSchema,
   argParentObj: unknown,
   safety: Safety,
@@ -760,7 +760,7 @@ function _parseObjectHelper2(
       }
       // Nested schema
     } else if (isStringRecord(schemaProp)) {
-      const childVal = _parseObjectHelper2(schemaProp, val, safety);
+      const childVal = parseObjectHelper2(schemaProp, val, safety);
       if (childVal === false) {
         return false;
       }
@@ -822,7 +822,7 @@ export const testObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, false, false>(
+  testObjectHelper<U, false, false, false>(
     schema,
     false,
     false,
@@ -835,7 +835,7 @@ export const testOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, false, false>(
+  testObjectHelper<U, true, false, false>(
     schema,
     true,
     false,
@@ -848,7 +848,7 @@ export const testNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, true, false>(
+  testObjectHelper<U, false, true, false>(
     schema,
     false,
     true,
@@ -861,7 +861,7 @@ export const testNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, true, false>(
+  testObjectHelper<U, true, true, false>(
     schema,
     true,
     true,
@@ -874,7 +874,7 @@ export const testObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, false, true>(
+  testObjectHelper<U, false, false, true>(
     schema,
     false,
     false,
@@ -887,7 +887,7 @@ export const testOptionalObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, false, true>(
+  testObjectHelper<U, true, false, true>(
     schema,
     true,
     false,
@@ -900,7 +900,7 @@ export const testNullableObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, true, true>(
+  testObjectHelper<U, false, true, true>(
     schema,
     false,
     true,
@@ -913,7 +913,7 @@ export const testNullishObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, true, true>(
+  testObjectHelper<U, true, true, true>(
     schema,
     true,
     true,
@@ -928,7 +928,7 @@ export const looseTestObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, false, false>(
+  testObjectHelper<U, false, false, false>(
     schema,
     false,
     false,
@@ -941,7 +941,7 @@ export const looseTestOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, false, false>(
+  testObjectHelper<U, true, false, false>(
     schema,
     true,
     false,
@@ -954,7 +954,7 @@ export const looseTestNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, true, false>(
+  testObjectHelper<U, false, true, false>(
     schema,
     false,
     true,
@@ -967,7 +967,7 @@ export const looseTestNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, true, false>(
+  testObjectHelper<U, true, true, false>(
     schema,
     true,
     true,
@@ -980,7 +980,7 @@ export const looseTestObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, false, true>(
+  testObjectHelper<U, false, false, true>(
     schema,
     false,
     false,
@@ -996,7 +996,7 @@ export const looseTestOptionalObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, false, true>(
+  testObjectHelper<U, true, false, true>(
     schema,
     true,
     false,
@@ -1012,7 +1012,7 @@ export const looseTestNullableObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, true, true>(
+  testObjectHelper<U, false, true, true>(
     schema,
     false,
     true,
@@ -1028,7 +1028,7 @@ export const looseTestNullishObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, true, true>(
+  testObjectHelper<U, true, true, true>(
     schema,
     true,
     true,
@@ -1043,7 +1043,7 @@ export const strictTestObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, false, false>(
+  testObjectHelper<U, false, false, false>(
     schema,
     false,
     false,
@@ -1056,7 +1056,7 @@ export const strictTestOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, false, false>(
+  testObjectHelper<U, true, false, false>(
     schema,
     true,
     false,
@@ -1069,7 +1069,7 @@ export const strictTestNullableObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, true, false>(
+  testObjectHelper<U, false, true, false>(
     schema,
     false,
     true,
@@ -1082,7 +1082,7 @@ export const strictTestNullishObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, true, false>(
+  testObjectHelper<U, true, true, false>(
     schema,
     true,
     true,
@@ -1095,7 +1095,7 @@ export const strictTestObjectArray = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, false, true>(
+  testObjectHelper<U, false, false, true>(
     schema,
     false,
     false,
@@ -1111,7 +1111,7 @@ export const strictTestOptionalObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, false, true>(
+  testObjectHelper<U, true, false, true>(
     schema,
     true,
     false,
@@ -1127,7 +1127,7 @@ export const strictTestNullableObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, false, true, true>(
+  testObjectHelper<U, false, true, true>(
     schema,
     false,
     true,
@@ -1143,7 +1143,7 @@ export const strictTestNullishObjectArray = <
   schema: U,
   onError?: TParseOnError,
 ) =>
-  _testObject<U, true, true, true>(
+  testObjectHelper<U, true, true, true>(
     schema,
     true,
     true,
@@ -1155,7 +1155,7 @@ export const strictTestNullishObjectArray = <
 /**
  * Like "parseObj" but returns a type-predicate instead of the object.
  */
-function _testObject<
+function testObjectHelper<
   U extends IBasicSchema,
   O extends boolean,
   N extends boolean,
@@ -1168,7 +1168,7 @@ function _testObject<
   safety: Safety,
   onError?: TParseOnError,
 ) {
-  const parseFn = _parseObject(
+  const parseFn = parseObjectHelper(
     schema,
     optional,
     nullable,
