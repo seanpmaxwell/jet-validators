@@ -2,6 +2,36 @@
 import { isFunction, isNumber, isOptionalString, isString, isUnsignedInteger } from 'src';
 import { test } from 'vitest';
 
+const parseUser = parseObjectNew({
+    id: isUnsignedInteger,
+    name: isString,
+    address: {
+      street: isString,
+      city: isString,
+      country: {
+        code: isNumber,
+        name: isString,
+      },
+    },
+    email: isOptionalString,
+  });
+
+  const user2 = {
+    id: 1,
+    name: 'sean',
+    address: {
+      street: '123 fake st',
+      city: 1234 as unknown as string,
+      country: {
+        code: '123' as unknown as number,
+        name: 'USA',
+      },
+    },
+    email: 123 as unknown as string,
+  };
+
+const sampleParam = parseUser(user2)
+
 const SAFETY = {
   Loose: 1,
   Normal: 2,
@@ -30,6 +60,7 @@ interface IValidatorLeaf {
   parent: IValidatorLeaf | null;
   children: IValidatorLeaf[];
   valueObject: Record<string, unknown>;
+  expectedKeys: string[];
 }
 
 // **** Validators **** //
@@ -80,6 +111,7 @@ function setupValidatorTree(
     parent: parentLeaf,
     children: [],
     valueObject: {},
+    expectedKeys: [],
   }
 
   // ** Recursively setup the tree ** //
@@ -95,6 +127,7 @@ function setupValidatorTree(
         childLeaf = setupValidatorTree(value, newLeaf, key, index);
       newLeaf.children.push(childLeaf);
     }
+    newLeaf.expectedKeys.push(key);
   }
 
   // ** Return ** //
@@ -128,16 +161,17 @@ function validateParamWithTree(
   // Start the loop
   while (true) {
 
-    // ** Iterate up ** //
+    // ** Go to the next sibling if there, if not, go to the parent ** //
     if (goingUp) {
-      const parent = leaf.parent;
-      if (!parent) {
-        break;
-      }
-      // If leaf was the last child, keep going up the tree
-      const nextSibling = parent.children[leaf.index + 1];
+      const nextSibling = leaf.parent?.children[leaf.index + 1];
       if (!nextSibling) {
-        leaf = parent;
+        if (!leaf.parent) {
+          break;
+        } 
+        leaf = leaf.parent;
+        if (!checkSafetyAndSanitize(leaf, safety, runId)) {
+          return false;
+        }
         continue;
       }
       leaf = nextSibling;
@@ -166,10 +200,11 @@ function validateParamWithTree(
       continue;
     }
 
-    // ** Go up the tree ** //
+    // Go up
     if (!checkSafetyAndSanitize(leaf, safety, runId)) {
       return false;
     }
+    leaf.parent!.seen[leaf.key] = runId;
     goingUp = true;
   }
 
@@ -203,13 +238,16 @@ function checkSafetyAndSanitize(
       }
     }
   }
+  leaf.seen = {};
 
   // Create a clone if needed
   if (needsClone) {
     const clean: Record<string, unknown> = {};
-    for (const key in leaf.seen) {
+    for (let i = 0; i < leaf.expectedKeys.length; i++) {
+      const key = leaf.expectedKeys[i];
       clean[key] = leaf.valueObject[key];
     }
+    // Preserve parent references
     leaf.valueObject = clean;
     if (!!leaf.parent) {
       leaf.parent.valueObject[leaf.key] = leaf.valueObject;
