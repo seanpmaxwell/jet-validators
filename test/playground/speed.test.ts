@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { isFunction, isNumber, isOptionalString, isString, isUnsignedInteger } from 'src';
-import { expect, test } from 'vitest';
+import { test } from 'vitest';
 
 const SAFETY = {
   Loose: 1,
@@ -11,26 +11,26 @@ const SAFETY = {
 // **** Types **** //
 
 type TValidatorFn = ((...args: any[]) => any);
-type TFunc = ((...args: any[]) => any);
 type TSafety = typeof SAFETY[keyof typeof SAFETY];
 
 interface ISchema {
   [key: string]: TValidatorFn | ISchema;
 }
 
-interface ValidatorLeaf {
-  index: number;
+interface IValidatorObject {
   key: string;
-  parentLeaf: ParentValidatorLeaf | null;
   validatorFn: TValidatorFn;
 }
 
-interface ParentValidatorLeaf extends Omit<ValidatorLeaf, 'validatorFn'> {
-  valueObject?: Record<string, unknown>;
-  children: (ValidatorLeaf | ParentValidatorLeaf)[];
-  seen: Record<string, boolean>;
+interface IValidatorLeaf {
+  index: number;
+  key: string;
+  seen: Record<string, number>;
+  validatorObjects: IValidatorObject[];
+  parent: IValidatorLeaf | null;
+  children: IValidatorLeaf[];
+  valueObject: Record<string, unknown>;
 }
-
 
 // **** Validators **** //
 
@@ -45,6 +45,7 @@ function parseObjectNew(
   safety: TSafety = SAFETY.Normal,
 ) {
   const rootLeaf = setupValidatorTree(schema, null, '', 0);
+  let runId = 0;
   return (param: unknown): (Record<string, unknown> | null | undefined) | false => {
     if (param === undefined) {
       return (isOptional || isNullish) ? param : false;
@@ -53,7 +54,7 @@ function parseObjectNew(
       return (isNullable || isNullish) ? param : false;
     }
     if (isObject(param)) {
-      return validateParamWithTree(param, rootLeaf, safety);
+      return validateParamWithTree(param, rootLeaf, safety, ++runId);
     } else {
       return false;
     }
@@ -65,143 +66,166 @@ function parseObjectNew(
  */
 function setupValidatorTree(
   schema: ISchema,
-  parentLeaf: ParentValidatorLeaf | null,
+  parentLeaf: IValidatorLeaf | null,
   paramKey: string,
   paramIndex: number,
-): ParentValidatorLeaf {
-  // Initialize new leaf
-  const newLeaf: ParentValidatorLeaf = {
+): IValidatorLeaf {
+
+  // ** Initialize new leaf ** //
+  const newLeaf: IValidatorLeaf = {
     index: paramIndex,
     key: paramKey,
-    parentLeaf,
-    children: [],
     seen: {},
+    validatorObjects: [],
+    parent: parentLeaf,
+    children: [],
+    valueObject: {},
   }
-  // Recursively setup the tree
-  let index = 0;
+
+  // ** Recursively setup the tree ** //
   for (const key in schema) {
     const value = schema[key];
     if (isFunction(value)) {
-      newLeaf.children.push({
+      newLeaf.validatorObjects.push({
         key,
         validatorFn: wrapValidator(value),
-        index,
-        parentLeaf: newLeaf,
       });
     } else {
-      const childLeaf = setupValidatorTree(value, newLeaf, key, index);
+      const index = newLeaf.children.length,
+        childLeaf = setupValidatorTree(value, newLeaf, key, index);
       newLeaf.children.push(childLeaf);
     }
-    index++
   }
-  // Return
+
+  // ** Return ** //
   return newLeaf;
 }
 
 /**
  * Prevent error throwing.
  */
-function wrapValidator(fn: TFunc) {
-  return function(param: unknown, cb: TFunc) {
-    try { return fn(param, cb) }
+function wrapValidator(fn: (param: unknown) => boolean) {
+  return function(param: unknown) {
+    try { return fn(param) }
     catch { return false }
   }
 }
-
 /**
  * Iteratively validate an object.
  */
 function validateParamWithTree(
   param: Record<string, unknown>,
-  root: ParentValidatorLeaf,
+  root: IValidatorLeaf,
   safety: TSafety,
+  runId: number,
 ): (false | Record<string, unknown>) {
-  let parentLeaf: ParentValidatorLeaf = root,
-    returnValueObject = param;
-  parentLeaf.valueObject = param;
-  parentLeaf.seen = {};
+
+  // Initialize
+  root.valueObject = param;
+  let leaf: IValidatorLeaf = root;
+  let goingUp = false;
+
   // Start the loop
-  for (let i = 0; i < parentLeaf.children.length; i++) {
-    const child = parentLeaf.children[i]
-    const valueItem = parentLeaf.valueObject![child.key];
-    // Run validator function
-    if (isNonParentLeaf(child)) {
-      const passes = child.validatorFn(valueItem);
-      parentLeaf.seen[child.key] = true; 
-      if (!passes) return false; 
-    // Go down the tree
-    } else {
-      if (!isObject(valueItem)) {
-        return false;
-      }
-      parentLeaf.valueObject = valueItem;
-      child.seen = {};
-      parentLeaf = child;
-      continue;
-    }
-    // When reaching the last index, go back up the tree
-    if ((i + 1) === parentLeaf.children.length) {
-      if (!sanitize(parentLeaf, safety)) {
-        return false;
-      }
-      i = parentLeaf.index + 1;
-      if (!!parentLeaf.parentLeaf) { // end of the root leaf reached
-        parentLeaf = parentLeaf.parentLeaf;
-      } else {
-        returnValueObject = parentLeaf.valueObject!;
+  while (true) {
+
+    // ** Iterate up ** //
+    if (goingUp) {
+      const parent = leaf.parent;
+      if (!parent) {
         break;
       }
+      // If leaf was the last child, keep going up the tree
+      const nextSibling = parent.children[leaf.index + 1];
+      if (!nextSibling) {
+        leaf = parent;
+        continue;
+      }
+      leaf = nextSibling;
+      goingUp = false;
     }
+
+    // ** Run validator functions ** //
+    if (!!leaf.parent) {
+      const valueObject = leaf.parent.valueObject[leaf.key];
+      if (!isObject(valueObject)) {
+        return false;
+      }
+      leaf.valueObject = valueObject;
+    }
+    for (let v = 0; v < leaf.validatorObjects.length; v++) {
+      const { key, validatorFn } = leaf.validatorObjects[v];
+      if (!validatorFn(leaf.valueObject[key])) {
+        return false;
+      }
+      leaf.seen[key] = runId;
+    }
+
+    // ** Go down the three ** //
+    if (leaf.children.length > 0) {
+      leaf = leaf.children[0];
+      continue;
+    }
+
+    // ** Go up the tree ** //
+    if (!checkSafetyAndSanitize(leaf, safety, runId)) {
+      return false;
+    }
+    goingUp = true;
   }
+
   // Return
-  return returnValueObject;
+  return leaf.valueObject;
 }
 
 /**
  * Check keys depending on the level of safety
  */
-function sanitize(leaf: ParentValidatorLeaf, safety: TSafety) {
+function checkSafetyAndSanitize(
+  leaf: IValidatorLeaf,
+  safety: TSafety,
+  runId: number,
+) {
+
   // Loose doesn't need sanitizing
   if (safety === SAFETY.Loose) {
     return true
   };
-  // Sanitize/clone the value object, throw error for strict mode if there
-  // are extra fields
+
+  // Check safety
+  let needsClone = false;
   for (const key in leaf.valueObject) {
-    if (!leaf.seen[key]) {
+    if (leaf.seen[key] !== runId) {
       if (safety === SAFETY.Strict) {
         return false;
       } else {
-        delete leaf.valueObject[key]
+        needsClone = true;
+        break;
       }
     }
   }
-  // Preserve references in return values and make sure the parent of the 
-  // parent marks this leaf as seen.
-  if (!!leaf.parentLeaf) {
-    leaf.parentLeaf.valueObject![leaf.key] = leaf.valueObject;
-    leaf.parentLeaf.seen[leaf.key] = true;
+
+  // Create a clone if needed
+  if (needsClone) {
+    const clean: Record<string, unknown> = {};
+    for (const key in leaf.seen) {
+      clean[key] = leaf.valueObject[key];
+    }
+    leaf.valueObject = clean;
+    if (!!leaf.parent) {
+      leaf.parent.valueObject[leaf.key] = leaf.valueObject;
+    }
   }
+
   // Return
   return true;
 }
 
 /**
- * 
+ * Check if non array object.
  */
 function isObject(arg: unknown): arg is Record<string, unknown> {
-  return Object.prototype.toString.call(arg) === '[object Object]';
+  return arg !== null && typeof arg === 'object' && !Array.isArray(arg);
 }
-
-/**
- * 
- */
-function isNonParentLeaf(
-  arg: ValidatorLeaf | ParentValidatorLeaf,
-): arg is ValidatorLeaf {
-  return Object.hasOwn(arg, 'validatorFn');
-}
-
 
 // **** Test **** //
 
