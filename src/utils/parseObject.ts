@@ -1,15 +1,16 @@
+import markSafe from 'src/markSafe.js';
 import { isUndef, isFunction, isString, isStringArray } from '../basic.js';
-import { type ITransformValidatorFn } from './simple-utils.js';
+import { isTransformFunction, type TransformValidatorFn } from './simple-utils.js';
 
-// **** Constants **** //
+/******************************************************************************
+                              Constants
+******************************************************************************/
 
 const SAFETY = {
   Loose: 0,
   Default: 1,
   Strict: 2,
 } as const;
-
-type Safety = (typeof SAFETY)[keyof typeof SAFETY];
 
 const ERRORS = {
   NotObject: 'Parsed item was not an object.',
@@ -23,6 +24,12 @@ const ERRORS = {
   SchemaProp: 'Schema property must be a function or nested schema',
 } as const;
 
+/******************************************************************************
+                                  Types
+******************************************************************************/
+
+type Safety = (typeof SAFETY)[keyof typeof SAFETY];
+
 // **** Utility Types **** //
 
 type AddNull<T, N> = N extends true ? T | null : T;
@@ -35,7 +42,7 @@ type AddMods<T, O, N, A> = A extends true
 
 // **** Error Types **** //
 
-export type TParseOnError = (errors: IParseObjectError[]) => void;
+type TParseOnError = (errors: IParseObjectError[]) => void;
 export interface IParseObjectError {
   info: string;
   prop?: string;
@@ -47,7 +54,7 @@ export interface IParseObjectError {
 
 // **** Basic Types **** //
 
-export interface IParseValidatorFn<T> {
+interface IParseValidatorFn<T> {
   (arg: unknown, onError?: TParseOnError): arg is T;
   isTransformFunction?: true;
 }
@@ -64,22 +71,18 @@ export type TSchemaHelper<T> = Required<{
   [K in keyof T]: T[K] extends Record<string, unknown>
     ?
         | IParseValidatorFn<T[K]>
-        | ITransformValidatorFn<T[K]>
+        | TransformValidatorFn<T[K]>
         | TSchemaHelper<T[K]>
-    : IParseValidatorFn<T[K]> | ITransformValidatorFn<T[K]>;
+    : IParseValidatorFn<T[K]> | TransformValidatorFn<T[K]>;
 }>;
 
 interface IBasicSchema {
   [key: string]:
-    | ITransformValidatorFn<unknown>
+    | TransformValidatorFn<unknown>
     | IParseValidatorFn<unknown>
     | IBasicSchema;
 }
 
-type TFlattenedSchema = Record<
-  string,
-  ITransformValidatorFn<unknown> | IParseValidatorFn<unknown>
->;
 
 type TInferFromSchema<U, O, N, A, Schema = TInferFromSchemaHelper<U>> = AddMods<
   Schema,
@@ -96,7 +99,9 @@ type TInferFromSchemaHelper<U> = {
       : never;
 };
 
-// **** Default parseObject **** //
+/******************************************************************************
+                              parseObject
+******************************************************************************/
 
 export const parseObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
@@ -453,8 +458,8 @@ function parseObjectHelper<
   // pick up here, do recursion before being passed the "arg"
   const flattenedSchema = flattenSchema(schema, safety);
 
-  // Return function
-  return (arg: unknown, onError?: TParseOnError) => {
+  // Initalize validator
+  const validator = (arg: unknown, onError?: TParseOnError) => {
     // ** If error callback provided ** //
     if (!!onErrorLower || !!onError) {
       return _checkBasicsWithErrorCallback<A>(
@@ -481,6 +486,9 @@ function parseObjectHelper<
       safety,
     ) as TInferFromSchema<U, O, N, A>;
   };
+
+  // parseObject should catch errors
+  return markSafe(validator);
 }
 
 /**
@@ -606,7 +614,7 @@ function _parseFlattenedSchemaWithErrorCallback(
       let childErrors: IParseObjectError[] | undefined,
         passed = false,
         info: string = ERRORS.ValidatorFn;
-      if (schemaProp.isTransformFunction === true) {
+      if (isTransformFunction(schemaProp)) {
         passed = schemaProp(value, (transformedValue) => {
           // Don't append "undefined" if the key is absent
           if (transformedValue === undefined && !(key in argParentObj)) {
@@ -741,7 +749,7 @@ function parseObjectHelper2(
     if (isFunction(schemaProp)) {
       try {
         let passed = false;
-        if (schemaProp.isTransformFunction === true) {
+        if (isTransformFunction(schemaProp)) {
           passed = schemaProp(val, (tval) => {
             // Don't append "undefined" if the key is absent
             if (tval === undefined && !(key in argParentObj)) {
@@ -816,8 +824,13 @@ function isStringRecord(arg: unknown): arg is Record<string, unknown> {
   return !!arg && typeof arg === 'object' && isStringArray(Object.keys(arg));
 }
 
-// **** testObject (just calls "parseObject" under the hood) **** //
+/******************************************************************************
+                              testObject
+******************************************************************************/
 
+/**
+ * Call parseObject and return true if not false.
+ */
 export const testObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
   onError?: TParseOnError,

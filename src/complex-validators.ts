@@ -6,6 +6,7 @@ import {
   isUndef,
   isValidNumber,
 } from './basic.js';
+import markSafe from './markSafe.js';
 
 // Add modifiers
 type AddNull<T, N> = N extends true ? T | null : T;
@@ -16,21 +17,23 @@ type AddMods<T, O, N, A> = A extends true
   ? AddNullables<T[], O, N>
   : AddNullables<T, O, N>;
 
-// **** Is in Array **** //
+/******************************************************************************
+                              isInArray
+******************************************************************************/
 
 export const isInArray = <T extends readonly unknown[]>(arg: T) =>
-  _isInArray<T, false, false>(arg, false, false);
+  isInArrayHelper<T, false, false>(arg, false, false);
 export const isOptionalInArray = <T extends readonly unknown[]>(arg: T) =>
-  _isInArray<T, true, false>(arg, true, false);
+  isInArrayHelper<T, true, false>(arg, true, false);
 export const isNullableInArray = <T extends readonly unknown[]>(arg: T) =>
-  _isInArray<T, false, true>(arg, false, true);
+  isInArrayHelper<T, false, true>(arg, false, true);
 export const isNullishInArray = <T extends readonly unknown[]>(arg: T) =>
-  _isInArray<T, true, true>(arg, true, true);
+  isInArrayHelper<T, true, true>(arg, true, true);
 
 /**
  * Is an item in an array.
  */
-export function _isInArray<
+export function isInArrayHelper<
   T extends readonly unknown[],
   O extends boolean,
   N extends boolean,
@@ -40,7 +43,7 @@ export function _isInArray<
   nullable: N,
 ): (arg: unknown) => arg is AddNullables<T[number], O, N> {
   const lookup = new Set(arr);
-  return (arg: unknown): arg is AddNullables<T[number], O, N> => {
+  const validator = (arg: unknown): arg is AddNullables<T[number], O, N> => {
     if (isUndef(arg)) {
       return !!optional;
     }
@@ -49,55 +52,61 @@ export function _isInArray<
     }
     return lookup.has(arg);
   };
+  return markSafe(validator);
 }
 
-// **** In Range **** //
+/******************************************************************************
+                              isInRange
+******************************************************************************/
 
 type TRangeParam = number | [number] | [];
 type TRangeFn = (arg: number) => boolean;
 
-export const isInRange = _isInRange<false, false, false>(false, false, false);
-export const isOptionalInRange = _isInRange<true, false, false>(
+export const isInRange = isInRangeHelper<false, false, false>(
+  false,
+  false,
+  false,
+);
+export const isOptionalInRange = isInRangeHelper<true, false, false>(
   true,
   false,
   false,
 );
-export const isNullableInRange = _isInRange<false, true, false>(
+export const isNullableInRange = isInRangeHelper<false, true, false>(
   false,
   true,
   false,
 );
-export const isNullishInRange = _isInRange<true, true, false>(
+export const isNullishInRange = isInRangeHelper<true, true, false>(
   true,
   true,
   false,
 );
-export const isInRangeArray = _isInRange<false, false, true>(
+export const isInRangeArray = isInRangeHelper<false, false, true>(
   false,
   false,
   true,
 );
-export const isOptionalInRangeArray = _isInRange<true, false, true>(
+export const isOptionalInRangeArray = isInRangeHelper<true, false, true>(
   true,
   false,
   true,
 );
-export const isNullableInRangeArray = _isInRange<false, true, true>(
+export const isNullableInRangeArray = isInRangeHelper<false, true, true>(
   false,
   true,
   true,
 );
-export const isNullishInRangeArray = _isInRange<true, true, true>(
+export const isNullishInRangeArray = isInRangeHelper<true, true, true>(
   true,
   true,
   true,
 );
 
 /**
- * Range will always determine if a number is >= the min and <= the max. If you want to
- * leave off a range, just use null.
+ * Range will always determine if a number is >= the min and <= the max.
  */
-function _isInRange<
+function isInRangeHelper<
   O extends boolean,
   N extends boolean,
   A extends boolean,
@@ -111,8 +120,8 @@ function _isInRange<
     min: TRangeParam,
     max: TRangeParam,
   ): ((arg: unknown) => arg is Ret) => {
-    const rangeFn = _initRangeFn(min, max);
-    return (arg: unknown): arg is Ret => {
+    const rangeFn = setupIsInRangeInternalFn(min, max);
+    const validator = (arg: unknown): arg is Ret => {
       if (arg === undefined) {
         return optional;
       }
@@ -122,18 +131,19 @@ function _isInRange<
       if (isArr) {
         return (
           Array.isArray(arg) &&
-          arg.every((item) => _isInRangeHelper(item, rangeFn))
+          arg.every((item) => isInRangeCheckType(item, rangeFn))
         );
       }
-      return _isInRangeHelper(arg, rangeFn);
+      return isInRangeCheckType(arg, rangeFn);
     };
+    return markSafe(validator);
   };
 }
 
 /**
  * Core logic for is array function.
  */
-function _isInRangeHelper(arg: unknown, rangeFn: TRangeFn): boolean {
+function isInRangeCheckType(arg: unknown, rangeFn: TRangeFn): boolean {
   if (isString(arg)) {
     if (isValidNumber(arg)) {
       arg = Number(arg);
@@ -150,7 +160,10 @@ function _isInRangeHelper(arg: unknown, rangeFn: TRangeFn): boolean {
 /**
  * Initialize inRange function.
  */
-function _initRangeFn(min: TRangeParam, max: TRangeParam): TRangeFn {
+function setupIsInRangeInternalFn(
+  min: TRangeParam,
+  max: TRangeParam,
+): TRangeFn {
   // arg >= min && arg <= max
   if (
     Array.isArray(min) &&
@@ -195,21 +208,23 @@ function _initRangeFn(min: TRangeParam, max: TRangeParam): TRangeFn {
   throw new Error('min and max must be number, [number], or []');
 }
 
-// **** Is string a key of an object **** //
+/******************************************************************************
+                              isKeyOf
+******************************************************************************/
 
 export const isKeyOf = <T extends object>(arg: T) =>
-  _isKeyOf<T, false, false>(arg, false, false);
+  isKeyOfHelper<T, false, false>(arg, false, false);
 export const isOptionalKeyOf = <T extends object>(arg: T) =>
-  _isKeyOf<T, true, false>(arg, true, false);
+  isKeyOfHelper<T, true, false>(arg, true, false);
 export const isNullableKeyOf = <T extends object>(arg: T) =>
-  _isKeyOf<T, false, true>(arg, false, true);
+  isKeyOfHelper<T, false, true>(arg, false, true);
 export const isNullishKeyOf = <T extends object>(arg: T) =>
-  _isKeyOf<T, true, true>(arg, true, true);
+  isKeyOfHelper<T, true, true>(arg, true, true);
 
 /**
  * See if something is a key of an object.
  */
-function _isKeyOf<
+function isKeyOfHelper<
   T extends object,
   O extends boolean,
   N extends boolean,
@@ -223,7 +238,7 @@ function _isKeyOf<
     throw new Error('Item to check from must be a Record<string, unknown>.');
   }
   const isInKeys = isInArray(Object.keys(obj));
-  return (arg: unknown): arg is Ret => {
+  const validator = (arg: unknown): arg is Ret => {
     if (arg === undefined) {
       return optional;
     }
@@ -232,25 +247,28 @@ function _isKeyOf<
     }
     return isInKeys(arg);
   };
+  return markSafe(validator);
 }
 
-// **** Is param a value in an object **** //
+/******************************************************************************
+                              isValueOf
+******************************************************************************/
 
 export type ValueOf<T extends object> = T[keyof T];
 
 export const isValueOf = <T extends object>(arg: T) =>
-  _isValueOf<T, false, false>(arg, false, false);
+  isValueOfHelper<T, false, false>(arg, false, false);
 export const isOptionalValueOf = <T extends object>(arg: T) =>
-  _isValueOf<T, true, false>(arg, true, false);
+  isValueOfHelper<T, true, false>(arg, true, false);
 export const isNullableValueOf = <T extends object>(arg: T) =>
-  _isValueOf<T, false, true>(arg, false, true);
+  isValueOfHelper<T, false, true>(arg, false, true);
 export const isNullishValueOf = <T extends object>(arg: T) =>
-  _isValueOf<T, true, true>(arg, true, true);
+  isValueOfHelper<T, true, true>(arg, true, true);
 
 /**
  * See if something is a value in an object.
  */
-function _isValueOf<
+function isValueOfHelper<
   T extends object,
   O extends boolean,
   N extends boolean,
@@ -264,7 +282,7 @@ function _isValueOf<
     throw new Error('Item to check from must be a Record<string, unknown>.');
   }
   const isInValues = isInArray(Object.values(obj));
-  return (arg: unknown): arg is Ret => {
+  const validator = (arg: unknown): arg is Ret => {
     if (arg === undefined) {
       return optional;
     }
@@ -273,4 +291,5 @@ function _isValueOf<
     }
     return isInValues(arg);
   };
+  return markSafe(validator);
 }

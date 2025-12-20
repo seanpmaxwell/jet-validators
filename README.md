@@ -187,7 +187,16 @@ Accepts `Date`, `string`, or `number` and validates via `new Date(...)`.
 
 ### `isObject`
 
+Is non-nullable object
+
 * `isObject` (+ variants)
+
+
+### `isPlainObject`
+
+Is it an object of type `Record<string, unknown>` and nothing else (i.e. `Date`, `Array`, `etc`).
+
+* `isPlainObject` (+ variants)
 
 ---
 

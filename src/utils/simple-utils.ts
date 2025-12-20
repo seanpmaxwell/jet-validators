@@ -1,12 +1,15 @@
-import { isString } from '../basic.js';
-import { type IParseValidatorFn, type TParseOnError } from './parseObject.js';
+import { isFunction, isString } from '../basic.js';
 
-// **** Types **** //
+const kTransformFunction = Symbol('transform-function');
 
-export interface ITransformValidatorFn<T> {
-  (arg: unknown, cb?: (arg: T) => void): arg is T;
-  isTransformFunction?: true;
-}
+/******************************************************************************
+                              Types
+******************************************************************************/
+
+export type TransformValidatorFn<T> = (
+  arg: unknown,
+  cb?: (arg: T) => void,
+) => arg is T;
 
 // **** Simple Util **** //
 
@@ -14,12 +17,12 @@ export interface ITransformValidatorFn<T> {
  * Extract null/undefined from a validator function. Have to provide an errorCb in case
  * we are wrapping a nested schema function.
  */
-export function nonNullable<T>(cb: IParseValidatorFn<T>) {
-  return (arg: unknown, onError?: TParseOnError): arg is NonNullable<T> => {
+export function nonNullable<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is NonNullable<T> => {
     if (arg === null || arg === undefined) {
       return false;
     } else {
-      return cb(arg, onError);
+      return cb(arg);
     }
   };
 }
@@ -69,19 +72,28 @@ export function makeNullish<T>(cb: (arg: unknown) => arg is T) {
 export function transform<T>(
   transformFn: (arg: unknown) => T,
   validate: (arg: unknown) => arg is T,
-): ITransformValidatorFn<T> {
-  const retFn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
+): TransformValidatorFn<T> {
+  const fn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
     if (arg !== undefined) {
       arg = transformFn(arg);
     }
     cb?.(arg as T);
     return validate(arg);
   };
-  Object.defineProperty(retFn, 'isTransformFunction', {
-    value: true,
-    writable: false,
-  });
-  return retFn;
+  (fn as unknown as Record<symbol, unknown>)[kTransformFunction] = true;
+  return fn;
+}
+
+/**
+ * Check if transform function
+ */
+export function isTransformFunction(
+  arg: unknown,
+): arg is TransformValidatorFn<unknown> {
+  return (
+    isFunction(arg) &&
+    (arg as unknown as Record<symbol, unknown>)[kTransformFunction] === true
+  );
 }
 
 // **** ParseBoolean **** //
