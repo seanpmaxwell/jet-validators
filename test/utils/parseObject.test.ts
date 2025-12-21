@@ -591,7 +591,8 @@ test.only('Test for update which removed recursion', () => {
   };
 
   const result = parseUser(user);
-  expect(result).toStrictEqual(user);
+  expect(result).toStrictEqual(user); // Should return deepClone of user
+
 
   const user2: IUser = {
     id: 1,

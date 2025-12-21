@@ -1,5 +1,9 @@
 import { isFunction, isString } from '../basic.js';
 
+/******************************************************************************
+                             Constants
+******************************************************************************/
+
 const kTransformFunction = Symbol('transform-function');
 
 /******************************************************************************
@@ -11,11 +15,13 @@ export type TransformValidatorFn<T> = (
   cb?: (arg: T) => void,
 ) => arg is T;
 
-// **** Simple Util **** //
+/******************************************************************************
+                               Functions
+******************************************************************************/
 
 /**
- * Extract null/undefined from a validator function. Have to provide an errorCb in case
- * we are wrapping a nested schema function.
+ * Extract null/undefined from a validator function. Have to provide an
+ * errorCb in case we are wrapping a nested schema function.
  */
 export function nonNullable<T>(cb: (arg: unknown) => arg is T) {
   return (arg: unknown): arg is NonNullable<T> => {
