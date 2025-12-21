@@ -1,4 +1,4 @@
-import { isPlainObject } from '../../basic.js';
+import { isPlainObject, type TFunction } from '../../basic.js';
 import { isSafe } from './mark-safe.js';
 
 /******************************************************************************
@@ -69,6 +69,7 @@ export type OnErrorCallback = (errors: ErrorItem[]) => void;
 interface IErrorState {
   errors: ErrorItem[];
   hasErrors: boolean;
+  index?: number;
 }
 
 type ErrorItem = {
@@ -122,38 +123,20 @@ function parseObjectCore(
     // Initialize error state
     const errorState: IErrorState | null =
       onError || localOnError ? { errors: [], hasErrors: false } : null;
-
-    // Check undefined
-    if (param === undefined) {
-      if (isOptional) return undefined;
-      if (!!errorState) {
-        errorState.hasErrors = true;
-        errorState.errors.push({
-          info: ERRORS.NotOptional,
-          functionName: '<isOptional>',
-          value: undefined,
-          key: '',
-        });
-      }
+    // Check for nullables
+    if (!checkNullables(isOptional, isNullable, param, errorState)) {
       return false;
     }
-
-    // Check null
-    if (param === isNullable) {
-      if (isNullable) return null;
-      if (!!errorState) {
-        errorState.hasErrors = true;
-        errorState.errors.push({
-          info: ERRORS.NotNullable,
-          functionName: '<isNullable>',
-          value: null,
-          key: '',
-        });
-      }
-      return false;
+    // Reset the runId if it gets to 4billion
+    if (++runId === 0xffffffff) {
+      runId = 1;
+      resetSeen(root);
     }
-
-    // Check null
+    // If an array
+    if (isArray) {
+      return parseArray(param, errorState, root, runId, finalParseFn);
+    }
+    // Make sure an object if not null, undefined, or array
     if (!isPlainObject(param)) {
       if (!!errorState) {
         errorState.hasErrors = true;
@@ -166,52 +149,7 @@ function parseObjectCore(
       }
       return false;
     }
-
-    // ** If an array ** //
-    if (isArray) {
-      if (!Array.isArray(param)) {
-        if (!!errorState) {
-          errorState.hasErrors = true;
-          errorState.errors.push({
-            info: ERRORS.NotArray,
-            functionName: '<isArray>',
-            value: param,
-            key: '',
-          });
-        }
-        return false;
-      }
-      // Run the validator for each array item
-      let isValid = true;
-      for (let i = 0; i < param.length; i++) {
-        const result = finalParseFn(param, root, runId, errorState, index);
-        if (result !== false) {
-          param[i] = result;
-        } else {
-          isValid = false;
-        }
-        // pick up here, pass the index down through the levels, if index
-        // is not undefined add it before the parent path
-        // if (errorState?.hasErrors) {
-        //   errorState.errors.forEach((err: ErrorItem) => {
-        //     if ('key' in err) {
-        //       (err as PlainObject).keyPath = [i.toString(), err.key];
-        //     } else {
-        //       err.keyPath = [i.toString(), ...err.keyPath];
-        //     }
-        //   });
-        // }
-      }
-      return isValid ? param : false;
-    }
-
-    // Reset the runId if it gets to 4billion
-    if (++runId === 0xffffffff) {
-      runId = 1;
-      resetSeen(root);
-    }
-
-    // Return
+    // Run parseFunction
     return finalParseFn(param, root, runId, errorState);
   };
 }
@@ -265,6 +203,92 @@ function setupValidatorTree(
 }
 
 /**
+ * Check for things like optiona, array, etc.
+ */
+function checkNullables(
+  isOptional: boolean,
+  isNullable: boolean,
+  param: unknown,
+  errorState: IErrorState | null,
+) {
+  // Check undefined
+  if (param === undefined) {
+    if (isOptional) return undefined;
+    if (!!errorState) {
+      errorState.hasErrors = true;
+      errorState.errors.push({
+        info: ERRORS.NotOptional,
+        functionName: '<isOptional>',
+        value: undefined,
+        key: '',
+      });
+    }
+    return false;
+  }
+  // Check null
+  if (param === null) {
+    if (isNullable) return null;
+    if (!!errorState) {
+      errorState.hasErrors = true;
+      errorState.errors.push({
+        info: ERRORS.NotNullable,
+        functionName: '<isNullable>',
+        value: null,
+        key: '',
+      });
+    }
+    return false;
+  }
+  // Return
+  return true;
+}
+
+/**
+ * Run parseFn for each index if in an array.
+ */
+function parseArray(
+  param: unknown,
+  errorState: IErrorState | null,
+  root: INode,
+  runId: number,
+  parseFn: TFunction,
+) {
+  // Make sure param is an array
+  if (!Array.isArray(param)) {
+    if (!!errorState) {
+      errorState.hasErrors = true;
+      errorState.errors.push({
+        info: ERRORS.NotArray,
+        functionName: '<isArray>',
+        value: param,
+        key: '',
+      });
+    }
+    return false;
+  }
+  // Run the validator for each array item
+  let isValid = true;
+  const paramClone = [];
+  for (let i = 0; i < param.length; i++) {
+    let errorStateIdx = null;
+    if (!!errorState) {
+      errorStateIdx = { errors: [], hasErrors: false, index: i };
+    }
+    const result = parseFn(param[i], root, runId, errorStateIdx);
+    if (errorStateIdx?.hasErrors) {
+      errorState!.errors = [...errorState!.errors, ...errorStateIdx.errors];
+    }
+    if (result !== false) {
+      paramClone[i] = result;
+    } else {
+      isValid = false;
+    }
+  }
+  // Return
+  return isValid ? param : false;
+}
+
+/**
  * parse in strict mode
  */
 function parseStrict(
@@ -272,7 +296,6 @@ function parseStrict(
   root: INode,
   runId: number,
   errorState: IErrorState | null,
-  index?: number,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -315,22 +338,22 @@ function sanitizeStrict(
   const keys = Object.keys(nodeVal),
     keysLength = keys.length;
   for (let i = 0; i < keysLength; i++) {
-    const k = keys[i],
-      kIdx = node.keyIndex[k];
+    const key = keys[i],
+      kIdx = node.keyIndex[key];
     if (kIdx === undefined || node.seen[kIdx] !== runId) {
       if (errorState) {
         errorState.hasErrors = true;
         errorState.errors.push({
           info: ERRORS.StrictSafety,
           functionName: '<strict>',
-          value: nodeVal[k],
-          ...(node.parent ? { keyPath: [...node.path, k] } : { key: k }),
+          value: nodeVal[key],
+          ...getKeyPath(node, errorState, key),
         });
       }
       return false;
     }
-    const v = nodeVal[k];
-    clean[k] = v !== null && typeof v === 'object' ? deepClone(v) : v;
+    const v = nodeVal[key];
+    clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
   }
   node.valueObject = clean;
   // Set the parent pointer to cleaned value
@@ -456,7 +479,6 @@ function runValidators(
   node: INode,
   runId: number,
   errorState: IErrorState | null,
-  index?: number,
 ): ValidationResult {
   // Set the value object on the child
   if (node.parent) {
@@ -465,15 +487,11 @@ function runValidators(
     if (!isPlainObject(nodeVal)) {
       if (!!errorState) {
         errorState.hasErrors = true;
-        let keyPath = [...node.parent.path, node.key];
-        if (index !== undefined) {
-          keyPath = [index.toString(), ...keyPath];
-        }
         errorState.errors.push({
           info: ERRORS.SchemaProp,
           functionName: '<object>',
           value: nodeVal,
-          keyPath,
+          ...getKeyPath(node, errorState, node.key),
         });
       }
       return { isValid: false, canDescend: false };
@@ -495,10 +513,7 @@ function runValidators(
           info: ERRORS.ValidatorFn,
           functionName: vldr.name,
           value: toValidate,
-          // pick up here, remember to do all places where an error is pushed
-          ...(node.parent
-            ? { keyPath: [...node.path, vldr.key] }
-            : { key: vldr.key }),
+          ...getKeyPath(node, errorState, vldr.key),
         });
       }
     } else {
@@ -519,9 +534,7 @@ function runValidators(
           functionName: vldr.name,
           value: nodeVal[vldr.key],
           caught: err ? String(err) : undefined,
-          ...(node.parent
-            ? { keyPath: [...node.path, vldr.key] }
-            : { key: vldr.key }),
+          ...getKeyPath(node, errorState, vldr.key),
         });
       }
     }
@@ -535,6 +548,20 @@ function runValidators(
                                 Helpers
             elpers kept in same file for minor performance
 ******************************************************************************/
+
+/**
+ * Get keyPath
+ */
+function getKeyPath(node: INode, errorState: IErrorState, key: string) {
+  let keyPath: string[] = [];
+  if (errorState.index !== undefined) {
+    keyPath = [errorState.index.toString()];
+  }
+  if (!!node.parent) {
+    keyPath = [...keyPath, ...node.path, key];
+  }
+  return keyPath.length > 1 ? { keyPath: [...keyPath, key] } : { key };
+}
 
 /**
  * Return a value or deep clone it if it's an object.
