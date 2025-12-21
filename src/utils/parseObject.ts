@@ -1,3 +1,8 @@
+import parseObjectCore, {
+  SAFETY,
+  type OnErrorCallback,
+} from './parseObjectCore/index.js';
+
 import type { TransformValidatorFn } from './simple-utils.js';
 
 /******************************************************************************
@@ -16,27 +21,10 @@ type AddMods<T, O, N, A> = A extends true
 
 // **** Error Types **** //
 
-type OnErroCallback = (errors: ErrorItem[]) => void;
-
-type ErrorItem = {
-  info: string;
-  functionName: string;
-  value?: unknown;
-  caught?: string;
-  index?: number;
-} & (
-  | {
-      key: string;
-    }
-  | {
-      keyPath: string[];
-    }
-);
-
 // **** Basic Types **** //
 
 interface IParseValidatorFn<T> {
-  (arg: unknown, onError?: OnErroCallback): arg is T;
+  (arg: unknown, onError?: OnErrorCallback): arg is T;
   isTransformFunction?: true;
 }
 
@@ -82,16 +70,20 @@ type TInferFromSchemaHelper<U> = {
 
 export const parseObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
-  onError?: OnErroCallback,
-) =>
-  parseObjectHelper<U, false, false, false>(
-    schema,
-    false,
-    false,
-    false,
-    SAFETY.Default,
-    onError,
-  );
+  onError?: OnErrorCallback,
+
+  // pick up here, TSchema<T> probably needs to inherit from the ICoreSchema
+  // object
+) => parseObjectCore(schema, false, false, false, SAFETY.Normal, onError);
+
+// parseObjectHelper<U, false, false, false>(
+//   schema,
+//   false,
+//   false,
+//   false,
+//   SAFETY.Default,
+//   onError,
+// );
 
 export const parseOptionalObject = <T, U extends TSchema<T> = TSchema<T>>(
   schema: U,
@@ -413,57 +405,3 @@ export const strictParseNullishObjectArray = <
     SAFETY.Strict,
     onError,
   );
-
-/**
- * Validates an object schema, calls an error function is supplied one, returns
- * "false" if the parse fails, and works recursively too. NOTE: this will
- * purge all keys not part of the schema.
- */
-function parseObjectHelper<
-  U extends IBasicSchema,
-  O extends boolean = boolean,
-  N extends boolean = boolean,
-  A extends boolean = boolean,
->(
-  schema: U,
-  optional: O,
-  nullable: N,
-  isArray: A,
-  safety: Safety,
-  onErrorLower?: OnErroCallback,
-) {
-  // pick up here, do recursion before being passed the "arg"
-  const flattenedSchema = flattenSchema(schema, safety);
-
-  // Initalize validator
-  const validator = (arg: unknown, onError?: OnErroCallback) => {
-    // ** If error callback provided ** //
-    if (!!onErrorLower || !!onError) {
-      return _checkBasicsWithErrorCallback<A>(
-        !!optional,
-        !!nullable,
-        isArray,
-        flattenedSchema,
-        arg,
-        safety,
-        (errors: ErrorItem[]) => {
-          setIsParseErrorArray(errors);
-          onErrorLower?.(errors);
-          onError?.(errors);
-        },
-      ) as TInferFromSchema<U, O, N, A>;
-    }
-    // ** Not error callback provided ** //
-    return _parseObjectHelper<A>(
-      !!optional,
-      !!nullable,
-      isArray,
-      schema,
-      arg,
-      safety,
-    ) as TInferFromSchema<U, O, N, A>;
-  };
-
-  // parseObject should catch errors
-  return markSafe(validator);
-}
