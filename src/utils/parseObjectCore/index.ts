@@ -184,21 +184,23 @@ function parseObjectCore(
       // Run the validator for each array item
       let isValid = true;
       for (let i = 0; i < param.length; i++) {
-        const result = finalParseFn(param, root, runId, errorState);
+        const result = finalParseFn(param, root, runId, errorState, index);
         if (result !== false) {
           param[i] = result;
         } else {
           isValid = false;
         }
-        if (errorState?.hasErrors) {
-          errorState.errors.forEach((err: ErrorItem) => {
-            if ('key' in err) {
-              (err as PlainObject).keyPath = [i.toString(), err.key];
-            } else {
-              err.keyPath = [i.toString(), ...err.keyPath];
-            }
-          });
-        }
+        // pick up here, pass the index down through the levels, if index
+        // is not undefined add it before the parent path
+        // if (errorState?.hasErrors) {
+        //   errorState.errors.forEach((err: ErrorItem) => {
+        //     if ('key' in err) {
+        //       (err as PlainObject).keyPath = [i.toString(), err.key];
+        //     } else {
+        //       err.keyPath = [i.toString(), ...err.keyPath];
+        //     }
+        //   });
+        // }
       }
       return isValid ? param : false;
     }
@@ -270,6 +272,7 @@ function parseStrict(
   root: INode,
   runId: number,
   errorState: IErrorState | null,
+  index?: number,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -453,6 +456,7 @@ function runValidators(
   node: INode,
   runId: number,
   errorState: IErrorState | null,
+  index?: number,
 ): ValidationResult {
   // Set the value object on the child
   if (node.parent) {
@@ -461,11 +465,15 @@ function runValidators(
     if (!isPlainObject(nodeVal)) {
       if (!!errorState) {
         errorState.hasErrors = true;
+        let keyPath = [...node.parent.path, node.key];
+        if (index !== undefined) {
+          keyPath = [index.toString(), ...keyPath];
+        }
         errorState.errors.push({
           info: ERRORS.SchemaProp,
           functionName: '<object>',
           value: nodeVal,
-          keyPath: [...node.parent.path, node.key],
+          keyPath,
         });
       }
       return { isValid: false, canDescend: false };
@@ -487,6 +495,7 @@ function runValidators(
           info: ERRORS.ValidatorFn,
           functionName: vldr.name,
           value: toValidate,
+          // pick up here, remember to do all places where an error is pushed
           ...(node.parent
             ? { keyPath: [...node.path, vldr.key] }
             : { key: vldr.key }),
