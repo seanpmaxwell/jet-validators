@@ -1,4 +1,4 @@
-import markSafe from 'src/markSafe.js';
+import markSafe from 'src/utils/parseObjectCore/helpers.js';
 import { isUndef, isFunction, isString, isStringArray } from '../basic.js';
 import { isTransformFunction, type TransformValidatorFn } from './simple-utils.js';
 

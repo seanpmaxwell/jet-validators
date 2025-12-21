@@ -1,23 +1,22 @@
-import { isFunction } from './basic.js';
-
 /******************************************************************************
-                          Constants/Types
+                              Types/Constants
 ******************************************************************************/
 
-const kSafeValidator = Symbol('safe-validator');
-type TSafeFunction = Record<symbol, unknown>;
-type TFunc = (arg: unknown) => boolean | undefined | null | object;
+const kSafeValidator = Symbol('safe-validator-function');
+type TSafeFunction = Record<symbol, boolean>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TFunc = (...args: any[]) => any;
 
 /******************************************************************************
-                             Functions
+                            Functions
 ******************************************************************************/
 
 /**
  * Mark internal functions as safe so we don't need to wrap them.
  */
-function markSafe<T extends TFunc>(fn: T): T {
-  if (isFunction(fn)) {
-    (fn as TSafeFunction)[kSafeValidator] = true;
+export function markSafe<T extends TFunc>(fn: T): T {
+  if (typeof fn === 'function') {
+    (fn as unknown as TSafeFunction)[kSafeValidator] = true;
   }
   return fn;
 }
@@ -30,7 +29,7 @@ export function markSafeIterative<T extends Record<string, unknown>>(
 ): T {
   for (const key in obj) {
     const fn = obj[key];
-    if (isFunction(fn)) {
+    if (typeof fn === 'function') {
       (fn as TSafeFunction)[kSafeValidator] = true;
     }
   }
@@ -43,9 +42,3 @@ export function markSafeIterative<T extends Record<string, unknown>>(
 export function isSafe(fn: unknown): boolean {
   return (fn as TSafeFunction)[kSafeValidator] === true;
 }
-
-/******************************************************************************
-                              Export
-******************************************************************************/
-
-export default markSafe;

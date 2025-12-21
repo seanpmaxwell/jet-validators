@@ -1,5 +1,5 @@
 import * as basicValidatorsRaw from './basic.js';
-import { markSafeIterative } from './markSafe.js';
+import { markSafeIterative } from './utils/parseObjectCore/mark-safe.js';
 
 /******************************************************************************
                                   Export

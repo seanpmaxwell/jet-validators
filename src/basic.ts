@@ -10,6 +10,9 @@ import {
 ******************************************************************************/
 
 const objectProto = Object.prototype;
+export type PlainObject = Record<string, unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type TFunction = (...args: any[]) => any;
 
 /******************************************************************************
                                     Setup
@@ -245,8 +248,7 @@ export const isNullablePlainObjectArray = makeNullable(isPlainObjectArray);
 export const isNullishPlainObjectArray = makeNullish(isPlainObjectArray);
 
 // Function
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isFunction = checkType<(...args: any[]) => any>('function');
+export const isFunction = checkType<TFunction>('function');
 export const isOptionalFunction = makeOptional(isFunction);
 export const isNullableFunction = makeNullable(isFunction);
 export const isNullishFunction = makeNullish(isFunction);
@@ -342,7 +344,7 @@ function isObjectHelper(arg: unknown): arg is NonNullable<object> {
 /**
  * Wrapper to check basic type.
  */
-function isPlainObjectHelper(arg: unknown): arg is Record<string, unknown> {
+function isPlainObjectHelper(arg: unknown): arg is PlainObject {
   if (!isObject(arg)) return false;
   const proto = Object.getPrototypeOf(arg);
   return proto === objectProto || proto === null;

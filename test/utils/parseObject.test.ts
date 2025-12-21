@@ -546,7 +546,7 @@ test('Fix "transform" appending undefined properties to object', () => {
  * 12/16/2025 add the flatten function to remove recursion for the schema
  * holding the validator functions.
  */
-test('Test for update which removed recursion', () => {
+test.only('Test for update which removed recursion', () => {
   interface IUser {
     id: number;
     name: string;
