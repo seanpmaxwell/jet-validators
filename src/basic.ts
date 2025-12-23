@@ -12,7 +12,7 @@ import {
 const objectProto = Object.prototype;
 export type PlainObject = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TFunction = (...args: any[]) => any;
+export type Function = (...args: any[]) => any;
 
 /******************************************************************************
                                     Setup
@@ -248,7 +248,7 @@ export const isNullablePlainObjectArray = makeNullable(isPlainObjectArray);
 export const isNullishPlainObjectArray = makeNullish(isPlainObjectArray);
 
 // Function
-export const isFunction = checkType<TFunction>('function');
+export const isFunction = checkType<Function>('function');
 export const isOptionalFunction = makeOptional(isFunction);
 export const isNullableFunction = makeNullable(isFunction);
 export const isNullishFunction = makeNullish(isFunction);

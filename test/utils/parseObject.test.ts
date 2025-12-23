@@ -40,7 +40,7 @@ test('test "parseObject()" function', () => {
   }
 
   // Basic Test
-  const parseUser = parseObject({
+  const parseUser = parseObject<IUser>({
     id: transform(Number, isNumber),
     name: isString,
   });
@@ -593,7 +593,6 @@ test.only('Test for update which removed recursion', () => {
   const result = parseUser(user);
   expect(result).toStrictEqual(user); // Should return deepClone of user
 
-
   const user2: IUser = {
     id: 1,
     name: 'sean',
@@ -640,3 +639,39 @@ test.only('Test for update which removed recursion', () => {
     ]);
   });
 });
+
+
+
+interface User {
+  id: number;
+  name: string;
+  address: {
+    street: string;
+    zip: number;
+  }
+}
+  
+function parseObject<T extends Schema<T>)>(schema: Schema<T>);
+
+function isNumber(arg: unknown): arg is number {
+  typeof arg === 'number' && !isNaN(arg);
+}
+
+function isString(arg: unknown): arg is number {
+  typeof arg === 'string';
+}
+
+type ParseFunction<T> = (arg: unknown) => T extends undefined ? InferTypeFromSchema<T> : T
+
+function parseObject<T>(schema: Schema<T>): ParseFunction<T>;
+
+const parseUser = parseObject<User>({  
+  id: isString // type error, type predicate must return a number
+  name: isString,
+  address: {
+    street: isString,
+    zip: isNumber,
+  }
+});
+
+const user = parseUser(); // user is type User 

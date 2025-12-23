@@ -6,7 +6,7 @@ import {
   isUndef,
   isValidNumber,
 } from './basic.js';
-import markSafe from './utils/parseObjectCore/helpers.js';
+import { markSafe } from './utils/parseObject/mark-safe.js';
 
 // Add modifiers
 type AddNull<T, N> = N extends true ? T | null : T;

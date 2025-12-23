@@ -1,4 +1,4 @@
-import { isPlainObject, type TFunction } from '../../basic.js';
+import { isPlainObject, type Function } from '../../basic.js';
 import { isSafe } from './mark-safe.js';
 
 /******************************************************************************
@@ -26,30 +26,30 @@ export const ERRORS = {
                                   Types
 ******************************************************************************/
 
-type TSafety = (typeof SAFETY)[keyof typeof SAFETY];
-type TValidatorFn = (value: unknown) => boolean;
+export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
+type ValidatorFn = (value: unknown) => boolean;
 type PlainObject = Record<string, unknown>;
 
 // **** Validation Schema **** //
 
-interface ICoreSchema {
-  [key: string]: TValidatorFn | ICoreSchema;
+interface CoreSchema {
+  [key: string]: ValidatorFn | CoreSchema;
 }
 
-interface IValidatorItem {
+interface ValidatorItem {
   key: string;
-  fn: TValidatorFn;
+  fn: ValidatorFn;
   idx: number;
   name: string;
 }
 
-interface INode {
+interface Node {
   key: string;
-  safeValidators: IValidatorItem[];
-  unSafeValidators: IValidatorItem[];
-  parent: INode | null;
+  safeValidators: ValidatorItem[];
+  unSafeValidators: ValidatorItem[];
+  parent: Node | null;
   path: string[];
-  children: INode[];
+  children: Node[];
   valueObject: PlainObject;
   // Track validations
   keyIndex: Record<string, number>;
@@ -57,22 +57,14 @@ interface INode {
 }
 
 type Frame = {
-  node: INode;
-  childIndex: number;
+  node: Node;
+  lastChildAddedToStack: number;
   entered: boolean;
 };
 
 // **** Error Handling **** //
 
-export type OnErrorCallback = (errors: ErrorItem[]) => void;
-
-interface IErrorState {
-  errors: ErrorItem[];
-  hasErrors: boolean;
-  index?: number;
-}
-
-type ErrorItem = {
+export type ParseError = {
   info: string;
   functionName: string; // name of the validator function
   value?: unknown;
@@ -85,6 +77,14 @@ type ErrorItem = {
       keyPath: string[]; // nested validator failed
     }
 );
+
+interface IErrorState {
+  errors: ParseError[];
+  hasErrors: boolean;
+  index?: number;
+}
+
+export type OnErrorCallback = (errors: ParseError[]) => void;
 
 type ValidationResult = {
   isValid: boolean; // did validators fail?
@@ -102,8 +102,8 @@ function parseObjectCore(
   isOptional: boolean,
   isNullable: boolean,
   isArray: boolean,
-  schema: ICoreSchema,
-  safety: TSafety,
+  schema: CoreSchema,
+  safety: Safety,
   onError?: OnErrorCallback,
 ) {
   // Intialize tree and final parse function
@@ -124,8 +124,13 @@ function parseObjectCore(
     const errorState: IErrorState | null =
       onError || localOnError ? { errors: [], hasErrors: false } : null;
     // Check for nullables
-    if (!checkNullables(isOptional, isNullable, param, errorState)) {
-      return false;
+    const resp = checkNullables(isOptional, isNullable, param, errorState);
+    if (!resp) {
+      if (resp === false) {
+        return false;
+      } else {
+        return resp;
+      }
     }
     // Reset the runId if it gets to 4billion
     if (++runId === 0xffffffff) {
@@ -158,10 +163,10 @@ function parseObjectCore(
  * Setup fast validator tree
  */
 function setupValidatorTree(
-  schema: ICoreSchema,
-  parentNode: INode | null,
+  schema: CoreSchema,
+  parentNode: Node | null,
   paramKey: string,
-): INode {
+): Node {
   // Setup keys
   const keys = Object.keys(schema);
   const keyIndex: Record<string, number> = Object.create(null);
@@ -169,7 +174,7 @@ function setupValidatorTree(
     keyIndex[keys[i]] = i;
   }
   // Initialize new node
-  const node: INode = {
+  const node: Node = {
     key: paramKey,
     safeValidators: [],
     unSafeValidators: [],
@@ -249,9 +254,9 @@ function checkNullables(
 function parseArray(
   param: unknown,
   errorState: IErrorState | null,
-  root: INode,
+  root: Node,
   runId: number,
-  parseFn: TFunction,
+  parseFn: Function,
 ) {
   // Make sure param is an array
   if (!Array.isArray(param)) {
@@ -293,7 +298,7 @@ function parseArray(
  */
 function parseStrict(
   param: PlainObject,
-  root: INode,
+  root: Node,
   runId: number,
   errorState: IErrorState | null,
 ) {
@@ -301,7 +306,7 @@ function parseStrict(
   const stack: Frame[] = [
     {
       node: root,
-      childIndex: 0,
+      lastChildAddedToStack: 0,
       entered: false,
     },
   ];
@@ -312,9 +317,10 @@ function parseStrict(
     if (!frame.entered) {
       frame.entered = true;
       const { canDescend } = runValidators(node, runId, errorState);
-      if (canDescend && frame.childIndex < node.children.length) {
-        const child = node.children[frame.childIndex++];
-        stack.push({ node: child, childIndex: 0, entered: false });
+      if (canDescend && frame.lastChildAddedToStack < node.children.length) {
+        const child = node.children[frame.lastChildAddedToStack];
+        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
+        frame.lastChildAddedToStack++;
         continue;
       }
     }
@@ -328,7 +334,7 @@ function parseStrict(
  * sanitize/clone for strict mode
  */
 function sanitizeStrict(
-  node: INode,
+  node: Node,
   runId: number,
   errorState: IErrorState | null,
 ): boolean {
@@ -368,7 +374,7 @@ function sanitizeStrict(
  */
 function parseNormal(
   param: PlainObject,
-  root: INode,
+  root: Node,
   runId: number,
   errorState: IErrorState | null,
 ) {
@@ -376,7 +382,7 @@ function parseNormal(
   const stack: Frame[] = [
     {
       node: root,
-      childIndex: 0,
+      lastChildAddedToStack: 0,
       entered: false,
     },
   ];
@@ -386,9 +392,10 @@ function parseNormal(
     if (!frame.entered) {
       frame.entered = true;
       const { canDescend } = runValidators(node, runId, errorState);
-      if (canDescend && frame.childIndex < node.children.length) {
-        const child = node.children[frame.childIndex++];
-        stack.push({ node: child, childIndex: 0, entered: false });
+      if (canDescend && frame.lastChildAddedToStack < node.children.length) {
+        const child = node.children[frame.lastChildAddedToStack];
+        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
+        frame.lastChildAddedToStack++;
         continue;
       }
     }
@@ -402,7 +409,7 @@ function parseNormal(
 /**
  * Sanitize in for normal mode
  */
-function sanitizeNormal(node: INode, runId: number): void {
+function sanitizeNormal(node: Node, runId: number): void {
   const nodeVal = node.valueObject,
     clean: PlainObject = {},
     keys = Object.keys(nodeVal);
@@ -423,7 +430,7 @@ function sanitizeNormal(node: INode, runId: number): void {
  */
 function parseLoose(
   param: PlainObject,
-  root: INode,
+  root: Node,
   runId: number,
   errorState: IErrorState | null,
 ) {
@@ -431,7 +438,7 @@ function parseLoose(
   const stack: Frame[] = [
     {
       node: root,
-      childIndex: 0,
+      lastChildAddedToStack: 0,
       entered: false,
     },
   ];
@@ -442,9 +449,10 @@ function parseLoose(
     if (!frame.entered) {
       frame.entered = true;
       const { canDescend } = runValidators(node, runId, errorState);
-      if (canDescend && frame.childIndex < node.children.length) {
-        const child = node.children[frame.childIndex++];
-        stack.push({ node: child, childIndex: 0, entered: false });
+      if (canDescend && frame.lastChildAddedToStack < node.children.length) {
+        const child = node.children[frame.lastChildAddedToStack];
+        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
+        frame.lastChildAddedToStack++;
         continue;
       }
     }
@@ -457,7 +465,7 @@ function parseLoose(
 /**
  * Sanitize for loose mode
  */
-function sanitizeLoose(node: INode): void {
+function sanitizeLoose(node: Node): void {
   const nodeVal = node.valueObject,
     clean: PlainObject = {},
     keys = Object.keys(nodeVal);
@@ -476,7 +484,7 @@ function sanitizeLoose(node: INode): void {
  * For validation functions.
  */
 function runValidators(
-  node: INode,
+  node: Node,
   runId: number,
   errorState: IErrorState | null,
 ): ValidationResult {
@@ -552,7 +560,7 @@ function runValidators(
 /**
  * Get keyPath
  */
-function getKeyPath(node: INode, errorState: IErrorState, key: string) {
+function getKeyPath(node: Node, errorState: IErrorState, key: string) {
   let keyPath: string[] = [];
   if (errorState.index !== undefined) {
     keyPath = [errorState.index.toString()];
@@ -630,8 +638,8 @@ function deepClone<T>(value: T): T {
  * This walks the validator tree once and clears all seen arrays.
  * it runs once every ~4 billion validations.
  */
-function resetSeen(root: INode): void {
-  const stack: INode[] = [root];
+function resetSeen(root: Node): void {
+  const stack: Node[] = [root];
   while (stack.length) {
     const node = stack.pop()!;
     node.seen.fill(0);

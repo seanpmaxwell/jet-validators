@@ -418,7 +418,15 @@ can be used in schemas.
 
 ### Wrapping parse/test
 
-When wrapping these utilities, ensure your generics extend `TSchema<T>` to preserve type safety.
+When wrapping these utilities, ensure your generics extend `Schema<T>` to preserve type safety.
+
+```typescript
+import { type Schema, ParseError } from 'jet-validators/utils';
+
+const myCustomParse = <T, S extends Schema<T>>(schema: S) => {
+  return parseObject(schema, (errors: ParseError[]) => `...do stuff`);
+}
+```
 
 ---
 
