@@ -71,10 +71,12 @@ export type ParseError = {
   caught?: string; // if a ValidatorItem caught an error from an unsafe function
 } & (
   | {
-      key: string; // root validator failed
+      key: string;
+      keyPath?: never;
     }
   | {
-      keyPath: string[]; // nested validator failed
+      keyPath: string[];
+      key?: never;
     }
 );
 

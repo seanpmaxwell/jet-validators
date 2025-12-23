@@ -17,13 +17,13 @@ import {
   parseOptionalObject,
   testObject,
   transform,
-  type TSchema,
-  type IParseObjectError,
   testOptionalObject,
   testObjectArray,
   strictParseObject,
   looseParseObject,
   looseTestObject,
+  type Schema,
+  type ParseError,
 } from '../../src/utils';
 
 /******************************************************************************
@@ -113,6 +113,7 @@ test('test "parseObject()" function', () => {
       zip: 98111,
     },
   });
+  // const blah: number = userWithAddr.address.city; // should cause type error
   expect(userWithAddr).toStrictEqual({
     id: 5,
     name: 'john',
@@ -141,7 +142,7 @@ test('test "parseObject()" function', () => {
       name: isString,
     },
     (err) => {
-      expect(err[0].prop).toStrictEqual('id');
+      expect(err[0].keyPath).toStrictEqual('id');
       expect(err[0].value).toStrictEqual('5');
     },
   );
@@ -157,9 +158,9 @@ test('test "parseObject()" function', () => {
       name: isString,
     },
     (err) => {
-      expect(err[0].prop).toStrictEqual('id');
       expect(err[0].value).toStrictEqual('3');
-      expect(err[0].index).toStrictEqual(2);
+      expect(err[0].keyPath?.[0]).toStrictEqual('2');
+      expect(err[0].keyPath?.[1]).toStrictEqual('id');
     },
   );
   parseUserArrWithError([
@@ -183,7 +184,7 @@ test('test "parseObject()" function', () => {
       name: isStrWithErr,
     },
     (err) => {
-      expect(err[0].prop).toStrictEqual('name');
+      expect(err[0].key).toStrictEqual('name');
       expect(err[0].value).toStrictEqual(null);
       expect(err[0].caught).toStrictEqual('Value was not a valid string.');
     },
@@ -194,7 +195,7 @@ test('test "parseObject()" function', () => {
   });
 
   // ** Wrap parseObject ** //
-  const customParse = <U extends TSchema>(schema: U) =>
+  const customParse = <U extends Schema<unknown>>(schema: U) =>
     parseObject(schema, (err) => {
       throw new Error(JSON.stringify(err));
     });
@@ -206,7 +207,7 @@ test('test "parseObject()" function', () => {
   expect(() => parseUserAlt('horse')).toThrowError();
 
   // ** Test onError for multiple properties ** //
-  let errArr: IParseObjectError[] = [];
+  let errArr: ParseError[] = [];
   parseObject(
     {
       id: isNumber,
@@ -246,7 +247,7 @@ test('test "testObject()" function', () => {
   expect(result).toStrictEqual(true);
 
   // Test combination of "parseObject" and "testObject"
-  let errArr: IParseObjectError[] = [];
+  let errArr: ParseError[] = [];
   const testCombo = parseObject(
     {
       id: isNumber,
@@ -293,6 +294,7 @@ test('test "testObject()" function', () => {
     },
   });
   expect(errArr).toStrictEqual([
+    // pick up here
     {
       info: 'Nested validation failed.',
       prop: 'address',
@@ -397,7 +399,7 @@ test('test different safety options', () => {
   });
 
   // Strict
-  let errArr: IParseObjectError[] = [];
+  let errArr: ParseError[] = [];
   const strictParseUser = strictParseObject(
     {
       id: isNumber,
@@ -421,7 +423,7 @@ test('test different safety options', () => {
   ]);
 
   // Combo
-  let errArr2: IParseObjectError[] = [];
+  let errArr2: ParseError[] = [];
 
   const comboParse = strictParseObject(
     {
@@ -467,6 +469,7 @@ test('test different safety options', () => {
 
   expect(resp4).toStrictEqual(false);
   expect(errArr2).toStrictEqual([
+    // pick up here
     {
       info: 'Nested validation failed.',
       prop: 'address',
@@ -537,7 +540,7 @@ test('Fix "transform" appending undefined properties to object', () => {
       birthdate: 'horse',
     },
     (errors) => {
-      expect(errors[0].prop).toStrictEqual('birthdate');
+      expect(errors[0].key).toStrictEqual('birthdate');
     },
   );
 });
@@ -609,6 +612,7 @@ test.only('Test for update which removed recursion', () => {
 
   parseUser(user2, (errors) => {
     expect(errors).toStrictEqual([
+      // pick up here
       {
         prop: 'address',
         info: 'Nested validation failed.',
@@ -639,39 +643,3 @@ test.only('Test for update which removed recursion', () => {
     ]);
   });
 });
-
-
-
-interface User {
-  id: number;
-  name: string;
-  address: {
-    street: string;
-    zip: number;
-  }
-}
-  
-function parseObject<T extends Schema<T>)>(schema: Schema<T>);
-
-function isNumber(arg: unknown): arg is number {
-  typeof arg === 'number' && !isNaN(arg);
-}
-
-function isString(arg: unknown): arg is number {
-  typeof arg === 'string';
-}
-
-type ParseFunction<T> = (arg: unknown) => T extends undefined ? InferTypeFromSchema<T> : T
-
-function parseObject<T>(schema: Schema<T>): ParseFunction<T>;
-
-const parseUser = parseObject<User>({  
-  id: isString // type error, type predicate must return a number
-  name: isString,
-  address: {
-    street: isString,
-    zip: isNumber,
-  }
-});
-
-const user = parseUser(); // user is type User 
