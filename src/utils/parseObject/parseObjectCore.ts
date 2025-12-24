@@ -21,7 +21,6 @@ export const ERRORS = {
   NotNullable: 'Root argument is null but not nullable.',
   NotObject: 'Root argument is not an object',
   NotArray: 'Root argument is not an array.',
-  NestedValidation: 'Nested validation failed.',
   ValidatorFn: 'Validator function returned false.',
   StrictSafety: 'Strict mode: unknown or invalid property',
   SchemaProp: 'Schema property must be a function or nested schema',
@@ -91,7 +90,6 @@ export type ParseError = {
 
 interface IErrorState {
   errors: ParseError[];
-  hasErrors: boolean;
   index?: number;
 }
 
@@ -119,6 +117,7 @@ function parseObjectCore(
 ) {
   // Intialize tree and final parse function
   const root = setupValidatorTree(schema, null, '');
+  console.log('asdf', root)
   let finalParseFn;
   if (safety === SAFETY.Strict) {
     finalParseFn = parseStrict;
@@ -133,7 +132,7 @@ function parseObjectCore(
   return (param: unknown, localOnError?: OnErrorCallback) => {
     // Initialize error state
     const errorState: IErrorState | null =
-      onError || localOnError ? { errors: [], hasErrors: false } : null;
+      onError || localOnError ? { errors: [] } : null;
     // Check for nullables
     const resp = checkNullables(isOptional, isNullable, param, errorState);
     if (!resp) {
@@ -155,7 +154,6 @@ function parseObjectCore(
     // Make sure an object if not null, undefined, or array
     if (!isPlainObject(param)) {
       if (!!errorState) {
-        errorState.hasErrors = true;
         errorState.errors.push({
           info: ERRORS.NotObject,
           functionName: '<isPlainObject>',
@@ -166,7 +164,17 @@ function parseObjectCore(
       return false;
     }
     // Run parseFunction
-    return finalParseFn(param, root, runId, errorState);
+    const result = finalParseFn(param, root, runId, errorState);
+    if (!!errorState && !result) {
+      if (!!localOnError) {
+        localOnError(errorState?.errors);
+      } else if (onError) {
+        onError(errorState?.errors);
+      }
+      return false;
+    } else {
+      return result;
+    }
   };
 }
 
@@ -179,8 +187,8 @@ function setupValidatorTree(
   paramKey: string,
 ): Node {
   // Setup keys
-  const keys = Object.keys(schema);
-  const keyIndex: Record<string, number> = Object.create(null);
+  const keys = Object.keys(schema),
+    keyIndex: Record<string, number> = Object.create(null);
   for (let i = 0; i < keys.length; i++) {
     keyIndex[keys[i]] = i;
   }
@@ -232,7 +240,6 @@ function checkNullables(
   if (param === undefined) {
     if (isOptional) return undefined;
     if (!!errorState) {
-      errorState.hasErrors = true;
       errorState.errors.push({
         info: ERRORS.NotOptional,
         functionName: '<isOptional>',
@@ -246,7 +253,6 @@ function checkNullables(
   if (param === null) {
     if (isNullable) return null;
     if (!!errorState) {
-      errorState.hasErrors = true;
       errorState.errors.push({
         info: ERRORS.NotNullable,
         functionName: '<isNullable>',
@@ -273,7 +279,6 @@ function parseArray(
   // Make sure param is an array
   if (!Array.isArray(param)) {
     if (!!errorState) {
-      errorState.hasErrors = true;
       errorState.errors.push({
         info: ERRORS.NotArray,
         functionName: '<isArray>',
@@ -323,12 +328,16 @@ function parseStrict(
     },
   ];
   // Iterate
+  let isValidFinal = true;
   while (stack.length) {
     const frame = stack[stack.length - 1];
     const node = frame.node;
     if (!frame.entered) {
       frame.entered = true;
-      const { canDescend } = runValidators(node, runId, errorState);
+      const { isValid, canDescend } = runValidators(node, runId, errorState);
+      if (!isValid) {
+        isValidFinal = false;
+      }
       if (canDescend && frame.lastChildAddedToStack < node.children.length) {
         const child = node.children[frame.lastChildAddedToStack];
         stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
@@ -336,10 +345,17 @@ function parseStrict(
         continue;
       }
     }
-    if (!sanitizeStrict(node, runId, errorState)) return false;
+    if (!sanitizeStrict(node, runId, errorState)) {
+      if (!!errorState) {
+        continue;
+      } else {
+        return false;
+      }
+    }
     stack.pop();
   }
-  return root.valueObject;
+  // Return
+  return isValidFinal ? root.valueObject : false;
 }
 
 /**
@@ -360,15 +376,15 @@ function sanitizeStrict(
       kIdx = node.keyIndex[key];
     if (kIdx === undefined || node.seen[kIdx] !== runId) {
       if (errorState) {
-        errorState.hasErrors = true;
         errorState.errors.push({
           info: ERRORS.StrictSafety,
           functionName: '<strict>',
           value: nodeVal[key],
           ...getKeyPath(node, errorState, key),
         });
+      } else {
+        return false;
       }
-      return false;
     }
     let v = nodeVal[key];
     if (key in node.transformedValuesObject) {
@@ -402,12 +418,16 @@ function parseNormal(
       entered: false,
     },
   ];
+  let isValidFinal = true;
   while (stack.length) {
     const frame = stack[stack.length - 1];
     const node = frame.node;
     if (!frame.entered) {
       frame.entered = true;
-      const { canDescend } = runValidators(node, runId, errorState);
+      const { isValid, canDescend } = runValidators(node, runId, errorState);
+      if (!isValid) {
+        isValidFinal = false;
+      }
       if (canDescend && frame.lastChildAddedToStack < node.children.length) {
         const child = node.children[frame.lastChildAddedToStack];
         stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
@@ -419,7 +439,7 @@ function parseNormal(
     stack.pop();
   }
   // Return
-  return errorState?.hasErrors ? false : root.valueObject;
+  return isValidFinal ? root.valueObject : false;
 }
 
 /**
@@ -443,6 +463,7 @@ function sanitizeNormal(node: Node, runId: number): void {
   }
   node.valueObject = clean;
   if (node.parent) node.parent.valueObject[node.key] = clean;
+  console.log(node)
 }
 
 /**
@@ -463,12 +484,14 @@ function parseLoose(
     },
   ];
   // Iterate
+  let isValidFinal = true;
   while (stack.length) {
     const frame = stack[stack.length - 1];
     const node = frame.node;
     if (!frame.entered) {
       frame.entered = true;
-      const { canDescend } = runValidators(node, runId, errorState);
+      const { isValid, canDescend } = runValidators(node, runId, errorState);
+      isValidFinal = isValid;
       if (canDescend && frame.lastChildAddedToStack < node.children.length) {
         const child = node.children[frame.lastChildAddedToStack];
         stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
@@ -479,7 +502,8 @@ function parseLoose(
     sanitizeLoose(node);
     stack.pop();
   }
-  return root.valueObject;
+  // Return
+  return isValidFinal ? root.valueObject : false;
 }
 
 /**
@@ -518,7 +542,6 @@ function runValidators(
       nodeVal = parentNodeVal[node.key];
     if (!isPlainObject(nodeVal)) {
       if (!!errorState) {
-        errorState.hasErrors = true;
         errorState.errors.push({
           info: ERRORS.SchemaProp,
           functionName: '<object>',
@@ -533,7 +556,7 @@ function runValidators(
     node.parent.seen[parentIdx] = runId;
   }
   // Run safe validators
-  let isValid = false;
+  let isValid = true;
   const nodeVal = node.valueObject;
   for (const vldr of node.safeValidators) {
     const vldrFn: Function = vldr.fn,
@@ -549,7 +572,6 @@ function runValidators(
     if (!result) {
       isValid = false;
       if (errorState) {
-        errorState.hasErrors = true;
         errorState.errors.push({
           info: ERRORS.ValidatorFn,
           functionName: vldr.name,
@@ -579,12 +601,12 @@ function runValidators(
     } catch (err) {
       isValid = false;
       if (errorState) {
-        errorState.hasErrors = true;
         errorState.errors.push({
           info: ERRORS.ValidatorFn,
           functionName: vldr.name,
           value: nodeVal[vldr.key],
-          caught: err ? String(err) : undefined,
+          caught:
+            err instanceof Error ? err.message : err ? String(err) : undefined,
           ...getKeyPath(node, errorState, vldr.key),
         });
       }
@@ -611,7 +633,7 @@ function getKeyPath(node: Node, errorState: IErrorState, key: string) {
   if (!!node.parent) {
     keyPath = [...keyPath, ...node.path, key];
   }
-  return keyPath.length > 1 ? { keyPath: [...keyPath, key] } : { key };
+  return keyPath.length > 1 ? { keyPath } : { key };
 }
 
 /**

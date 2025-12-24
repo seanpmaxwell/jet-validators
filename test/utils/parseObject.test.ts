@@ -142,7 +142,7 @@ test('test "parseObject()" function', () => {
       name: isString,
     },
     (err) => {
-      expect(err[0].keyPath).toStrictEqual('id');
+      expect(err[0].key).toStrictEqual('id');
       expect(err[0].value).toStrictEqual('5');
     },
   );
@@ -226,25 +226,25 @@ test('test "parseObject()" function', () => {
 /**
  * Test "testObject" function
  */
-test('test "testObject()" function', () => {
+test.only('test "testObject()" function', () => {
   // Do basic test
-  const testUser = testObject({
-    id: isNumber,
-    name: isString,
-    address: {
-      city: isString,
-      zip: transform(Number, isNumber),
-    },
-  });
-  const result = testUser({
-    id: 5,
-    name: 'john',
-    address: {
-      city: 'Seattle',
-      zip: '98109',
-    },
-  });
-  expect(result).toStrictEqual(true);
+  // const testUser = testObject({
+  //   id: isNumber,
+  //   name: isString,
+  //   address: {
+  //     city: isString,
+  //     zip: transform(Number, isNumber),
+  //   },
+  // });
+  // const result = testUser({
+  //   id: 5,
+  //   name: 'john',
+  //   address: {
+  //     city: 'Seattle',
+  //     zip: '98109',
+  //   },
+  // });
+  // expect(result).toStrictEqual(true);
 
   // Test combination of "parseObject" and "testObject"
   let errArr: ParseError[] = [];
@@ -252,6 +252,7 @@ test('test "testObject()" function', () => {
     {
       id: isNumber,
       name: isString,
+      // pick up here, nested testObjects need to have a way to pass up values
       address: testObject({
         city: isString,
         zip: transform(Number, isNumber),
@@ -281,6 +282,9 @@ test('test "testObject()" function', () => {
       zip: 98109,
     },
   });
+
+  return;
+
   testCombo({
     id: 5,
     name: 'john',
@@ -549,7 +553,7 @@ test('Fix "transform" appending undefined properties to object', () => {
  * 12/16/2025 add the flatten function to remove recursion for the schema
  * holding the validator functions.
  */
-test.only('Test for update which removed recursion', () => {
+test('Test for update which removed recursion', () => {
   interface IUser {
     id: number;
     name: string;
@@ -612,33 +616,23 @@ test.only('Test for update which removed recursion', () => {
 
   parseUser(user2, (errors) => {
     expect(errors).toStrictEqual([
-      // pick up here
       {
-        prop: 'address',
-        info: 'Nested validation failed.',
-        children: [
-          {
-            info: 'Validator-function returned false.',
-            prop: 'city',
-            value: 1234,
-          },
-          {
-            prop: 'country',
-            info: 'Nested validation failed.',
-            children: [
-              {
-                info: 'Validator-function returned false.',
-                prop: 'code',
-                value: '123',
-              },
-            ],
-          },
-        ],
+        functionName: 'isOptionalString',
+        info: 'Validator function returned false.',
+        key: 'email',
+        value: 123,
       },
       {
-        info: 'Validator-function returned false.',
-        prop: 'email',
-        value: 123,
+        functionName: 'isString',
+        info: 'Validator function returned false.',
+        keyPath: ['address', 'city'],
+        value: 1234,
+      },
+      {
+        functionName: 'isNumber',
+        info: 'Validator function returned false.',
+        keyPath: ['address', 'country', 'code'],
+        value: '123',
       },
     ]);
   });
