@@ -1,3 +1,4 @@
+import type { TransformValidatorFn } from '../simple-utils';
 import parseObjectCore, {
   SAFETY,
   type OnErrorCallback,
@@ -7,7 +8,7 @@ import parseObjectCore, {
                                  Types
 ******************************************************************************/
 
-type ValidatorFn<T> = (arg: unknown) => arg is T;
+type ValidatorFn<T> = (arg: unknown) => arg is T | TransformValidatorFn<T>;
 
 // Handle variations
 type ResolveMods<T, O extends boolean, N extends boolean, A extends boolean> =

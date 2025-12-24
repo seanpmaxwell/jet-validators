@@ -488,35 +488,35 @@ test('test different safety options', () => {
  * response object.
  */
 test('Fix "transform" appending undefined properties to object', () => {
-  interface IUser {
+  interface User {
     id: number;
     name: string;
     birthdate?: Date;
   }
 
-  const transIsOptionalDate = transform(
+  const transformIsOptionalDate = transform(
     (arg) => (isUndef(arg) ? arg : new Date(arg as string)),
     (arg: unknown): arg is Date | undefined => isOptionalValidDate(arg),
   );
 
-  const parseUser = parseObject<IUser>({
+  const parseUser = parseObject<User>({
     id: isNumber,
     name: isString,
-    birthdate: transIsOptionalDate,
+    birthdate: transformIsOptionalDate,
   });
 
-  const user: IUser = {
+  const user: User = {
     id: 1,
     name: 'joe',
   };
 
-  const user2: IUser = {
+  const user2: User = {
     id: 2,
     name: 'john',
     birthdate: undefined,
   };
 
-  const user3: IUser = {
+  const user3: User = {
     id: 3,
     name: 'jane',
     birthdate: '2025-05-31T18:13:34.990Z' as unknown as Date,
