@@ -6,8 +6,7 @@ import { parseBoolean } from './utils/index.js';
 
 const objectProto = Object.prototype;
 export type PlainObject = Record<string, unknown>;
-// **** eslint-disable-next-line @typescript-eslint/no-explicit-any **** //
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Function = (...args: any[]) => any;
 
 /******************************************************************************
@@ -15,7 +14,6 @@ export type Function = (...args: any[]) => any;
 ******************************************************************************/
 
 // **** Nullables **** //
-
 
 export function isUndef(arg: unknown): arg is undefined {
   return arg === undefined;
@@ -30,7 +28,6 @@ export function isNullish(arg: unknown): arg is null | undefined {
 }
 
 // **** Boolean **** //
-
 
 export function isBoolean(arg: unknown): arg is boolean {
   return typeof arg === 'boolean';
@@ -54,8 +51,9 @@ export function isBooleanArray(arg: unknown): arg is boolean[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
-    if (typeof value !== 'boolean') {
+  const length = arg.length;
+  for (let i = 0; i < length; i += 1) {
+    if (typeof arg[i] !== 'boolean') {
       return false;
     }
   }
@@ -71,8 +69,9 @@ export function isOptionalBooleanArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
-    if (typeof value !== 'boolean') {
+  const length = arg.length;
+  for (let i = 0; i < length; i += 1) {
+    if (typeof arg[i] !== 'boolean') {
       return false;
     }
   }
@@ -86,8 +85,9 @@ export function isNullableBooleanArray(arg: unknown): arg is boolean[] | null {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
-    if (typeof value !== 'boolean') {
+  const length = arg.length;
+  for (let i = 0; i < length; i += 1) {
+    if (typeof arg[i] !== 'boolean') {
       return false;
     }
   }
@@ -103,8 +103,9 @@ export function isNullishBooleanArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
-    if (typeof value !== 'boolean') {
+  const length = arg.length;
+  for (let i = 0; i < length; i += 1) {
+    if (typeof arg[i] !== 'boolean') {
       return false;
     }
   }
@@ -112,7 +113,6 @@ export function isNullishBooleanArray(
 }
 
 // **** Is it a boolean after doing "parseBoolean" **** //
-
 
 export function isValidBoolean(arg: unknown): arg is number | string | boolean {
   try {
@@ -171,7 +171,8 @@ export function isValidBooleanArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     try {
       parseBoolean(value);
     } catch {
@@ -190,7 +191,8 @@ export function isOptionalValidBooleanArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     try {
       parseBoolean(value);
     } catch {
@@ -209,7 +211,8 @@ export function isNullableValidBooleanArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     try {
       parseBoolean(value);
     } catch {
@@ -228,7 +231,8 @@ export function isNullishValidBooleanArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     try {
       parseBoolean(value);
     } catch {
@@ -266,7 +270,8 @@ export function isNumberArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value)) {
       return false;
     }
@@ -283,7 +288,8 @@ export function isOptionalNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value)) {
       return false;
     }
@@ -298,7 +304,8 @@ export function isNullableNumberArray(arg: unknown): arg is number[] | null {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value)) {
       return false;
     }
@@ -315,7 +322,8 @@ export function isNullishNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value)) {
       return false;
     }
@@ -324,7 +332,6 @@ export function isNullishNumberArray(
 }
 
 // **** Postive Number **** //
-
 
 export function isPositiveNumber(arg: unknown): arg is number {
   return typeof arg === 'number' && !isNaN(arg) && arg > 0;
@@ -356,7 +363,8 @@ export function isPositiveNumberArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value <= 0) {
       return false;
     }
@@ -373,7 +381,8 @@ export function isOptionalPositiveNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value <= 0) {
       return false;
     }
@@ -390,7 +399,8 @@ export function isNullablePositiveNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value <= 0) {
       return false;
     }
@@ -407,7 +417,8 @@ export function isNullishPositiveNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value <= 0) {
       return false;
     }
@@ -447,7 +458,8 @@ export function isNegativeNumberArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value >= 0) {
       return false;
     }
@@ -464,7 +476,8 @@ export function isOptionalNegativeNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value >= 0) {
       return false;
     }
@@ -481,7 +494,8 @@ export function isNullableNegativeNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value >= 0) {
       return false;
     }
@@ -498,7 +512,8 @@ export function isNullishNegativeNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value >= 0) {
       return false;
     }
@@ -538,7 +553,8 @@ export function isUnsignedNumberArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value < 0) {
       return false;
     }
@@ -555,7 +571,8 @@ export function isOptionalUnsignedNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value < 0) {
       return false;
     }
@@ -572,7 +589,8 @@ export function isNullableUnsignedNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value < 0) {
       return false;
     }
@@ -589,7 +607,8 @@ export function isNullishUnsignedNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'number' || isNaN(value) || value < 0) {
       return false;
     }
@@ -621,7 +640,8 @@ export function isIntegerArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value)) {
       return false;
     }
@@ -638,7 +658,8 @@ export function isOptionalIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value)) {
       return false;
     }
@@ -653,7 +674,8 @@ export function isNullableIntegerArray(arg: unknown): arg is number[] | null {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value)) {
       return false;
     }
@@ -670,7 +692,8 @@ export function isNullishIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value)) {
       return false;
     }
@@ -708,7 +731,8 @@ export function isPositiveIntegerArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) <= 0) {
       return false;
     }
@@ -725,7 +749,8 @@ export function isOptionalPositiveIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) <= 0) {
       return false;
     }
@@ -742,7 +767,8 @@ export function isNullablePositiveIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) <= 0) {
       return false;
     }
@@ -759,7 +785,8 @@ export function isNullishPositiveIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) <= 0) {
       return false;
     }
@@ -797,7 +824,8 @@ export function isNegativeIntegerArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) >= 0) {
       return false;
     }
@@ -814,7 +842,8 @@ export function isOptionalNegativeIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) >= 0) {
       return false;
     }
@@ -831,7 +860,8 @@ export function isNullableNegativeIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) >= 0) {
       return false;
     }
@@ -848,7 +878,8 @@ export function isNullishNegativeIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) >= 0) {
       return false;
     }
@@ -886,7 +917,8 @@ export function isUnsignedIntegerArray(arg: unknown): arg is number[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) < 0) {
       return false;
     }
@@ -903,7 +935,8 @@ export function isOptionalUnsignedIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) < 0) {
       return false;
     }
@@ -920,7 +953,8 @@ export function isNullableUnsignedIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) < 0) {
       return false;
     }
@@ -937,7 +971,8 @@ export function isNullishUnsignedIntegerArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!Number.isInteger(value) || (value as number) < 0) {
       return false;
     }
@@ -969,7 +1004,8 @@ export function isBigIntArray(arg: unknown): arg is bigint[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'bigint') {
       return false;
     }
@@ -986,7 +1022,8 @@ export function isOptionalBigIntArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'bigint') {
       return false;
     }
@@ -1001,7 +1038,8 @@ export function isNullableBigIntArray(arg: unknown): arg is bigint[] | null {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'bigint') {
       return false;
     }
@@ -1018,7 +1056,8 @@ export function isNullishBigIntArr(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'bigint') {
       return false;
     }
@@ -1069,7 +1108,8 @@ export function isValidNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const casted = Number(value);
     if (isNaN(casted)) {
       return false;
@@ -1087,7 +1127,8 @@ export function isOptionalValidNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const casted = Number(value);
     if (isNaN(casted)) {
       return false;
@@ -1105,7 +1146,8 @@ export function isNullableValidNumberArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const casted = Number(value);
     if (isNaN(casted)) {
       return false;
@@ -1123,7 +1165,8 @@ export function isNishValidNumArr(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const casted = Number(value);
     if (isNaN(casted)) {
       return false;
@@ -1156,7 +1199,8 @@ export function isStringArray(arg: unknown): arg is string[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string') {
       return false;
     }
@@ -1173,7 +1217,8 @@ export function isOptionalStringArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string') {
       return false;
     }
@@ -1188,7 +1233,8 @@ export function isNullableStringArray(arg: unknown): arg is string[] | null {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string') {
       return false;
     }
@@ -1205,7 +1251,8 @@ export function isNullishStringArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string') {
       return false;
     }
@@ -1243,7 +1290,8 @@ export function isNonEmptyStringArray(arg: unknown): arg is string[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string' || value.length === 0) {
       return false;
     }
@@ -1260,7 +1308,8 @@ export function isOptionalNonEmptyStringArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string' || value.length === 0) {
       return false;
     }
@@ -1277,7 +1326,8 @@ export function isNullableNonEmptyStringArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string' || value.length === 0) {
       return false;
     }
@@ -1294,7 +1344,8 @@ export function isNullishNonEmptyStringArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'string' || value.length === 0) {
       return false;
     }
@@ -1326,7 +1377,8 @@ export function isSymbolArray(arg: unknown): arg is symbol[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'symbol') {
       return false;
     }
@@ -1343,7 +1395,8 @@ export function isOptionalSymbolArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'symbol') {
       return false;
     }
@@ -1358,7 +1411,8 @@ export function isNullableSymbolArray(arg: unknown): arg is symbol[] | null {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'symbol') {
       return false;
     }
@@ -1375,7 +1429,8 @@ export function isNullishSymbolArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'symbol') {
       return false;
     }
@@ -1409,7 +1464,8 @@ export function isDateArray(arg: unknown): arg is Date[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!(value instanceof Date) || isNaN(value.getTime())) {
       return false;
     }
@@ -1424,7 +1480,8 @@ export function isOptionalDateArray(arg: unknown): arg is Date[] | undefined {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!(value instanceof Date) || isNaN(value.getTime())) {
       return false;
     }
@@ -1439,7 +1496,8 @@ export function isNullableDateArray(arg: unknown): arg is Date[] | null {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!(value instanceof Date) || isNaN(value.getTime())) {
       return false;
     }
@@ -1456,7 +1514,8 @@ export function isNullishDateArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (!(value instanceof Date) || isNaN(value.getTime())) {
       return false;
     }
@@ -1531,7 +1590,8 @@ export function isValidDateArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const isStringType = typeof value === 'string';
     const isNumberType = typeof value === 'number' && !isNaN(value);
     const isDateType = value instanceof Date;
@@ -1555,7 +1615,8 @@ export function isOptionalValidDateArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const isStringType = typeof value === 'string';
     const isNumberType = typeof value === 'number' && !isNaN(value);
     const isDateType = value instanceof Date;
@@ -1579,7 +1640,8 @@ export function isNullableValidDateArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const isStringType = typeof value === 'string';
     const isNumberType = typeof value === 'number' && !isNaN(value);
     const isDateType = value instanceof Date;
@@ -1603,7 +1665,8 @@ export function isNullishValidDateArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     const isStringType = typeof value === 'string';
     const isNumberType = typeof value === 'number' && !isNaN(value);
     const isDateType = value instanceof Date;
@@ -1650,7 +1713,8 @@ export function isObjectArray(arg: unknown): arg is NonNullable<object>[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1667,7 +1731,8 @@ export function isOptionalObjectArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1684,7 +1749,8 @@ export function isNullableObjectArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1701,7 +1767,8 @@ export function isNullishObjectArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1760,7 +1827,8 @@ export function isPlainObjectArray(arg: unknown): arg is PlainObject[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1781,7 +1849,8 @@ export function isOptionalPlainObjectArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1802,7 +1871,8 @@ export function isNullablePlainObjectArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1823,7 +1893,8 @@ export function isNullishPlainObjectArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (value === null || typeof value !== 'object') {
       return false;
     }
@@ -1859,7 +1930,8 @@ export function isFunctionArray(arg: unknown): arg is Function[] {
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'function') {
       return false;
     }
@@ -1876,7 +1948,8 @@ export function isOptionalFunctionArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'function') {
       return false;
     }
@@ -1893,7 +1966,8 @@ export function isNullableFunctionArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'function') {
       return false;
     }
@@ -1910,7 +1984,8 @@ export function isNullishFunctionArray(
   if (!Array.isArray(arg)) {
     return false;
   }
-  for (const value of arg) {
+  for (let i = 0; i < arg.length; i += 1) {
+    const value = arg[i];
     if (typeof value !== 'function') {
       return false;
     }

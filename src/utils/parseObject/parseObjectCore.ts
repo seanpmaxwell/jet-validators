@@ -1,3 +1,8 @@
+import {
+  isTransformFunction,
+  type ValidatorFnWithTransformCb,
+} from '../simple-utils.js';
+
 import { isPlainObject, type Function } from '../../basic.js';
 import { isSafe } from './mark-safe.js';
 
@@ -27,18 +32,21 @@ export const ERRORS = {
 ******************************************************************************/
 
 export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
-type ValidatorFn = (value: unknown) => boolean;
 type PlainObject = Record<string, unknown>;
 
 // **** Validation Schema **** //
 
 interface CoreSchema {
-  [key: string]: ValidatorFn | CoreSchema;
+  [key: string]: ValidatorFn<unknown> | CoreSchema;
 }
+
+export type ValidatorFn<T> =
+  | ((arg: unknown) => arg is T)
+  | ValidatorFnWithTransformCb<T>;
 
 interface ValidatorItem {
   key: string;
-  fn: ValidatorFn;
+  fn: ValidatorFn<unknown>;
   idx: number;
   name: string;
 }
@@ -51,6 +59,7 @@ interface Node {
   path: string[];
   children: Node[];
   valueObject: PlainObject;
+  transformedValuesObject: PlainObject;
   // Track validations
   keyIndex: Record<string, number>;
   seen: Uint32Array;
@@ -184,6 +193,7 @@ function setupValidatorTree(
     children: [],
     path: parentNode ? [...parentNode.path, paramKey] : [],
     valueObject: {},
+    transformedValuesObject: {},
     keyIndex,
     seen: new Uint32Array(keys.length),
   };
@@ -360,7 +370,11 @@ function sanitizeStrict(
       }
       return false;
     }
-    const v = nodeVal[key];
+    let v = nodeVal[key];
+    if (key in node.transformedValuesObject) {
+      v = node.transformedValuesObject[key];
+      delete node.transformedValuesObject[key];
+    }
     clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
   }
   node.valueObject = clean;
@@ -416,11 +430,15 @@ function sanitizeNormal(node: Node, runId: number): void {
     clean: PlainObject = {},
     keys = Object.keys(nodeVal);
   for (let i = 0; i < keys.length; i++) {
-    const k = keys[i],
-      kIdx = node.keyIndex[k];
+    const key = keys[i],
+      kIdx = node.keyIndex[key];
     if (kIdx !== undefined && node.seen[kIdx] === runId) {
-      const v = nodeVal[k];
-      clean[k] = v !== null && typeof v === 'object' ? deepClone(v) : v;
+      let v = nodeVal[key];
+      if (key in node.transformedValuesObject) {
+        v = node.transformedValuesObject[key];
+        delete node.transformedValuesObject[key];
+      }
+      clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
     }
   }
   node.valueObject = clean;
@@ -472,9 +490,13 @@ function sanitizeLoose(node: Node): void {
     clean: PlainObject = {},
     keys = Object.keys(nodeVal);
   for (let i = 0; i < keys.length; i++) {
-    const k = keys[i],
-      v = nodeVal[k];
-    clean[k] = v !== null && typeof v === 'object' ? deepClone(v) : v;
+    const key = keys[i];
+    let v = nodeVal[key];
+    if (key in node.transformedValuesObject) {
+      v = node.transformedValuesObject[key];
+      delete node.transformedValuesObject[key];
+    }
+    clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
   }
   node.valueObject = clean;
   if (node.parent) {
@@ -514,8 +536,17 @@ function runValidators(
   let isValid = false;
   const nodeVal = node.valueObject;
   for (const vldr of node.safeValidators) {
-    const toValidate = nodeVal[vldr.key];
-    if (!vldr.fn(toValidate)) {
+    const vldrFn: Function = vldr.fn,
+      toValidate = nodeVal[vldr.key];
+    let result;
+    if (isTransformFunction(vldrFn)) {
+      result = vldrFn(toValidate, (newValue) => {
+        node.transformedValuesObject[vldr.key] = newValue;
+      });
+    } else {
+      result = vldrFn(toValidate);
+    }
+    if (!result) {
       isValid = false;
       if (errorState) {
         errorState.hasErrors = true;
@@ -533,7 +564,17 @@ function runValidators(
   // Run unsafe validators
   for (const vldr of node.unSafeValidators) {
     try {
-      if (!vldr.fn(nodeVal[vldr.key])) throw null;
+      const vldrFn: Function = vldr.fn,
+        toValidate = nodeVal[vldr.key];
+      let result;
+      if (isTransformFunction(vldrFn)) {
+        result = vldrFn(toValidate, (newValue) => {
+          node.transformedValuesObject[vldr.key] = newValue;
+        });
+      } else {
+        result = vldrFn(toValidate);
+      }
+      if (!result) throw null;
       node.seen[vldr.idx] = runId;
     } catch (err) {
       isValid = false;
@@ -556,7 +597,7 @@ function runValidators(
 
 /******************************************************************************
                                 Helpers
-            elpers kept in same file for minor performance
+            Helpers kept in same file for minor performance
 ******************************************************************************/
 
 /**

@@ -1,13 +1,12 @@
 import parseObjectCore, {
   SAFETY,
   type OnErrorCallback,
+  type ValidatorFn,
 } from './parseObjectCore';
 
 /******************************************************************************
                                  Types
 ******************************************************************************/
-
-type ValidatorFn<T> = (arg: unknown) => arg is T;
 
 // Handle variations
 type ResolveMods<T, O extends boolean, N extends boolean, A extends boolean> =
