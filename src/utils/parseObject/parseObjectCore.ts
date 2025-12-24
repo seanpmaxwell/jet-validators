@@ -5,6 +5,7 @@ import {
 
 import { isPlainObject, type Function } from '../../basic.js';
 import { isSafe } from './mark-safe.js';
+import { isTestObjectCoreFn } from './testObjectCore.js';
 
 /******************************************************************************
                                 Constants
@@ -88,7 +89,7 @@ export type ParseError = {
     }
 );
 
-interface IErrorState {
+interface ErrorState {
   errors: ParseError[];
   index?: number;
 }
@@ -117,7 +118,6 @@ function parseObjectCore(
 ) {
   // Intialize tree and final parse function
   const root = setupValidatorTree(schema, null, '');
-  console.log('asdf', root)
   let finalParseFn;
   if (safety === SAFETY.Strict) {
     finalParseFn = parseStrict;
@@ -131,7 +131,7 @@ function parseObjectCore(
   // Return user facing function
   return (param: unknown, localOnError?: OnErrorCallback) => {
     // Initialize error state
-    const errorState: IErrorState | null =
+    const errorState: ErrorState | null =
       onError || localOnError ? { errors: [] } : null;
     // Check for nullables
     const resp = checkNullables(isOptional, isNullable, param, errorState);
@@ -234,7 +234,7 @@ function checkNullables(
   isOptional: boolean,
   isNullable: boolean,
   param: unknown,
-  errorState: IErrorState | null,
+  errorState: ErrorState | null,
 ) {
   // Check undefined
   if (param === undefined) {
@@ -271,7 +271,7 @@ function checkNullables(
  */
 function parseArray(
   param: unknown,
-  errorState: IErrorState | null,
+  errorState: ErrorState | null,
   root: Node,
   runId: number,
   parseFn: Function,
@@ -317,7 +317,7 @@ function parseStrict(
   param: PlainObject,
   root: Node,
   runId: number,
-  errorState: IErrorState | null,
+  errorState: ErrorState | null,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -364,7 +364,7 @@ function parseStrict(
 function sanitizeStrict(
   node: Node,
   runId: number,
-  errorState: IErrorState | null,
+  errorState: ErrorState | null,
 ): boolean {
   const nodeVal = node.valueObject,
     clean: PlainObject = {};
@@ -408,7 +408,7 @@ function parseNormal(
   param: PlainObject,
   root: Node,
   runId: number,
-  errorState: IErrorState | null,
+  errorState: ErrorState | null,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -463,7 +463,6 @@ function sanitizeNormal(node: Node, runId: number): void {
   }
   node.valueObject = clean;
   if (node.parent) node.parent.valueObject[node.key] = clean;
-  console.log(node)
 }
 
 /**
@@ -473,7 +472,7 @@ function parseLoose(
   param: PlainObject,
   root: Node,
   runId: number,
-  errorState: IErrorState | null,
+  errorState: ErrorState | null,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -534,7 +533,7 @@ function sanitizeLoose(node: Node): void {
 function runValidators(
   node: Node,
   runId: number,
-  errorState: IErrorState | null,
+  errorState: ErrorState | null,
 ): ValidationResult {
   // Set the value object on the child
   if (node.parent) {
@@ -562,10 +561,21 @@ function runValidators(
     const vldrFn: Function = vldr.fn,
       toValidate = nodeVal[vldr.key];
     let result;
+    // Transform validator function
     if (isTransformFunction(vldrFn)) {
       result = vldrFn(toValidate, (newValue) => {
         node.transformedValuesObject[vldr.key] = newValue;
       });
+      // Nested testObject function
+    } else if (isTestObjectCoreFn(vldrFn)) {
+      result = vldrFn(
+        toValidate,
+        !!errorState ? getBlendedOnErrorCb(errorState, node) : undefined,
+        (modifiedValue) => {
+          node.transformedValuesObject[vldr.key] = modifiedValue;
+        },
+      );
+      // Standard validator function
     } else {
       result = vldrFn(toValidate);
     }
@@ -625,7 +635,7 @@ function runValidators(
 /**
  * Get keyPath
  */
-function getKeyPath(node: Node, errorState: IErrorState, key: string) {
+function getKeyPath(node: Node, errorState: ErrorState, key: string) {
   let keyPath: string[] = [];
   if (errorState.index !== undefined) {
     keyPath = [errorState.index.toString()];
@@ -688,9 +698,9 @@ function deepClone<T>(value: T): T {
     return value.slice(0) as T;
   }
   // Plain object OR class instance
-  const proto = Object.getPrototypeOf(value);
-  const out = Object.create(proto);
-  const keys = Object.keys(value as object);
+  const proto = Object.getPrototypeOf(value),
+    out = Object.create(proto),
+    keys = Object.keys(value as object);
   // Go down
   for (let i = 0; i < keys.length; i++) {
     const k = keys[i];
@@ -712,6 +722,23 @@ function resetSeen(root: Node): void {
       stack.push(node.children[i]);
     }
   }
+}
+
+/**
+ * If a nestTested object function as errors, we need to add those.
+ */
+function getBlendedOnErrorCb(errorState: ErrorState, leaf: Node) {
+  return (errors: ParseError[]) => {
+    for (const error of errors) {
+      if (error.key) {
+        (error as PlainObject).keyPath = [...leaf.path, error.key];
+        delete (error as PlainObject).key;
+      } else {
+        error.keyPath = [...leaf.path, ...(error.keyPath ?? [])];
+      }
+      errorState.errors.push(error);
+    }
+  };
 }
 
 /******************************************************************************

@@ -2,10 +2,10 @@
                               Types/Constants
 ******************************************************************************/
 
-const kSafeValidator = Symbol('safe-validator-function');
-type TSafeFunction = Record<symbol, boolean>;
+const symSafeValidatorFn = Symbol('safe-validator-function');
+type SafeFunction = Record<symbol, boolean>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TFunc = (...args: any[]) => any;
+type AnyFunction = (...args: any[]) => any;
 
 /******************************************************************************
                             Functions
@@ -14,9 +14,9 @@ type TFunc = (...args: any[]) => any;
 /**
  * Mark internal functions as safe so we don't need to wrap them.
  */
-export function markSafe<T extends TFunc>(fn: T): T {
+export function markSafe<T extends AnyFunction>(fn: T): T {
   if (typeof fn === 'function') {
-    (fn as unknown as TSafeFunction)[kSafeValidator] = true;
+    (fn as unknown as SafeFunction)[symSafeValidatorFn] = true;
   }
   return fn;
 }
@@ -30,7 +30,7 @@ export function markSafeIterative<T extends Record<string, unknown>>(
   for (const key in obj) {
     const fn = obj[key];
     if (typeof fn === 'function') {
-      (fn as TSafeFunction)[kSafeValidator] = true;
+      (fn as SafeFunction)[symSafeValidatorFn] = true;
     }
   }
   return obj;
@@ -40,5 +40,5 @@ export function markSafeIterative<T extends Record<string, unknown>>(
  * Check if a function has been marked as safe
  */
 export function isSafe(fn: unknown): boolean {
-  return (fn as TSafeFunction)[kSafeValidator] === true;
+  return (fn as SafeFunction)[symSafeValidatorFn] === true;
 }

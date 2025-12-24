@@ -1,14 +1,11 @@
-import parseObjectCore, {
-  type OnErrorCallback,
-  type Safety,
-  SAFETY,
-} from './parseObjectCore';
+import { type OnErrorCallback, SAFETY } from './parseObjectCore';
+import testObjectCore from './testObjectCore';
 
 import type {
   InferredReturnValue,
   Schema,
   TypedReturnValue,
-} from './setup-variations';
+} from './parseObject';
 
 /******************************************************************************
                               testObject
@@ -621,32 +618,4 @@ export function looseTestNullishObjectArray(
   onError?: OnErrorCallback,
 ) {
   return testObjectCore(true, true, true, schema, SAFETY.Loose, onError);
-}
-
-/******************************************************************************
-                                Helpers
-******************************************************************************/
-
-/**
- * Wrap the testObject function to return a type-predicate.
- */
-function testObjectCore<T>(
-  optional: boolean,
-  nullable: boolean,
-  isArray: boolean,
-  schema: Schema<T>,
-  safety: Safety,
-  onError?: OnErrorCallback,
-) {
-  const testFn = parseObjectCore(
-    optional,
-    nullable,
-    isArray,
-    schema,
-    safety,
-    onError,
-  );
-  return (arg: unknown, onError?: OnErrorCallback): arg is T => {
-    return testFn(arg, onError) !== false;
-  };
 }

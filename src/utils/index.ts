@@ -40,7 +40,7 @@ export {
   strictParseNullableObjectArray,
   strictParseNullishObjectArray,
   type Schema,
-} from './parseObject/setup-variations.js';
+} from './parseObject/parseObject.js';
 
 export {
   testObject,

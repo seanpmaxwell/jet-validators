@@ -252,7 +252,8 @@ test.only('test "testObject()" function', () => {
     {
       id: isNumber,
       name: isString,
-      // pick up here, nested testObjects need to have a way to pass up values
+      // pick up here, 2 things to do with testObjectCore function,
+      // pass modified value AND blend error messages
       address: testObject({
         city: isString,
         zip: transform(Number, isNumber),
