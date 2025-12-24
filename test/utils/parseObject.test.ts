@@ -213,38 +213,46 @@ test('test "parseObject()" function', () => {
       id: isNumber,
       name: isString,
     },
-    (err) => {
-      errArr = err;
-    },
+    (err) => (errArr = err),
   )({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
-    { prop: 'id', value: 'joe', info: 'Validator-function returned false.' },
-    { prop: 'name', value: 5, info: 'Validator-function returned false.' },
+    {
+      functionName: 'isNumber',
+      info: 'Validator function returned false.',
+      key: 'id',
+      value: 'joe',
+    },
+    {
+      functionName: 'isString',
+      info: 'Validator function returned false.',
+      key: 'name',
+      value: 5,
+    },
   ]);
 });
 
 /**
  * Test "testObject" function
  */
-test.only('test "testObject()" function', () => {
+test('test "testObject()" function', () => {
   // Do basic test
-  // const testUser = testObject({
-  //   id: isNumber,
-  //   name: isString,
-  //   address: {
-  //     city: isString,
-  //     zip: transform(Number, isNumber),
-  //   },
-  // });
-  // const result = testUser({
-  //   id: 5,
-  //   name: 'john',
-  //   address: {
-  //     city: 'Seattle',
-  //     zip: '98109',
-  //   },
-  // });
-  // expect(result).toStrictEqual(true);
+  const testUser = testObject({
+    id: isNumber,
+    name: isString,
+    address: {
+      city: isString,
+      zip: transform(Number, isNumber),
+    },
+  });
+  const result = testUser({
+    id: 5,
+    name: 'john',
+    address: {
+      city: 'Seattle',
+      zip: '98109',
+    },
+  });
+  expect(result).toStrictEqual(true);
 
   // Test combination of "parseObject" and "testObject"
   let errArr: ParseError[] = [];
@@ -252,8 +260,6 @@ test.only('test "testObject()" function', () => {
     {
       id: isNumber,
       name: isString,
-      // pick up here, 2 things to do with testObjectCore function,
-      // pass modified value AND blend error messages
       address: testObject({
         city: isString,
         zip: transform(Number, isNumber),
@@ -284,8 +290,6 @@ test.only('test "testObject()" function', () => {
     },
   });
 
-  return;
-
   testCombo({
     id: 5,
     name: 'john',
@@ -299,28 +303,40 @@ test.only('test "testObject()" function', () => {
     },
   });
   expect(errArr).toStrictEqual([
-    // pick up here
     {
-      info: 'Nested validation failed.',
-      prop: 'address',
-      children: [
-        {
-          info: 'Validator-function returned false.',
-          prop: 'zip',
-          value: 'horse',
+      functionName: 'isNumber',
+      info: 'Validator function returned false.',
+      keyPath: ['code'],
+      value: '1234',
+    },
+    {
+      functionName: 'testFn',
+      info: 'Validator function returned false.',
+      keyPath: ['country'],
+      value: {
+        code: '1234',
+        name: 'USA',
+      },
+    },
+    {
+      caught: undefined,
+      functionName: 'fn',
+      info: 'Validator function returned false.',
+      keyPath: ['zip'],
+      value: 'horse',
+    },
+    {
+      functionName: 'testFn',
+      info: 'Validator function returned false.',
+      key: 'address',
+      value: {
+        city: 'Seattle',
+        country: {
+          code: '1234',
+          name: 'USA',
         },
-        {
-          info: 'Nested validation failed.',
-          prop: 'country',
-          children: [
-            {
-              info: 'Validator-function returned false.',
-              prop: 'code',
-              value: '1234',
-            },
-          ],
-        },
-      ],
+        zip: 'horse',
+      },
     },
   ]);
 
@@ -422,8 +438,10 @@ test('test different safety options', () => {
   expect(resp3).toStrictEqual(false);
   expect(errArr).toStrictEqual([
     {
-      info: 'strict-safety failed, prop not in schema.',
-      prop: 'address',
+      functionName: '<strict>',
+      info: 'Strict mode: unknown or invalid property',
+      key: 'address',
+      value: 'blah',
     },
   ]);
 
@@ -474,16 +492,11 @@ test('test different safety options', () => {
 
   expect(resp4).toStrictEqual(false);
   expect(errArr2).toStrictEqual([
-    // pick up here
     {
-      info: 'Nested validation failed.',
-      prop: 'address',
-      children: [
-        {
-          info: 'strict-safety failed, prop not in schema.',
-          prop: 'city',
-        },
-      ],
+      functionName: '<strict>',
+      info: 'Strict mode: unknown or invalid property',
+      keyPath: ['address', 'city'],
+      value: 'Seattle',
     },
   ]);
 });
@@ -561,7 +574,8 @@ test('Test for update which removed recursion', () => {
     address: {
       street: string;
       city: string;
-      // country?: { // <-- Cannot use undefined for nested schemas unless using parse/testObject function
+      // country?: { // <-- Cannot use undefined for nested schemas unless
+      // using parse/testObject function
       country: {
         code: number;
         name: string;

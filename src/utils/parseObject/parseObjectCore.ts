@@ -133,10 +133,20 @@ function parseObjectCore(
     // Initialize error state
     const errorState: ErrorState | null =
       onError || localOnError ? { errors: [] } : null;
+    const fireOnErrorCb = () => {
+      if (!!errorState && errorState.errors.length > 0) {
+        if (!!localOnError) {
+          localOnError(errorState.errors);
+        } else if (onError) {
+          onError(errorState.errors);
+        }
+      }
+    };
     // Check for nullables
     const resp = checkNullables(isOptional, isNullable, param, errorState);
     if (!resp) {
       if (resp === false) {
+        fireOnErrorCb();
         return false;
       } else {
         return resp;
@@ -149,7 +159,11 @@ function parseObjectCore(
     }
     // If an array
     if (isArray) {
-      return parseArray(param, errorState, root, runId, finalParseFn);
+      const result = parseArray(param, errorState, root, runId, finalParseFn);
+      if (result === false) {
+        fireOnErrorCb();
+      }
+      return result;
     }
     // Make sure an object if not null, undefined, or array
     if (!isPlainObject(param)) {
@@ -161,16 +175,13 @@ function parseObjectCore(
           key: '',
         });
       }
+      fireOnErrorCb();
       return false;
     }
     // Run parseFunction
     const result = finalParseFn(param, root, runId, errorState);
-    if (!!errorState && !result) {
-      if (!!localOnError) {
-        localOnError(errorState?.errors);
-      } else if (onError) {
-        onError(errorState?.errors);
-      }
+    if (result === false) {
+      fireOnErrorCb();
       return false;
     } else {
       return result;
@@ -347,7 +358,7 @@ function parseStrict(
     }
     if (!sanitizeStrict(node, runId, errorState)) {
       if (!!errorState) {
-        continue;
+        isValidFinal = false;
       } else {
         return false;
       }
@@ -368,6 +379,7 @@ function sanitizeStrict(
 ): boolean {
   const nodeVal = node.valueObject,
     clean: PlainObject = {};
+  let isValid = true;
   // Clean object
   const keys = Object.keys(nodeVal),
     keysLength = keys.length;
@@ -375,7 +387,8 @@ function sanitizeStrict(
     const key = keys[i],
       kIdx = node.keyIndex[key];
     if (kIdx === undefined || node.seen[kIdx] !== runId) {
-      if (errorState) {
+      if (!!errorState) {
+        isValid = false;
         errorState.errors.push({
           info: ERRORS.StrictSafety,
           functionName: '<strict>',
@@ -398,7 +411,7 @@ function sanitizeStrict(
   if (node.parent) {
     node.parent.valueObject[node.key] = clean;
   }
-  return true;
+  return isValid;
 }
 
 /**
