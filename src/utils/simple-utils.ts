@@ -10,10 +10,7 @@ const kTransformFunction = Symbol('transform-function');
                               Types
 ******************************************************************************/
 
-export type TransformValidatorFn<T> = (
-  arg: unknown,
-  cb?: (arg: T) => void,
-) => arg is T;
+export type ValidatorFnWithTransformCb<T> = ReturnType<typeof transform<T>>;
 
 /******************************************************************************
                                Functions
@@ -78,7 +75,7 @@ export function makeNullish<T>(cb: (arg: unknown) => arg is T) {
 export function transform<T>(
   transformFn: (arg: unknown) => T,
   validate: (arg: unknown) => arg is T,
-): TransformValidatorFn<T> {
+) {
   const fn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
     if (arg !== undefined) {
       arg = transformFn(arg);
@@ -95,7 +92,7 @@ export function transform<T>(
  */
 export function isTransformFunction(
   arg: unknown,
-): arg is TransformValidatorFn<unknown> {
+): arg is ValidatorFnWithTransformCb<unknown> {
   return (
     isFunction(arg) &&
     (arg as unknown as Record<symbol, unknown>)[kTransformFunction] === true

@@ -1,15 +1,20 @@
 import { parseBoolean } from './utils/index.js';
 
+/******************************************************************************
+                            Types/Constants
+******************************************************************************/
+
 const objectProto = Object.prototype;
 export type PlainObject = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Function = (...args: any[]) => any;
 
 /******************************************************************************
-                                    Setup
+                                Functions
 ******************************************************************************/
 
-// Nullables
+// **** Nullables **** //
+
 export function isUndef(arg: unknown): arg is undefined {
   return arg === undefined;
 }
@@ -22,46 +27,89 @@ export function isNullish(arg: unknown): arg is null | undefined {
   return arg === null || arg === undefined;
 }
 
-// Boolean
+// **** Boolean **** //
+
 export function isBoolean(arg: unknown): arg is boolean {
   return typeof arg === 'boolean';
 }
 
 export function isOptionalBoolean(arg: unknown): arg is boolean | undefined {
-  return arg === undefined || isBoolean(arg);
+  return arg === undefined || typeof arg === 'boolean';
 }
 
 export function isNullableBoolean(arg: unknown): arg is boolean | null {
-  return arg === null || isBoolean(arg);
+  return arg === null || typeof arg === 'boolean';
 }
 
 export function isNullishBoolean(
   arg: unknown,
 ): arg is boolean | null | undefined {
-  return arg === null || arg === undefined || isBoolean(arg);
+  return arg === null || arg === undefined || typeof arg === 'boolean';
 }
 
 export function isBooleanArray(arg: unknown): arg is boolean[] {
-  return Array.isArray(arg) && arg.every(isBoolean);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'boolean') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalBooleanArray(
   arg: unknown,
 ): arg is boolean[] | undefined {
-  return arg === undefined || isBooleanArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'boolean') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableBooleanArray(arg: unknown): arg is boolean[] | null {
-  return arg === null || isBooleanArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'boolean') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishBooleanArray(
   arg: unknown,
 ): arg is boolean[] | null | undefined {
-  return arg === null || arg === undefined || isBooleanArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'boolean') {
+      return false;
+    }
+  }
+  return true;
 }
 
-// Is it a boolean after doing "parseBoolean"
+// **** Is it a boolean after doing "parseBoolean" **** //
+
 export function isValidBoolean(arg: unknown): arg is number | string | boolean {
   try {
     parseBoolean(arg);
@@ -74,379 +122,816 @@ export function isValidBoolean(arg: unknown): arg is number | string | boolean {
 export function isOptionalValidBoolean(
   arg: unknown,
 ): arg is number | string | boolean | undefined {
-  return arg === undefined || isValidBoolean(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  try {
+    parseBoolean(arg);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isNullableValidBoolean(
   arg: unknown,
 ): arg is number | string | boolean | null {
-  return arg === null || isValidBoolean(arg);
+  if (arg === null) {
+    return true;
+  }
+  try {
+    parseBoolean(arg);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isNullishValidBoolean(
   arg: unknown,
 ): arg is number | string | boolean | null | undefined {
-  return arg === null || arg === undefined || isValidBoolean(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  try {
+    parseBoolean(arg);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function isValidBooleanArray(
   arg: unknown,
 ): arg is Array<number | string | boolean> {
-  return Array.isArray(arg) && arg.every(isValidBoolean);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    try {
+      parseBoolean(value);
+    } catch {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalValidBooleanArray(
   arg: unknown,
 ): arg is Array<number | string | boolean> | undefined {
-  return arg === undefined || isValidBooleanArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    try {
+      parseBoolean(value);
+    } catch {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableValidBooleanArray(
   arg: unknown,
 ): arg is Array<number | string | boolean> | null {
-  return arg === null || isValidBooleanArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    try {
+      parseBoolean(value);
+    } catch {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishValidBooleanArray(
   arg: unknown,
 ): arg is Array<number | string | boolean> | null | undefined {
-  return arg === null || arg === undefined || isValidBooleanArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    try {
+      parseBoolean(value);
+    } catch {
+      return false;
+    }
+  }
+  return true;
 }
 
-// Number
+// **** Number **** //
+
 export function isNumber(arg: unknown): arg is number {
   return typeof arg === 'number' && !isNaN(arg);
 }
 
 export function isOptionalNumber(arg: unknown): arg is number | undefined {
-  return arg === undefined || isNumber(arg);
+  return arg === undefined || (typeof arg === 'number' && !isNaN(arg));
 }
 
 export function isNullableNumber(arg: unknown): arg is number | null {
-  return arg === null || isNumber(arg);
+  return arg === null || (typeof arg === 'number' && !isNaN(arg));
 }
 
 export function isNullishNumber(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isNumber(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (typeof arg === 'number' && !isNaN(arg))
+  );
 }
 
 export function isNumberArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isNumber);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalNumberArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isNumberArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableNumberArray(arg: unknown): arg is number[] | null {
-  return arg === null || isNumberArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishNumberArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isNumberArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
-// Postive Number
+// **** Postive Number **** //
+
 export function isPositiveNumber(arg: unknown): arg is number {
-  return isNumber(arg) && arg > 0;
+  return typeof arg === 'number' && !isNaN(arg) && arg > 0;
 }
 
 export function isOptionalPositiveNumber(
   arg: unknown,
 ): arg is number | undefined {
-  return arg === undefined || isPositiveNumber(arg);
+  return (
+    arg === undefined || (typeof arg === 'number' && !isNaN(arg) && arg > 0)
+  );
 }
 
 export function isNullablePositiveNumber(arg: unknown): arg is number | null {
-  return arg === null || isPositiveNumber(arg);
+  return arg === null || (typeof arg === 'number' && !isNaN(arg) && arg > 0);
 }
 
 export function isNullishPositiveNumber(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isPositiveNumber(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (typeof arg === 'number' && !isNaN(arg) && arg > 0)
+  );
 }
 
 export function isPositiveNumberArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isPositiveNumber);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalPositiveNumberArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isPositiveNumberArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullablePositiveNumberArray(
   arg: unknown,
 ): arg is number[] | null {
-  return arg === null || isPositiveNumberArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishPositiveNumberArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isPositiveNumberArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Negative Number
 export function isNegativeNumber(arg: unknown): arg is number {
-  return isNumber(arg) && arg < 0;
+  return typeof arg === 'number' && !isNaN(arg) && arg < 0;
 }
 
 export function isOptionalNegativeNumber(
   arg: unknown,
 ): arg is number | undefined {
-  return arg === undefined || isNegativeNumber(arg);
+  return (
+    arg === undefined || (typeof arg === 'number' && !isNaN(arg) && arg < 0)
+  );
 }
 
 export function isNullableNegativeNumber(arg: unknown): arg is number | null {
-  return arg === null || isNegativeNumber(arg);
+  return arg === null || (typeof arg === 'number' && !isNaN(arg) && arg < 0);
 }
 
 export function isNullishNegativeNumber(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isNegativeNumber(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (typeof arg === 'number' && !isNaN(arg) && arg < 0)
+  );
 }
 
 export function isNegativeNumberArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isNegativeNumber);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalNegativeNumberArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isNegativeNumberArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableNegativeNumberArray(
   arg: unknown,
 ): arg is number[] | null {
-  return arg === null || isNegativeNumberArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishNegativeNumberArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isNegativeNumberArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Unsigned Number
 export function isUnsignedNumber(arg: unknown): arg is number {
-  return isNumber(arg) && arg >= 0;
+  return typeof arg === 'number' && !isNaN(arg) && arg >= 0;
 }
 
 export function isOptionalUnsignedNumber(
   arg: unknown,
 ): arg is number | undefined {
-  return arg === undefined || isUnsignedNumber(arg);
+  return (
+    arg === undefined || (typeof arg === 'number' && !isNaN(arg) && arg >= 0)
+  );
 }
 
 export function isNullableUnsignedNumber(arg: unknown): arg is number | null {
-  return arg === null || isUnsignedNumber(arg);
+  return arg === null || (typeof arg === 'number' && !isNaN(arg) && arg >= 0);
 }
 
 export function isNullishUnsignedNumber(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isUnsignedNumber(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (typeof arg === 'number' && !isNaN(arg) && arg >= 0)
+  );
 }
 
 export function isUnsignedNumberArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isUnsignedNumber);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalUnsignedNumberArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isUnsignedNumberArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableUnsignedNumberArray(
   arg: unknown,
 ): arg is number[] | null {
-  return arg === null || isUnsignedNumberArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishUnsignedNumberArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isUnsignedNumberArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'number' || isNaN(value) || value < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Integer
 export function isInteger(arg: unknown): arg is number {
-  return typeof arg === 'number' && Number.isInteger(arg);
+  return Number.isInteger(arg);
 }
 
 export function isOptionalInteger(arg: unknown): arg is number | undefined {
-  return arg === undefined || isInteger(arg);
+  return arg === undefined || Number.isInteger(arg);
 }
 
 export function isNullableInteger(arg: unknown): arg is number | null {
-  return arg === null || isInteger(arg);
+  return arg === null || Number.isInteger(arg);
 }
 
 export function isNullishInteger(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isInteger(arg);
+  return arg === null || arg === undefined || Number.isInteger(arg);
 }
 
 export function isIntegerArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isInteger);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalIntegerArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isIntegerArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableIntegerArray(arg: unknown): arg is number[] | null {
-  return arg === null || isIntegerArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishIntegerArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isIntegerArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Postive Integer
 export function isPositiveInteger(arg: unknown): arg is number {
-  return isInteger(arg) && (arg as number) > 0;
+  return Number.isInteger(arg) && (arg as number) > 0;
 }
 
 export function isOptionalPositiveInteger(
   arg: unknown,
 ): arg is number | undefined {
-  return arg === undefined || isPositiveInteger(arg);
+  return arg === undefined || (Number.isInteger(arg) && (arg as number) > 0);
 }
 
 export function isNullablePositiveInteger(arg: unknown): arg is number | null {
-  return arg === null || isPositiveInteger(arg);
+  return arg === null || (Number.isInteger(arg) && (arg as number) > 0);
 }
 
 export function isNullishPositiveInteger(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isPositiveInteger(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (Number.isInteger(arg) && (arg as number) > 0)
+  );
 }
 
 export function isPositiveIntegerArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isPositiveInteger);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalPositiveIntegerArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isPositiveIntegerArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullablePositiveIntegerArray(
   arg: unknown,
 ): arg is number[] | null {
-  return arg === null || isPositiveIntegerArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishPositiveIntegerArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isPositiveIntegerArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) <= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Negative Integer
 export function isNegativeInteger(arg: unknown): arg is number {
-  return isInteger(arg) && (arg as number) < 0;
+  return Number.isInteger(arg) && (arg as number) < 0;
 }
 
 export function isOptionalNegativeInteger(
   arg: unknown,
 ): arg is number | undefined {
-  return arg === undefined || isNegativeInteger(arg);
+  return arg === undefined || (Number.isInteger(arg) && (arg as number) < 0);
 }
 
 export function isNullableNegativeInteger(arg: unknown): arg is number | null {
-  return arg === null || isNegativeInteger(arg);
+  return arg === null || (Number.isInteger(arg) && (arg as number) < 0);
 }
 
 export function isNullishNegativeInteger(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isNegativeInteger(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (Number.isInteger(arg) && (arg as number) < 0)
+  );
 }
 
 export function isNegativeIntegerArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isNegativeInteger);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalNegativeIntegerArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isNegativeIntegerArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableNegativeIntegerArray(
   arg: unknown,
 ): arg is number[] | null {
-  return arg === null || isNegativeIntegerArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishNegativeIntegerArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isNegativeIntegerArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) >= 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Unsigned Integer
 export function isUnsignedInteger(arg: unknown): arg is number {
-  return isInteger(arg) && (arg as number) >= 0;
+  return Number.isInteger(arg) && (arg as number) >= 0;
 }
 
 export function isOptionalUnsignedInteger(
   arg: unknown,
 ): arg is number | undefined {
-  return arg === undefined || isUnsignedInteger(arg);
+  return arg === undefined || (Number.isInteger(arg) && (arg as number) >= 0);
 }
 
 export function isNullableUnsignedInteger(arg: unknown): arg is number | null {
-  return arg === null || isUnsignedInteger(arg);
+  return arg === null || (Number.isInteger(arg) && (arg as number) >= 0);
 }
 
 export function isNullishUnsignedInteger(
   arg: unknown,
 ): arg is number | null | undefined {
-  return arg === null || arg === undefined || isUnsignedInteger(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (Number.isInteger(arg) && (arg as number) >= 0)
+  );
 }
 
 export function isUnsignedIntegerArray(arg: unknown): arg is number[] {
-  return Array.isArray(arg) && arg.every(isUnsignedInteger);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalUnsignedIntegerArray(
   arg: unknown,
 ): arg is number[] | undefined {
-  return arg === undefined || isUnsignedIntegerArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableUnsignedIntegerArray(
   arg: unknown,
 ): arg is number[] | null {
-  return arg === null || isUnsignedIntegerArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishUnsignedIntegerArray(
   arg: unknown,
 ): arg is number[] | null | undefined {
-  return arg === null || arg === undefined || isUnsignedIntegerArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!Number.isInteger(value) || (value as number) < 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // BigInt
@@ -455,37 +940,78 @@ export function isBigInt(arg: unknown): arg is bigint {
 }
 
 export function isOptionalBigInt(arg: unknown): arg is bigint | undefined {
-  return arg === undefined || isBigInt(arg);
+  return arg === undefined || typeof arg === 'bigint';
 }
 
 export function isNullableBigInt(arg: unknown): arg is bigint | null {
-  return arg === null || isBigInt(arg);
+  return arg === null || typeof arg === 'bigint';
 }
 
 export function isNullishBigInt(
   arg: unknown,
 ): arg is bigint | null | undefined {
-  return arg === null || arg === undefined || isBigInt(arg);
+  return arg === null || arg === undefined || typeof arg === 'bigint';
 }
 
 export function isBigIntArray(arg: unknown): arg is bigint[] {
-  return Array.isArray(arg) && arg.every(isBigInt);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'bigint') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalBigIntArray(
   arg: unknown,
 ): arg is bigint[] | undefined {
-  return arg === undefined || isBigIntArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'bigint') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableBigIntArray(arg: unknown): arg is bigint[] | null {
-  return arg === null || isBigIntArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'bigint') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishBigIntArr(
   arg: unknown,
 ): arg is bigint[] | null | undefined {
-  return arg === null || arg === undefined || isBigIntArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'bigint') {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Valid number (is it still a number after doing Number(arg))
@@ -497,43 +1023,100 @@ export function isValidNumber(arg: unknown): arg is string | number | boolean {
 export function isOptionalValidNumber(
   arg: unknown,
 ): arg is string | number | boolean | undefined {
-  return arg === undefined || isValidNumber(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  const casted = Number(arg);
+  return !isNaN(casted);
 }
 
 export function isNullableValidNumber(
   arg: unknown,
 ): arg is string | number | boolean | null {
-  return arg === null || isValidNumber(arg);
+  if (arg === null) {
+    return true;
+  }
+  const casted = Number(arg);
+  return !isNaN(casted);
 }
 
 export function isNullishValidNumber(
   arg: unknown,
 ): arg is string | number | boolean | null | undefined {
-  return arg === null || arg === undefined || isValidNumber(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  const casted = Number(arg);
+  return !isNaN(casted);
 }
 
 export function isValidNumberArray(
   arg: unknown,
 ): arg is Array<string | number | boolean> {
-  return Array.isArray(arg) && arg.every(isValidNumber);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const casted = Number(value);
+    if (isNaN(casted)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalValidNumberArray(
   arg: unknown,
 ): arg is Array<string | number | boolean> | undefined {
-  return arg === undefined || isValidNumberArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const casted = Number(value);
+    if (isNaN(casted)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableValidNumberArray(
   arg: unknown,
 ): arg is Array<string | number | boolean> | null {
-  return arg === null || isValidNumberArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const casted = Number(value);
+    if (isNaN(casted)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNishValidNumArr(
   arg: unknown,
 ): arg is Array<string | number | boolean> | null | undefined {
-  return arg === null || arg === undefined || isValidNumberArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const casted = Number(value);
+    if (isNaN(casted)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // String
@@ -542,80 +1125,166 @@ export function isString(arg: unknown): arg is string {
 }
 
 export function isOptionalString(arg: unknown): arg is string | undefined {
-  return arg === undefined || isString(arg);
+  return arg === undefined || typeof arg === 'string';
 }
 
 export function isNullableString(arg: unknown): arg is string | null {
-  return arg === null || isString(arg);
+  return arg === null || typeof arg === 'string';
 }
 
 export function isNullishString(
   arg: unknown,
 ): arg is string | null | undefined {
-  return arg === null || arg === undefined || isString(arg);
+  return arg === null || arg === undefined || typeof arg === 'string';
 }
 
 export function isStringArray(arg: unknown): arg is string[] {
-  return Array.isArray(arg) && arg.every(isString);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalStringArray(
   arg: unknown,
 ): arg is string[] | undefined {
-  return arg === undefined || isStringArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableStringArray(arg: unknown): arg is string[] | null {
-  return arg === null || isStringArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishStringArray(
   arg: unknown,
 ): arg is string[] | null | undefined {
-  return arg === null || arg === undefined || isStringArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string') {
+      return false;
+    }
+  }
+  return true;
 }
 
 // NeStr => "Non-Empty String"
 export function isNonEmptyString(arg: unknown): arg is string {
-  return isString(arg) && (arg as string).length > 0;
+  return typeof arg === 'string' && (arg as string).length > 0;
 }
 
 export function isOptionalNonEmptyString(
   arg: unknown,
 ): arg is string | undefined {
-  return arg === undefined || isNonEmptyString(arg);
+  return arg === undefined || (typeof arg === 'string' && arg.length > 0);
 }
 
 export function isNullableNonEmptyString(arg: unknown): arg is string | null {
-  return arg === null || isNonEmptyString(arg);
+  return arg === null || (typeof arg === 'string' && arg.length > 0);
 }
 
 export function isNullishNonEmptyString(
   arg: unknown,
 ): arg is string | null | undefined {
-  return arg === null || arg === undefined || isNonEmptyString(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (typeof arg === 'string' && arg.length > 0)
+  );
 }
 
 export function isNonEmptyStringArray(arg: unknown): arg is string[] {
-  return Array.isArray(arg) && arg.every(isNonEmptyString);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string' || value.length === 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalNonEmptyStringArray(
   arg: unknown,
 ): arg is string[] | undefined {
-  return arg === undefined || isNonEmptyStringArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string' || value.length === 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableNonEmptyStringArray(
   arg: unknown,
 ): arg is string[] | null {
-  return arg === null || isNonEmptyStringArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string' || value.length === 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishNonEmptyStringArray(
   arg: unknown,
 ): arg is string[] | null | undefined {
-  return arg === null || arg === undefined || isNonEmptyStringArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'string' || value.length === 0) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Symbol
@@ -624,37 +1293,78 @@ export function isSymbol(arg: unknown): arg is symbol {
 }
 
 export function isOptionalSymbol(arg: unknown): arg is symbol | undefined {
-  return arg === undefined || isSymbol(arg);
+  return arg === undefined || typeof arg === 'symbol';
 }
 
 export function isNullableSymbol(arg: unknown): arg is symbol | null {
-  return arg === null || isSymbol(arg);
+  return arg === null || typeof arg === 'symbol';
 }
 
 export function isNullishSymbol(
   arg: unknown,
 ): arg is symbol | null | undefined {
-  return arg === null || arg === undefined || isSymbol(arg);
+  return arg === null || arg === undefined || typeof arg === 'symbol';
 }
 
 export function isSymbolArray(arg: unknown): arg is symbol[] {
-  return Array.isArray(arg) && arg.every(isSymbol);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'symbol') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalSymbolArray(
   arg: unknown,
 ): arg is symbol[] | undefined {
-  return arg === undefined || isSymbolArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'symbol') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableSymbolArray(arg: unknown): arg is symbol[] | null {
-  return arg === null || isSymbolArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'symbol') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishSymbolArray(
   arg: unknown,
 ): arg is symbol[] | null | undefined {
-  return arg === null || arg === undefined || isSymbolArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'symbol') {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Date
@@ -663,38 +1373,86 @@ export function isDate(arg: unknown): arg is Date {
 }
 
 export function isOptionalDate(arg: unknown): arg is Date | undefined {
-  return arg === undefined || isDate(arg);
+  return arg === undefined || (arg instanceof Date && !isNaN(arg.getTime()));
 }
 
 export function isNullableDate(arg: unknown): arg is Date | null {
-  return arg === null || isDate(arg);
+  return arg === null || (arg instanceof Date && !isNaN(arg.getTime()));
 }
 
 export function isNullishDate(arg: unknown): arg is Date | null | undefined {
-  return arg === null || arg === undefined || isDate(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (arg instanceof Date && !isNaN(arg.getTime()))
+  );
 }
 
 export function isDateArray(arg: unknown): arg is Date[] {
-  return Array.isArray(arg) && arg.every(isDate);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!(value instanceof Date) || isNaN(value.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalDateArray(arg: unknown): arg is Date[] | undefined {
-  return arg === undefined || isDateArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!(value instanceof Date) || isNaN(value.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableDateArray(arg: unknown): arg is Date[] | null {
-  return arg === null || isDateArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!(value instanceof Date) || isNaN(value.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishDateArray(
   arg: unknown,
 ): arg is Date[] | null | undefined {
-  return arg === null || arg === undefined || isDateArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (!(value instanceof Date) || isNaN(value.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Is valid date
 export function isValidDate(arg: unknown): arg is Date | string | number {
-  if (!(isString(arg) || isNumber(arg) || arg instanceof Date)) {
+  const isStringType = typeof arg === 'string';
+  const isNumberType = typeof arg === 'number' && !isNaN(arg);
+  const isDateType = arg instanceof Date;
+  if (!isStringType && !isNumberType && !isDateType) {
     return false;
   }
   const value = new Date(arg);
@@ -704,43 +1462,142 @@ export function isValidDate(arg: unknown): arg is Date | string | number {
 export function isOptionalValidDate(
   arg: unknown,
 ): arg is Date | string | number | undefined {
-  return arg === undefined || isValidDate(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  const isStringType = typeof arg === 'string';
+  const isNumberType = typeof arg === 'number' && !isNaN(arg);
+  const isDateType = arg instanceof Date;
+  if (!isStringType && !isNumberType && !isDateType) {
+    return false;
+  }
+  const value = new Date(arg);
+  return !isNaN(value.getTime());
 }
 
 export function isNullableValidDate(
   arg: unknown,
 ): arg is Date | string | number | null {
-  return arg === null || isValidDate(arg);
+  if (arg === null) {
+    return true;
+  }
+  const isStringType = typeof arg === 'string';
+  const isNumberType = typeof arg === 'number' && !isNaN(arg);
+  const isDateType = arg instanceof Date;
+  if (!isStringType && !isNumberType && !isDateType) {
+    return false;
+  }
+  const value = new Date(arg);
+  return !isNaN(value.getTime());
 }
 
 export function isNullishValidDate(
   arg: unknown,
 ): arg is Date | string | number | null | undefined {
-  return arg === null || arg === undefined || isValidDate(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  const isStringType = typeof arg === 'string';
+  const isNumberType = typeof arg === 'number' && !isNaN(arg);
+  const isDateType = arg instanceof Date;
+  if (!isStringType && !isNumberType && !isDateType) {
+    return false;
+  }
+  const value = new Date(arg);
+  return !isNaN(value.getTime());
 }
 
 export function isValidDateArray(
   arg: unknown,
 ): arg is Array<Date | string | number> {
-  return Array.isArray(arg) && arg.every(isValidDate);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const isStringType = typeof value === 'string';
+    const isNumberType = typeof value === 'number' && !isNaN(value);
+    const isDateType = value instanceof Date;
+    if (!isStringType && !isNumberType && !isDateType) {
+      return false;
+    }
+    const parsed = new Date(value as Date | string | number);
+    if (isNaN(parsed.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalValidDateArray(
   arg: unknown,
 ): arg is Array<Date | string | number> | undefined {
-  return arg === undefined || isValidDateArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const isStringType = typeof value === 'string';
+    const isNumberType = typeof value === 'number' && !isNaN(value);
+    const isDateType = value instanceof Date;
+    if (!isStringType && !isNumberType && !isDateType) {
+      return false;
+    }
+    const parsed = new Date(value as Date | string | number);
+    if (isNaN(parsed.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableValidDateArray(
   arg: unknown,
 ): arg is Array<Date | string | number> | null {
-  return arg === null || isValidDateArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const isStringType = typeof value === 'string';
+    const isNumberType = typeof value === 'number' && !isNaN(value);
+    const isDateType = value instanceof Date;
+    if (!isStringType && !isNumberType && !isDateType) {
+      return false;
+    }
+    const parsed = new Date(value as Date | string | number);
+    if (isNaN(parsed.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishValidDateArray(
   arg: unknown,
 ): arg is Array<Date | string | number> | null | undefined {
-  return arg === null || arg === undefined || isValidDateArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    const isStringType = typeof value === 'string';
+    const isNumberType = typeof value === 'number' && !isNaN(value);
+    const isDateType = value instanceof Date;
+    if (!isStringType && !isNumberType && !isDateType) {
+      return false;
+    }
+    const parsed = new Date(value as Date | string | number);
+    if (isNaN(parsed.getTime())) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Object
@@ -751,46 +1608,91 @@ export function isObject(arg: unknown): arg is NonNullable<object> {
 export function isOptionalObject(
   arg: unknown,
 ): arg is NonNullable<object> | undefined {
-  return arg === undefined || isObject(arg);
+  return arg === undefined || (arg !== null && typeof arg === 'object');
 }
 
 export function isNullableObject(
   arg: unknown,
 ): arg is NonNullable<object> | null {
-  return arg === null || isObject(arg);
+  return arg === null || (arg !== null && typeof arg === 'object');
 }
 
 export function isNullishObject(
   arg: unknown,
 ): arg is NonNullable<object> | null | undefined {
-  return arg === null || arg === undefined || isObject(arg);
+  return (
+    arg === null ||
+    arg === undefined ||
+    (arg !== null && typeof arg === 'object')
+  );
 }
 
 export function isObjectArray(arg: unknown): arg is NonNullable<object>[] {
-  return Array.isArray(arg) && arg.every(isObject);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalObjectArray(
   arg: unknown,
 ): arg is NonNullable<object>[] | undefined {
-  return arg === undefined || isObjectArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableObjectArray(
   arg: unknown,
 ): arg is NonNullable<object>[] | null {
-  return arg === null || isObjectArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishObjectArray(
   arg: unknown,
 ): arg is NonNullable<object>[] | null | undefined {
-  return arg === null || arg === undefined || isObjectArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Plain Object
 export function isPlainObject(arg: unknown): arg is PlainObject {
-  if (!isObject(arg)) {
+  if (arg === null || typeof arg !== 'object') {
     return false;
   }
   const proto = Object.getPrototypeOf(arg);
@@ -800,39 +1702,117 @@ export function isPlainObject(arg: unknown): arg is PlainObject {
 export function isOptionalPlainObject(
   arg: unknown,
 ): arg is PlainObject | undefined {
-  return arg === undefined || isPlainObject(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (arg === null || typeof arg !== 'object') {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(arg);
+  return proto === objectProto || proto === null;
 }
 
 export function isNullablePlainObject(arg: unknown): arg is PlainObject | null {
-  return arg === null || isPlainObject(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (arg === null || typeof arg !== 'object') {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(arg);
+  return proto === objectProto || proto === null;
 }
 
 export function isNullishPlainObject(
   arg: unknown,
 ): arg is PlainObject | null | undefined {
-  return arg === null || arg === undefined || isPlainObject(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (arg === null || typeof arg !== 'object') {
+    return false;
+  }
+  const proto = Object.getPrototypeOf(arg);
+  return proto === objectProto || proto === null;
 }
 
 export function isPlainObjectArray(arg: unknown): arg is PlainObject[] {
-  return Array.isArray(arg) && arg.every(isPlainObject);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+    const proto = Object.getPrototypeOf(value);
+    if (!(proto === objectProto || proto === null)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalPlainObjectArray(
   arg: unknown,
 ): arg is PlainObject[] | undefined {
-  return arg === undefined || isPlainObjectArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+    const proto = Object.getPrototypeOf(value);
+    if (!(proto === objectProto || proto === null)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullablePlainObjectArray(
   arg: unknown,
 ): arg is PlainObject[] | null {
-  return arg === null || isPlainObjectArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+    const proto = Object.getPrototypeOf(value);
+    if (!(proto === objectProto || proto === null)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishPlainObjectArray(
   arg: unknown,
 ): arg is PlainObject[] | null | undefined {
-  return arg === null || arg === undefined || isPlainObjectArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (value === null || typeof value !== 'object') {
+      return false;
+    }
+    const proto = Object.getPrototypeOf(value);
+    if (!(proto === objectProto || proto === null)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 // Function
@@ -841,37 +1821,78 @@ export function isFunction(arg: unknown): arg is Function {
 }
 
 export function isOptionalFunction(arg: unknown): arg is Function | undefined {
-  return arg === undefined || isFunction(arg);
+  return arg === undefined || typeof arg === 'function';
 }
 
 export function isNullableFunction(arg: unknown): arg is Function | null {
-  return arg === null || isFunction(arg);
+  return arg === null || typeof arg === 'function';
 }
 
 export function isNullishFunction(
   arg: unknown,
 ): arg is Function | null | undefined {
-  return arg === null || arg === undefined || isFunction(arg);
+  return arg === null || arg === undefined || typeof arg === 'function';
 }
 
 export function isFunctionArray(arg: unknown): arg is Function[] {
-  return Array.isArray(arg) && arg.every(isFunction);
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'function') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isOptionalFunctionArray(
   arg: unknown,
 ): arg is Function[] | undefined {
-  return arg === undefined || isFunctionArray(arg);
+  if (arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'function') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullableFunctionArray(
   arg: unknown,
 ): arg is Function[] | null {
-  return arg === null || isFunctionArray(arg);
+  if (arg === null) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'function') {
+      return false;
+    }
+  }
+  return true;
 }
 
 export function isNullishFunctionArray(
   arg: unknown,
 ): arg is Function[] | null | undefined {
-  return arg === null || arg === undefined || isFunctionArray(arg);
+  if (arg === null || arg === undefined) {
+    return true;
+  }
+  if (!Array.isArray(arg)) {
+    return false;
+  }
+  for (const value of arg) {
+    if (typeof value !== 'function') {
+      return false;
+    }
+  }
+  return true;
 }
