@@ -8,14 +8,15 @@ import {
 } from './basic.js';
 import { markSafe } from './utils/parseObject/mark-safe.js';
 
-// Add modifiers
-type AddNull<T, N> = N extends true ? T | null : T;
-type AddNullables<T, O, N> = O extends true
-  ? AddNull<T, N> | undefined
-  : AddNull<T, N>;
-type AddMods<T, O, N, A> = A extends true
-  ? AddNullables<T[], O, N>
-  : AddNullables<T, O, N>;
+/******************************************************************************
+                                 Types
+******************************************************************************/
+
+type ResolveMods<T, O extends boolean, N extends boolean, A extends boolean> =
+  | T
+  | (A extends true ? T[] : T)
+  | (O extends true ? undefined : T)
+  | (N extends true ? null : never);
 
 /******************************************************************************
                               isInArray
@@ -33,7 +34,7 @@ export const isNullishInArray = <T extends readonly unknown[]>(arg: T) =>
 /**
  * Is an item in an array.
  */
-export function isInArrayHelper<
+function isInArrayHelper<
   T extends readonly unknown[],
   O extends boolean,
   N extends boolean,
@@ -41,9 +42,11 @@ export function isInArrayHelper<
   arr: T,
   optional: O,
   nullable: N,
-): (arg: unknown) => arg is AddNullables<T[number], O, N> {
+): (arg: unknown) => arg is ResolveMods<T[number], O, N, false> {
   const lookup = new Set(arr);
-  const validator = (arg: unknown): arg is AddNullables<T[number], O, N> => {
+  const validator = (
+    arg: unknown,
+  ): arg is ResolveMods<T[number], O, N, false> => {
     if (isUndef(arg)) {
       return !!optional;
     }
@@ -110,7 +113,7 @@ function isInRangeHelper<
   O extends boolean,
   N extends boolean,
   A extends boolean,
-  Ret = AddMods<number | string, O, N, A>,
+  Ret = ResolveMods<number | string, O, N, A>,
 >(
   optional: boolean,
   nullable: boolean,
@@ -228,7 +231,7 @@ function isKeyOfHelper<
   T extends object,
   O extends boolean,
   N extends boolean,
-  Ret = AddMods<keyof T, O, N, false>,
+  Ret = ResolveMods<keyof T, O, N, false>,
 >(
   obj: object,
   optional: boolean,
@@ -272,7 +275,7 @@ function isValueOfHelper<
   T extends object,
   O extends boolean,
   N extends boolean,
-  Ret = AddMods<ValueOf<T>, O, N, false>,
+  Ret = ResolveMods<ValueOf<T>, O, N, false>,
 >(
   obj: object,
   optional: boolean,
