@@ -1,11 +1,3 @@
-import {
-  isNull,
-  isNumber,
-  isObject,
-  isString,
-  isUndef,
-  isValidNumber,
-} from './basic.js';
 import { markSafe } from './utils/parseObject/mark-safe.js';
 
 /******************************************************************************
@@ -51,10 +43,10 @@ function isInArrayHelper<
   const validator = (
     arg: unknown,
   ): arg is ResolveMods<T[number], O, N, false> => {
-    if (isUndef(arg)) {
+    if (arg === undefined) {
       return !!optional;
     }
-    if (isNull(arg)) {
+    if (arg === null) {
       return !!nullable;
     }
     return lookup.has(arg);
@@ -68,6 +60,10 @@ function isInArrayHelper<
 
 type RangeParam = number | [number] | [];
 type isInRangeFn = (arg: number) => boolean;
+type RangeBound = {
+  value: number;
+  inclusive: boolean;
+};
 
 export function isInRange(min: RangeParam, max: RangeParam) {
   return isInRangeHelper<false, false, false>(false, false, false, min, max);
@@ -118,10 +114,15 @@ function isInRangeHelper<
       return nullable;
     }
     if (isArr) {
-      return (
-        Array.isArray(arg) &&
-        arg.every((item) => isInRangeCheckType(item, rangeFn))
-      );
+      if (!Array.isArray(arg)) {
+        return false;
+      }
+      for (let i = 0; i < arg.length; i += 1) {
+        if (!isInRangeCheckType(arg[i], rangeFn)) {
+          return false;
+        }
+      }
+      return true;
     }
     return isInRangeCheckType(arg, rangeFn);
   };
@@ -132,17 +133,17 @@ function isInRangeHelper<
  * Core logic for is array function.
  */
 function isInRangeCheckType(arg: unknown, rangeFn: isInRangeFn): boolean {
-  if (isString(arg)) {
-    if (isValidNumber(arg)) {
-      arg = Number(arg);
-    } else {
+  if (typeof arg === 'number') {
+    return rangeFn(arg);
+  }
+  if (typeof arg === 'string') {
+    const casted = Number(arg);
+    if (Number.isNaN(casted)) {
       return false;
     }
+    return rangeFn(casted);
   }
-  if (!isNumber(arg)) {
-    return false;
-  }
-  return rangeFn(arg);
+  return false;
 }
 
 /**
@@ -152,47 +153,48 @@ function setupIsInRangeInternalFn(
   min: RangeParam,
   max: RangeParam,
 ): isInRangeFn {
-  // arg >= min && arg <= max
-  if (
-    Array.isArray(min) &&
-    min.length === 1 &&
-    Array.isArray(max) &&
-    max.length === 1
-  ) {
-    return (arg: number) => arg >= min[0] && arg <= max[0];
-    // arg >= min
-  } else if (
-    Array.isArray(min) &&
-    min.length === 1 &&
-    Array.isArray(max) &&
-    max.length === 0
-  ) {
-    return (arg: number) => arg >= min[0];
-    // arg > min
-  } else if (!Array.isArray(min) && Array.isArray(max) && max.length === 0) {
-    return (arg: number) => arg > min;
-    // arg >= min && arg < max
-  } else if (Array.isArray(min) && min.length === 1 && !Array.isArray(max)) {
-    return (arg: number) => arg >= min[0] && arg < max;
-    // arg <= max
-  } else if (
-    Array.isArray(min) &&
-    min.length === 0 &&
-    Array.isArray(max) &&
-    max.length === 1
-  ) {
-    return (arg: number) => arg <= max[0];
-    // arg < max
-  } else if (Array.isArray(min) && min.length === 0 && !Array.isArray(max)) {
-    return (arg: number) => arg < max;
-    // arg > min && arg <= max
-  } else if (!Array.isArray(min) && Array.isArray(max) && max.length === 1) {
-    return (arg: number) => arg > min && arg <= max[0];
-    // arg > min && arg < max
-  } else if (!Array.isArray(min) && !Array.isArray(max)) {
-    return (arg: number) => arg > min && arg < max;
+  const minBound = parseRangeBound(min);
+  const maxBound = parseRangeBound(max);
+  return (arg: number) => {
+    if (minBound) {
+      if (minBound.inclusive) {
+        if (arg < minBound.value) {
+          return false;
+        }
+      } else if (arg <= minBound.value) {
+        return false;
+      }
+    }
+    if (maxBound) {
+      if (maxBound.inclusive) {
+        if (arg > maxBound.value) {
+          return false;
+        }
+      } else if (arg >= maxBound.value) {
+        return false;
+      }
+    }
+    return true;
+  };
+}
+
+function parseRangeBound(param: RangeParam): RangeBound | null {
+  if (Array.isArray(param)) {
+    if (param.length === 0) {
+      return null;
+    }
+    if (param.length === 1) {
+      return {
+        value: param[0],
+        inclusive: true,
+      };
+    }
+  } else {
+    return {
+      value: param,
+      inclusive: false,
+    };
   }
-  // Shouldn't reach this point.
   throw new Error('min and max must be number, [number], or []');
 }
 
@@ -226,8 +228,8 @@ function isKeyOfHelper<
   optional: boolean,
   nullable: boolean,
 ): (arg: unknown) => arg is Ret {
-  if (!isObject(obj)) {
-    throw new Error('Item to check from must be a Record<string, unknown>.');
+  if (!(obj !== null && typeof obj === 'object')) {
+    throw new Error('Item to check from must be a object.');
   }
   const isInKeys = isInArray(Object.keys(obj));
   const validator = (arg: unknown): arg is Ret => {
@@ -274,7 +276,7 @@ function isValueOfHelper<
   optional: boolean,
   nullable: boolean,
 ): (arg: unknown) => arg is Ret {
-  if (!isObject(obj)) {
+  if (!(obj !== null && typeof obj === 'object')) {
     throw new Error('Item to check from must be a Record<string, unknown>.');
   }
   const isInValues = isInArray(Object.values(obj));
