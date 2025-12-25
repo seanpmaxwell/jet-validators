@@ -17,6 +17,13 @@ export const SAFETY = {
   Strict: 3,
 } as const;
 
+const PARSE_TABLE = [
+  null, // index 0 unused
+  [parseLooseNoErrors, parseLoose],
+  [parseNormalNoErrors, parseNormal],
+  [parseStrictNoErrors, parseStrict],
+] as const;
+
 export const ERRORS = {
   NotOptional: 'Root argument is undefined but not optional.',
   NotNullable: 'Root argument is null but not nullable.',
@@ -96,11 +103,6 @@ interface ErrorState {
 
 export type OnErrorCallback = (errors: ParseError[]) => void;
 
-type ValidationResult = {
-  isValid: boolean; // did validators fail?
-  canDescend: boolean; // is value a PlainObject?
-};
-
 /******************************************************************************
                                   Functions
 ******************************************************************************/
@@ -117,22 +119,16 @@ function parseObjectCore(
   onError?: OnErrorCallback,
 ) {
   // Intialize tree and final parse function
-  const root = setupValidatorTree(schema, null, '');
-  let finalParseFn;
-  if (safety === SAFETY.Strict) {
-    finalParseFn = parseStrict;
-  } else if (safety === SAFETY.Normal) {
-    finalParseFn = parseNormal;
-  } else {
-    finalParseFn = parseLoose;
-  }
+  const root = setupValidatorTree(schema, null, ''),
+    selectParseFn = setupSelectParseFn(safety);
   let runId = 0;
 
   // Return user facing function
   return (param: unknown, localOnError?: OnErrorCallback) => {
     // Initialize error state
-    const errorState: ErrorState | null =
-      onError || localOnError ? { errors: [] } : null;
+    const collectErrors = !!(onError || localOnError),
+      errorState: ErrorState | null = collectErrors ? { errors: [] } : null;
+    // Call the onError callbacks if there are errors
     const fireOnErrorCb = () => {
       if (!!errorState && errorState.errors.length > 0) {
         if (!!localOnError) {
@@ -157,9 +153,10 @@ function parseObjectCore(
       runId = 1;
       resetSeen(root);
     }
+    const parseFn = selectParseFn(!!collectErrors);
     // If an array
     if (isArray) {
-      const result = parseArray(param, errorState, root, runId, finalParseFn);
+      const result = parseArray(param, errorState, root, runId, parseFn);
       if (result === false) {
         fireOnErrorCb();
       }
@@ -179,7 +176,7 @@ function parseObjectCore(
       return false;
     }
     // Run parseFunction
-    const result = finalParseFn(param, root, runId, errorState);
+    const result = parseFn(param, root, runId, errorState);
     if (result === false) {
       fireOnErrorCb();
       return false;
@@ -253,7 +250,7 @@ function checkNullables(
     if (!!errorState) {
       errorState.errors.push({
         info: ERRORS.NotOptional,
-        functionName: '<isOptional>',
+        functionName: '<optional>',
         value: undefined,
         key: '',
       });
@@ -266,7 +263,7 @@ function checkNullables(
     if (!!errorState) {
       errorState.errors.push({
         info: ERRORS.NotNullable,
-        functionName: '<isNullable>',
+        functionName: '<nullable>',
         value: null,
         key: '',
       });
@@ -299,26 +296,38 @@ function parseArray(
     }
     return false;
   }
-  // Run the validator for each array item
-  let isValid = true;
+  // Run the parseFn with an individual error state
+  if (!!errorState) {
+    const paramClone = [];
+    let isValid = true;
+    for (let i = 0; i < param.length; i++) {
+      const arrayItemErrorState = { errors: [], index: i },
+        result = parseFn(param[i], root, runId, arrayItemErrorState);
+      if (arrayItemErrorState.errors.length > 0) {
+        errorState!.errors = [
+          ...errorState.errors,
+          ...arrayItemErrorState.errors,
+        ];
+      }
+      if (result !== false && isValid) {
+        paramClone[i] = result;
+      } else {
+        isValid = false;
+      }
+    }
+    return isValid ? paramClone : false;
+  }
+  // Run the parseFn without an individual error state
   const paramClone = [];
   for (let i = 0; i < param.length; i++) {
-    let errorStateIdx = null;
-    if (!!errorState) {
-      errorStateIdx = { errors: [], hasErrors: false, index: i };
-    }
-    const result = parseFn(param[i], root, runId, errorStateIdx);
-    if (errorStateIdx?.hasErrors) {
-      errorState!.errors = [...errorState!.errors, ...errorStateIdx.errors];
-    }
+    const result = parseFn(param[i], root, runId);
     if (result !== false) {
       paramClone[i] = result;
     } else {
-      isValid = false;
+      return false;
     }
   }
-  // Return
-  return isValid ? param : false;
+  return paramClone;
 }
 
 /**
@@ -328,7 +337,7 @@ function parseStrict(
   param: PlainObject,
   root: Node,
   runId: number,
-  errorState: ErrorState | null,
+  errorState: ErrorState,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -339,16 +348,12 @@ function parseStrict(
     },
   ];
   // Iterate
-  let isValidFinal = true;
   while (stack.length) {
     const frame = stack[stack.length - 1];
     const node = frame.node;
     if (!frame.entered) {
       frame.entered = true;
-      const { isValid, canDescend } = runValidators(node, runId, errorState);
-      if (!isValid) {
-        isValidFinal = false;
-      }
+      const canDescend = runValidators(node, runId, errorState);
       if (canDescend && frame.lastChildAddedToStack < node.children.length) {
         const child = node.children[frame.lastChildAddedToStack];
         stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
@@ -356,17 +361,11 @@ function parseStrict(
         continue;
       }
     }
-    if (!sanitizeStrict(node, runId, errorState)) {
-      if (!!errorState) {
-        isValidFinal = false;
-      } else {
-        return false;
-      }
-    }
+    sanitizeStrict(node, runId, errorState);
     stack.pop();
   }
   // Return
-  return isValidFinal ? root.valueObject : false;
+  return errorState.errors.length === 0 ? root.valueObject : false;
 }
 
 /**
@@ -375,11 +374,82 @@ function parseStrict(
 function sanitizeStrict(
   node: Node,
   runId: number,
-  errorState: ErrorState | null,
-): boolean {
+  errorState: ErrorState,
+): void {
+  // Setup a clean object and check for extras
+  const nodeVal = node.valueObject,
+    clean: PlainObject = {},
+    keys = Object.keys(nodeVal),
+    keysLength = keys.length;
+  for (let i = 0; i < keysLength; i++) {
+    const key = keys[i],
+      kIdx = node.keyIndex[key];
+    if (kIdx === undefined || node.seen[kIdx] !== runId) {
+      errorState.errors.push({
+        info: ERRORS.StrictSafety,
+        functionName: '<strict>',
+        value: nodeVal[key],
+        ...getKeyPath(node, errorState, key),
+      });
+    }
+    // Don't need to clone if there are errors
+    if (errorState.errors.length === 0) {
+      let v = nodeVal[key];
+      if (key in node.transformedValuesObject) {
+        v = node.transformedValuesObject[key];
+        delete node.transformedValuesObject[key];
+      }
+      clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
+    }
+  }
+  // If no errors, replace current value with cloned value
+  if (errorState.errors.length === 0) {
+    node.valueObject = clean;
+    if (node.parent) {
+      node.parent.valueObject[node.key] = clean;
+    }
+  }
+}
+
+/**
+ * parse in strict mode
+ */
+function parseStrictNoErrors(param: PlainObject, root: Node, runId: number) {
+  root.valueObject = param;
+  const stack: Frame[] = [
+    {
+      node: root,
+      lastChildAddedToStack: 0,
+      entered: false,
+    },
+  ];
+  // Iterate
+  while (stack.length) {
+    const frame = stack[stack.length - 1];
+    const node = frame.node;
+    if (!frame.entered) {
+      frame.entered = true;
+      if (!runValidatorsNoErrors(node, runId)) return false;
+      if (frame.lastChildAddedToStack < node.children.length) {
+        const child = node.children[frame.lastChildAddedToStack];
+        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
+        frame.lastChildAddedToStack++;
+        continue;
+      }
+    }
+    if (!sanitizeStrictNoErrors(node, runId)) return false;
+    stack.pop();
+  }
+  // Return
+  return root.valueObject;
+}
+
+/**
+ * sanitize/clone for strict mode
+ */
+function sanitizeStrictNoErrors(node: Node, runId: number): boolean {
   const nodeVal = node.valueObject,
     clean: PlainObject = {};
-  let isValid = true;
   // Clean object
   const keys = Object.keys(nodeVal),
     keysLength = keys.length;
@@ -387,17 +457,7 @@ function sanitizeStrict(
     const key = keys[i],
       kIdx = node.keyIndex[key];
     if (kIdx === undefined || node.seen[kIdx] !== runId) {
-      if (!!errorState) {
-        isValid = false;
-        errorState.errors.push({
-          info: ERRORS.StrictSafety,
-          functionName: '<strict>',
-          value: nodeVal[key],
-          ...getKeyPath(node, errorState, key),
-        });
-      } else {
-        return false;
-      }
+      return false;
     }
     let v = nodeVal[key];
     if (key in node.transformedValuesObject) {
@@ -411,7 +471,7 @@ function sanitizeStrict(
   if (node.parent) {
     node.parent.valueObject[node.key] = clean;
   }
-  return isValid;
+  return true;
 }
 
 /**
@@ -421,7 +481,7 @@ function parseNormal(
   param: PlainObject,
   root: Node,
   runId: number,
-  errorState: ErrorState | null,
+  errorState: ErrorState,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -431,17 +491,47 @@ function parseNormal(
       entered: false,
     },
   ];
-  let isValidFinal = true;
   while (stack.length) {
-    const frame = stack[stack.length - 1];
-    const node = frame.node;
+    const frame = stack[stack.length - 1],
+      node = frame.node;
     if (!frame.entered) {
       frame.entered = true;
-      const { isValid, canDescend } = runValidators(node, runId, errorState);
-      if (!isValid) {
-        isValidFinal = false;
-      }
+      const canDescend = runValidators(node, runId, errorState);
       if (canDescend && frame.lastChildAddedToStack < node.children.length) {
+        const child = node.children[frame.lastChildAddedToStack];
+        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
+        frame.lastChildAddedToStack++;
+        continue;
+      }
+    }
+    if (errorState.errors.length === 0) {
+      sanitizeNormal(node, runId);
+    }
+    stack.pop();
+  }
+  // Return
+  return errorState.errors.length === 0 ? root.valueObject : false;
+}
+
+/**
+ * Parse for normal mode
+ */
+function parseNormalNoErrors(param: PlainObject, root: Node, runId: number) {
+  root.valueObject = param;
+  const stack: Frame[] = [
+    {
+      node: root,
+      lastChildAddedToStack: 0,
+      entered: false,
+    },
+  ];
+  while (stack.length) {
+    const frame = stack[stack.length - 1],
+      node = frame.node;
+    if (!frame.entered) {
+      frame.entered = true;
+      if (!runValidatorsNoErrors(node, runId)) return false;
+      if (frame.lastChildAddedToStack < node.children.length) {
         const child = node.children[frame.lastChildAddedToStack];
         stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
         frame.lastChildAddedToStack++;
@@ -451,8 +541,7 @@ function parseNormal(
     sanitizeNormal(node, runId);
     stack.pop();
   }
-  // Return
-  return isValidFinal ? root.valueObject : false;
+  return root.valueObject;
 }
 
 /**
@@ -479,13 +568,13 @@ function sanitizeNormal(node: Node, runId: number): void {
 }
 
 /**
- * Parse for loose mode
+ * Parse for loose mode with errors.
  */
 function parseLoose(
   param: PlainObject,
   root: Node,
   runId: number,
-  errorState: ErrorState | null,
+  errorState: ErrorState,
 ) {
   root.valueObject = param;
   const stack: Frame[] = [
@@ -495,16 +584,46 @@ function parseLoose(
       entered: false,
     },
   ];
-  // Iterate
-  let isValidFinal = true;
   while (stack.length) {
     const frame = stack[stack.length - 1];
     const node = frame.node;
     if (!frame.entered) {
       frame.entered = true;
-      const { isValid, canDescend } = runValidators(node, runId, errorState);
-      isValidFinal = isValid;
+      const canDescend = runValidators(node, runId, errorState);
       if (canDescend && frame.lastChildAddedToStack < node.children.length) {
+        const child = node.children[frame.lastChildAddedToStack];
+        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
+        frame.lastChildAddedToStack++;
+        continue;
+      }
+    }
+    if (errorState.errors.length === 0) {
+      sanitizeLoose(node);
+    }
+    stack.pop();
+  }
+  return errorState.errors.length === 0 ? root.valueObject : false;
+}
+
+/**
+ * Parse for loose mode
+ */
+function parseLooseNoErrors(param: PlainObject, root: Node, runId: number) {
+  root.valueObject = param;
+  const stack: Frame[] = [
+    {
+      node: root,
+      lastChildAddedToStack: 0,
+      entered: false,
+    },
+  ];
+  while (stack.length) {
+    const frame = stack[stack.length - 1];
+    const node = frame.node;
+    if (!frame.entered) {
+      frame.entered = true;
+      if (!runValidatorsNoErrors(node, runId)) return false;
+      if (frame.lastChildAddedToStack < node.children.length) {
         const child = node.children[frame.lastChildAddedToStack];
         stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
         frame.lastChildAddedToStack++;
@@ -514,8 +633,7 @@ function parseLoose(
     sanitizeLoose(node);
     stack.pop();
   }
-  // Return
-  return isValidFinal ? root.valueObject : false;
+  return root.valueObject;
 }
 
 /**
@@ -540,35 +658,47 @@ function sanitizeLoose(node: Node): void {
   }
 }
 
+/******************************************************************************
+                                Helpers
+            Helpers kept in same file for minor performance
+******************************************************************************/
+
+/**
+ * Fastest way to select the parse function.
+ */
+function setupSelectParseFn(safety: Safety): Function {
+  const innerArray = PARSE_TABLE[safety];
+  return (collectErrors: boolean) => {
+    return innerArray[collectErrors ? 1 : 0];
+  };
+}
+
 /**
  * For validation functions.
  */
 function runValidators(
   node: Node,
   runId: number,
-  errorState: ErrorState | null,
-): ValidationResult {
+  errorState: ErrorState,
+): boolean {
   // Set the value object on the child
   if (node.parent) {
     const parentNodeVal = node.parent.valueObject,
       nodeVal = parentNodeVal[node.key];
     if (!isPlainObject(nodeVal)) {
-      if (!!errorState) {
-        errorState.errors.push({
-          info: ERRORS.SchemaProp,
-          functionName: '<object>',
-          value: nodeVal,
-          ...getKeyPath(node, errorState, node.key),
-        });
-      }
-      return { isValid: false, canDescend: false };
+      errorState.errors.push({
+        info: ERRORS.SchemaProp,
+        functionName: '<object>',
+        value: nodeVal,
+        ...getKeyPath(node, errorState, node.key),
+      });
+      return false;
     }
     node.valueObject = nodeVal;
     const parentIdx = node.parent.keyIndex[node.key];
     node.parent.seen[parentIdx] = runId;
   }
   // Run safe validators
-  let isValid = true;
   const nodeVal = node.valueObject;
   for (const vldr of node.safeValidators) {
     const vldrFn: Function = vldr.fn,
@@ -583,7 +713,7 @@ function runValidators(
     } else if (isTestObjectCoreFn(vldrFn)) {
       result = vldrFn(
         toValidate,
-        !!errorState ? getBlendedOnErrorCb(errorState, node) : undefined,
+        getBlendedOnErrorCb(errorState, node),
         (modifiedValue) => {
           node.transformedValuesObject[vldr.key] = modifiedValue;
         },
@@ -593,15 +723,12 @@ function runValidators(
       result = vldrFn(toValidate);
     }
     if (!result) {
-      isValid = false;
-      if (errorState) {
-        errorState.errors.push({
-          info: ERRORS.ValidatorFn,
-          functionName: vldr.name,
-          value: toValidate,
-          ...getKeyPath(node, errorState, vldr.key),
-        });
-      }
+      errorState.errors.push({
+        info: ERRORS.ValidatorFn,
+        functionName: vldr.name,
+        value: toValidate,
+        ...getKeyPath(node, errorState, vldr.key),
+      });
     } else {
       node.seen[vldr.idx] = runId;
     }
@@ -622,28 +749,82 @@ function runValidators(
       if (!result) throw null;
       node.seen[vldr.idx] = runId;
     } catch (err) {
-      isValid = false;
-      if (errorState) {
-        errorState.errors.push({
-          info: ERRORS.ValidatorFn,
-          functionName: vldr.name,
-          value: nodeVal[vldr.key],
-          caught:
-            err instanceof Error ? err.message : err ? String(err) : undefined,
-          ...getKeyPath(node, errorState, vldr.key),
-        });
-      }
+      errorState.errors.push({
+        info: ERRORS.ValidatorFn,
+        functionName: vldr.name,
+        value: nodeVal[vldr.key],
+        caught:
+          err instanceof Error ? err.message : err ? String(err) : undefined,
+        ...getKeyPath(node, errorState, vldr.key),
+      });
     }
     node.seen[vldr.idx] = runId;
   }
   // Return
-  return { isValid, canDescend: true };
+  return true;
 }
 
-/******************************************************************************
-                                Helpers
-            Helpers kept in same file for minor performance
-******************************************************************************/
+/**
+ * For validation functions.
+ */
+function runValidatorsNoErrors(node: Node, runId: number): boolean {
+  // Set the value object on the child
+  if (node.parent) {
+    const parentNodeVal = node.parent.valueObject,
+      nodeVal = parentNodeVal[node.key];
+    if (!isPlainObject(nodeVal)) {
+      return false;
+    }
+    node.valueObject = nodeVal;
+    const parentIdx = node.parent.keyIndex[node.key];
+    node.parent.seen[parentIdx] = runId;
+  }
+  // Run safe validators
+  const nodeVal = node.valueObject;
+  for (const vldr of node.safeValidators) {
+    const vldrFn: Function = vldr.fn,
+      toValidate = nodeVal[vldr.key];
+    // Transform validator function
+    if (isTransformFunction(vldrFn)) {
+      const result = vldrFn(toValidate, (newValue) => {
+        node.transformedValuesObject[vldr.key] = newValue;
+      });
+      if (!result) return false;
+      // Nested testObject function
+    } else if (isTestObjectCoreFn(vldrFn)) {
+      const result = vldrFn(toValidate, undefined, (modifiedValue) => {
+        node.transformedValuesObject[vldr.key] = modifiedValue;
+      });
+      if (!result) return false;
+      // Standard validator function
+    } else {
+      if (!vldrFn(toValidate)) return false;
+    }
+    node.seen[vldr.idx] = runId;
+  }
+  // Run unsafe validators
+  for (const vldr of node.unSafeValidators) {
+    try {
+      const vldrFn: Function = vldr.fn,
+        toValidate = nodeVal[vldr.key];
+      let result;
+      if (isTransformFunction(vldrFn)) {
+        result = vldrFn(toValidate, (newValue) => {
+          node.transformedValuesObject[vldr.key] = newValue;
+        });
+      } else {
+        result = vldrFn(toValidate);
+      }
+      if (!result) throw null;
+      node.seen[vldr.idx] = runId;
+    } catch {
+      return false;
+    }
+    node.seen[vldr.idx] = runId;
+  }
+  // Return
+  return true;
+}
 
 /**
  * Get keyPath
