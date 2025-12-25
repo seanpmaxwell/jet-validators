@@ -304,7 +304,7 @@ function parseArray(
       const arrayItemErrorState = { errors: [], index: i },
         result = parseFn(param[i], root, runId, arrayItemErrorState);
       if (arrayItemErrorState.errors.length > 0) {
-        errorState!.errors = [
+        errorState.errors = [
           ...errorState.errors,
           ...arrayItemErrorState.errors,
         ];
@@ -834,7 +834,7 @@ function getKeyPath(node: Node, errorState: ErrorState, key: string) {
   if (errorState.index !== undefined) {
     keyPath = [errorState.index.toString()];
   }
-  if (!!node.parent) {
+  if (!!node.parent || keyPath.length > 0) {
     keyPath = [...keyPath, ...node.path, key];
   }
   return keyPath.length > 1 ? { keyPath } : { key };

@@ -157,10 +157,10 @@ test('test "parseObject()" function', () => {
       id: isNumber,
       name: isString,
     },
-    (err) => {
-      expect(err[0].value).toStrictEqual('3');
-      expect(err[0].keyPath?.[0]).toStrictEqual('2');
-      expect(err[0].keyPath?.[1]).toStrictEqual('id');
+    (errors) => {
+      expect(errors[0].value).toStrictEqual('3');
+      expect(errors[0].keyPath?.[0]).toStrictEqual('2');
+      expect(errors[0].keyPath?.[1]).toStrictEqual('id');
     },
   );
   parseUserArrWithError([
