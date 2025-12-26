@@ -3,7 +3,7 @@ import {
   type ValidatorFnWithTransformCb,
 } from '../simple-utils.js';
 
-import { isPlainObject, type Function } from '../../basic.js';
+import { isPlainObject } from '../../basic.js';
 import { isSafe } from './mark-safe.js';
 import { isTestObjectCoreFn } from './testObjectCore.js';
 
@@ -40,6 +40,8 @@ export const ERRORS = {
 
 export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
 type PlainObject = Record<string, unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyFunction = (...args: any[]) => any;
 
 // **** Validation Schema **** //
 
@@ -282,7 +284,7 @@ function parseArray(
   errorState: ErrorState | null,
   root: Node,
   runId: number,
-  parseFn: Function,
+  parseFn: AnyFunction,
 ) {
   // Make sure param is an array
   if (!Array.isArray(param)) {
@@ -304,10 +306,7 @@ function parseArray(
       const arrayItemErrorState = { errors: [], index: i },
         result = parseFn(param[i], root, runId, arrayItemErrorState);
       if (arrayItemErrorState.errors.length > 0) {
-        errorState.errors = [
-          ...errorState.errors,
-          ...arrayItemErrorState.errors,
-        ];
+        errorState.errors.push(...arrayItemErrorState.errors);
       }
       if (result !== false && isValid) {
         paramClone[i] = result;
@@ -672,7 +671,7 @@ function sanitizeLoose(node: Node): void {
 /**
  * Fastest way to select the parse function.
  */
-function setupSelectParseFn(safety: Safety): Function {
+function setupSelectParseFn(safety: Safety): AnyFunction {
   const innerArray = PARSE_TABLE[safety];
   return (collectErrors: boolean) => {
     return innerArray[collectErrors ? 1 : 0];
@@ -707,7 +706,7 @@ function runValidators(
   // Run safe validators
   const nodeVal = node.valueObject;
   for (const vldr of node.safeValidators) {
-    const vldrFn: Function = vldr.fn,
+    const vldrFn: AnyFunction = vldr.fn,
       toValidate = nodeVal[vldr.key];
     let result,
       isNestedTestObjectFn = false;
@@ -755,7 +754,7 @@ function runValidators(
   for (const vldr of node.unSafeValidators) {
     // Run test
     try {
-      const vldrFn: Function = vldr.fn,
+      const vldrFn: AnyFunction = vldr.fn,
         toValidate = nodeVal[vldr.key];
       let result;
       if (isTransformFn(vldrFn)) {
@@ -807,7 +806,7 @@ function runValidatorsNoErrors(node: Node, runId: number): boolean {
   // Run safe validators
   const nodeVal = node.valueObject;
   for (const vldr of node.safeValidators) {
-    const vldrFn: Function = vldr.fn,
+    const vldrFn: AnyFunction = vldr.fn,
       toValidate = nodeVal[vldr.key];
     // Transform validator function
     if (isTransformFn(vldrFn)) {
@@ -830,7 +829,7 @@ function runValidatorsNoErrors(node: Node, runId: number): boolean {
   // Run unsafe validators
   for (const vldr of node.unSafeValidators) {
     try {
-      const vldrFn: Function = vldr.fn,
+      const vldrFn: AnyFunction = vldr.fn,
         toValidate = nodeVal[vldr.key];
       let result;
       if (isTransformFn(vldrFn)) {
