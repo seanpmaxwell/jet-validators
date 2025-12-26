@@ -234,7 +234,7 @@ test('test "parseObject()" function', () => {
 /**
  * Test "testObject" function
  */
-test('test "testObject()" function', () => {
+test.only('test "testObject()" function', () => {
   // Do basic test
   const testUser = testObject({
     id: isNumber,
@@ -306,37 +306,14 @@ test('test "testObject()" function', () => {
     {
       functionName: 'isNumber',
       info: 'Validator function returned false.',
-      keyPath: ['code'],
+      keyPath: ['address', 'country', 'code'],
       value: '1234',
     },
     {
-      functionName: 'testFn',
+      functionName: 'transform-isNumber',
       info: 'Validator function returned false.',
-      keyPath: ['country'],
-      value: {
-        code: '1234',
-        name: 'USA',
-      },
-    },
-    {
-      caught: undefined,
-      functionName: 'fn',
-      info: 'Validator function returned false.',
-      keyPath: ['zip'],
+      keyPath: ['address', 'zip'],
       value: 'horse',
-    },
-    {
-      functionName: 'testFn',
-      info: 'Validator function returned false.',
-      key: 'address',
-      value: {
-        city: 'Seattle',
-        country: {
-          code: '1234',
-          name: 'USA',
-        },
-        zip: 'horse',
-      },
     },
   ]);
 

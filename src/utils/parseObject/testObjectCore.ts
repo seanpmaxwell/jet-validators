@@ -34,6 +34,7 @@ function testObjectCore<T>(
   isArray: boolean,
   schema: Schema<T>,
   safety: Safety,
+  name: string,
   onError?: OnErrorCallback,
 ) {
   // Setup the parse function
@@ -46,7 +47,7 @@ function testObjectCore<T>(
     onError,
   );
   // Wrap type predicate function around the parse function
-  const testFn = (
+  const userFacingFn = (
     arg: unknown,
     onError?: OnErrorCallback,
     modifiedValueCb?: (modifiedValue: unknown) => void,
@@ -56,10 +57,13 @@ function testObjectCore<T>(
     return result !== false;
   };
   // Add symbols
-  (testFn as unknown as SafeFunction)[symTestObjectFn] = true;
-  markSafe(testFn);
+  (userFacingFn as unknown as SafeFunction)[symTestObjectFn] = true;
+  markSafe(userFacingFn);
+  Object.defineProperty(userFacingFn, 'name', {
+    value: `transform-${validate.name}`,
+  });
   // Return the test predicate function
-  return testFn;
+  return userFacingFn;
 }
 
 /**

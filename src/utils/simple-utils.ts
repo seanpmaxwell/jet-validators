@@ -76,6 +76,7 @@ export function transform<T, U = T>(
   transformFn: (arg: unknown) => T,
   validate: (arg: unknown) => arg is U,
 ): ValidatorFnWithTransformCb<T> {
+  // Initialize the function
   const fn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
     if (arg !== undefined) {
       arg = transformFn(arg);
@@ -83,11 +84,19 @@ export function transform<T, U = T>(
     cb?.(arg as T);
     return validate(arg);
   };
+  // Set properties
   (fn as unknown as Record<symbol, unknown>)[kTransformFunction] = true;
+  Object.defineProperty(fn, 'name', {
+    value: `transform-${validate.name}`,
+  });
+  // Return
   return fn;
 }
 
-export function isTransformFunction(
+/**
+ * Check if a function is a transform function by looking at the symbol.
+ */
+export function isTransformFn(
   arg: Function,
 ): arg is ValidatorFnWithTransformCb<unknown> {
   return (
