@@ -30,15 +30,7 @@ export function testObject<S extends Record<string, unknown>>(
 ) => arg is InferredReturnValue<S, false, false, false>;
 
 export function testObject(schema: Schema<unknown>, onError?: OnErrorCallback) {
-  return testObjectCore(
-    false,
-    false,
-    false,
-    schema,
-    SAFETY.Normal,
-    'testObject',
-    onError,
-  );
+  return testObjectCore(false, false, false, schema, SAFETY.Normal, onError);
 }
 
 // **** testOptionalObject **** //
@@ -63,15 +55,7 @@ export function testOptionalObject(
   schema: Schema<unknown>,
   onError?: OnErrorCallback,
 ) {
-  return testObjectCore(
-    true,
-    false,
-    false,
-    schema,
-    SAFETY.Normal,
-    'testOptionalObject',
-    onError,
-  );
+  return testObjectCore(true, false, false, schema, SAFETY.Normal, onError);
 }
 
 // **** testNullableObject **** //
@@ -96,15 +80,7 @@ export function testNullableObject(
   schema: Schema<unknown>,
   onError?: OnErrorCallback,
 ) {
-  return testObjectCore(
-    false,
-    true,
-    false,
-    schema,
-    SAFETY.Normal,
-    'testNullableObject',
-    onError,
-  );
+  return testObjectCore(false, true, false, schema, SAFETY.Normal, onError);
 }
 
 // **** testNullishObject **** //
@@ -129,15 +105,7 @@ export function testNullishObject(
   schema: Schema<unknown>,
   onError?: OnErrorCallback,
 ) {
-  return testObjectCore(
-    true,
-    true,
-    false,
-    schema,
-    SAFETY.Normal,
-    'testNullishObject',
-    onError,
-  );
+  return testObjectCore(true, true, false, schema, SAFETY.Normal, onError);
 }
 
 // **** testObjectArray **** //

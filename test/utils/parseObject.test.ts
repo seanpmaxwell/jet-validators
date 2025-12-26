@@ -234,7 +234,7 @@ test('test "parseObject()" function', () => {
 /**
  * Test "testObject" function
  */
-test.only('test "testObject()" function', () => {
+test('test "testObject()" function', () => {
   // Do basic test
   const testUser = testObject({
     id: isNumber,

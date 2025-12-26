@@ -709,7 +709,8 @@ function runValidators(
   for (const vldr of node.safeValidators) {
     const vldrFn: Function = vldr.fn,
       toValidate = nodeVal[vldr.key];
-    let result;
+    let result,
+      isNestedTestObjectFn = false;
     // Transform validator function
     if (isTransformFn(vldrFn)) {
       result = vldrFn(toValidate, (newValue) => {
@@ -717,20 +718,19 @@ function runValidators(
       });
       // Nested testObject function
     } else if (isTestObjectCoreFn(vldrFn)) {
+      isNestedTestObjectFn = true;
       result = vldrFn(
         toValidate,
         (nestedErrors: ParseError[]) => {
-          console.log('aaa', node.path, nestedErrors)
           for (const error of nestedErrors) {
             if (error.key) {
-              (error as PlainObject).keyPath = [...node.path, error.key];
+              (error as PlainObject).keyPath = [vldr.key, error.key];
               delete (error as PlainObject).key;
             } else {
-              error.keyPath = [...node.path, ...(error.keyPath ?? [])];
+              error.keyPath = [vldr.key, ...(error.keyPath ?? [])];
             }
             errorState.errors.push(error);
           }
-          console.log('bbb', nestedErrors)
         },
         (modifiedValue) => {
           node.transformedValuesObject[vldr.key] = modifiedValue;
@@ -740,7 +740,7 @@ function runValidators(
     } else {
       result = vldrFn(toValidate);
     }
-    if (!result) {
+    if (!result && !isNestedTestObjectFn) {
       errorState.errors.push({
         info: ERRORS.ValidatorFn,
         functionName: vldr.name,
@@ -753,6 +753,7 @@ function runValidators(
   }
   // Run unsafe validators
   for (const vldr of node.unSafeValidators) {
+    // Run test
     try {
       const vldrFn: Function = vldr.fn,
         toValidate = nodeVal[vldr.key];
@@ -766,13 +767,19 @@ function runValidators(
       }
       if (!result) throw null;
       node.seen[vldr.idx] = runId;
+      // Catch any thrown errors
     } catch (err) {
+      let errMsg = null;
+      if (err instanceof Error) {
+        errMsg = err.message;
+      } else if (err !== null) {
+        errMsg = String(err);
+      }
       errorState.errors.push({
         info: ERRORS.ValidatorFn,
         functionName: vldr.name,
         value: nodeVal[vldr.key],
-        caught:
-          err instanceof Error ? err.message : err ? String(err) : undefined,
+        ...(errMsg !== null ? { caught: errMsg } : {}),
         ...getKeyPath(node, errorState, vldr.key),
       });
     }
