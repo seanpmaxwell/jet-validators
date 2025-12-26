@@ -68,7 +68,7 @@ interface Node {
   path: string[];
   children: Node[];
   valueObject: PlainObject;
-  transformedValuesObject: PlainObject;
+  transformedValuesObject: PlainObject | null;
   // Track validations
   keyIndex: Record<string, number>;
   seen: Uint32Array;
@@ -211,7 +211,7 @@ function setupValidatorTree(
     children: [],
     path: parentNode ? [...parentNode.path, paramKey] : [],
     valueObject: {},
-    transformedValuesObject: {},
+    transformedValuesObject: null,
     keyIndex,
     seen: new Uint32Array(keys.length),
   };
@@ -300,7 +300,7 @@ function parseArray(
   }
   // Run the parseFn with an individual error state
   if (!!errorState) {
-    const paramClone = [];
+    const paramClone = new Array(param.length);
     let isValid = true;
     for (let i = 0; i < param.length; i++) {
       const arrayItemErrorState = { errors: [], index: i },
@@ -317,7 +317,7 @@ function parseArray(
     return isValid ? paramClone : false;
   }
   // Run the parseFn without an individual error state
-  const paramClone = [];
+  const paramClone = new Array(param.length);
   for (let i = 0; i < param.length; i++) {
     const result = parseFn(param[i], root, runId);
     if (result !== false) {
@@ -381,6 +381,7 @@ function sanitizeStrict(
   const nodeVal = node.valueObject,
     clean: PlainObject = {},
     keys = Object.keys(nodeVal),
+    transformedValues = node.transformedValuesObject,
     keysLength = keys.length;
   for (let i = 0; i < keysLength; i++) {
     const key = keys[i],
@@ -396,13 +397,16 @@ function sanitizeStrict(
     // Don't need to clone if there are errors
     if (errorState.errors.length === 0) {
       let v = nodeVal[key];
-      if (key in node.transformedValuesObject) {
-        v = node.transformedValuesObject[key];
+      if (
+        transformedValues &&
+        Object.prototype.hasOwnProperty.call(transformedValues, key)
+      ) {
+        v = transformedValues[key];
       }
       clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
     }
   }
-  node.transformedValuesObject = {};
+  node.transformedValuesObject = null;
   // If no errors, replace current value with cloned value
   if (errorState.errors.length === 0) {
     node.valueObject = clean;
@@ -450,7 +454,8 @@ function parseStrictNoErrors(param: PlainObject, root: Node, runId: number) {
  */
 function sanitizeStrictNoErrors(node: Node, runId: number): boolean {
   const nodeVal = node.valueObject,
-    clean: PlainObject = {};
+    clean: PlainObject = {},
+    transformedValues = node.transformedValuesObject;
   // Clean object
   const keys = Object.keys(nodeVal),
     keysLength = keys.length;
@@ -461,13 +466,16 @@ function sanitizeStrictNoErrors(node: Node, runId: number): boolean {
       return false;
     }
     let v = nodeVal[key];
-    if (key in node.transformedValuesObject) {
-      v = node.transformedValuesObject[key];
+    if (
+      transformedValues &&
+      Object.prototype.hasOwnProperty.call(transformedValues, key)
+    ) {
+      v = transformedValues[key];
     }
     clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
   }
   node.valueObject = clean;
-  node.transformedValuesObject = {};
+  node.transformedValuesObject = null;
   // Set the parent pointer to cleaned value
   if (node.parent) {
     node.parent.valueObject[node.key] = clean;
@@ -553,19 +561,24 @@ function parseNormalNoErrors(param: PlainObject, root: Node, runId: number) {
 function sanitizeNormal(node: Node, runId: number): void {
   const nodeVal = node.valueObject,
     clean: PlainObject = {},
-    keys = Object.keys(nodeVal);
+    keys = Object.keys(nodeVal),
+    transformedValues = node.transformedValuesObject;
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i],
       kIdx = node.keyIndex[key];
     if (kIdx !== undefined && node.seen[kIdx] === runId) {
       let v = nodeVal[key];
-      if (key in node.transformedValuesObject) {
-        v = node.transformedValuesObject[key];
+      if (
+        transformedValues &&
+        Object.prototype.hasOwnProperty.call(transformedValues, key)
+      ) {
+        v = transformedValues[key];
       }
       clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
     }
   }
   node.valueObject = clean;
+  node.transformedValuesObject = null;
   if (node.parent) node.parent.valueObject[node.key] = clean;
 }
 
@@ -647,17 +660,21 @@ function parseLooseNoErrors(param: PlainObject, root: Node, runId: number) {
 function sanitizeLoose(node: Node): void {
   const nodeVal = node.valueObject,
     clean: PlainObject = {},
-    keys = Object.keys(nodeVal);
+    keys = Object.keys(nodeVal),
+    transformedValues = node.transformedValuesObject;
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
     let v = nodeVal[key];
-    if (key in node.transformedValuesObject) {
-      v = node.transformedValuesObject[key];
+    if (
+      transformedValues &&
+      Object.prototype.hasOwnProperty.call(transformedValues, key)
+    ) {
+      v = transformedValues[key];
     }
     clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
   }
   node.valueObject = clean;
-  node.transformedValuesObject = {};
+  node.transformedValuesObject = null;
   if (node.parent) {
     node.parent.valueObject[node.key] = clean;
   }
@@ -676,6 +693,20 @@ function setupSelectParseFn(safety: Safety): AnyFunction {
   return (collectErrors: boolean) => {
     return innerArray[collectErrors ? 1 : 0];
   };
+}
+
+/**
+ * Lazily record transformed values so sanitize passes can skip extra work.
+ */
+function setTransformedValue(node: Node, key: string, value: unknown): void {
+  const store = node.transformedValuesObject;
+  if (store === null) {
+    const newStore: PlainObject = Object.create(null);
+    newStore[key] = value;
+    node.transformedValuesObject = newStore;
+  } else {
+    store[key] = value;
+  }
 }
 
 /**
@@ -704,16 +735,18 @@ function runValidators(
     node.parent.seen[parentIdx] = runId;
   }
   // Run safe validators
-  const nodeVal = node.valueObject;
-  for (const vldr of node.safeValidators) {
-    const vldrFn: AnyFunction = vldr.fn,
+  const nodeVal = node.valueObject,
+    safeValidators = node.safeValidators;
+  for (let i = 0; i < safeValidators.length; i++) {
+    const vldr = safeValidators[i],
+      vldrFn: AnyFunction = vldr.fn,
       toValidate = nodeVal[vldr.key];
     let result,
       isNestedTestObjectFn = false;
     // Transform validator function
     if (isTransformFn(vldrFn)) {
       result = vldrFn(toValidate, (newValue) => {
-        node.transformedValuesObject[vldr.key] = newValue;
+        setTransformedValue(node, vldr.key, newValue);
       });
       // Nested testObject function
     } else if (isTestObjectCoreFn(vldrFn)) {
@@ -732,7 +765,7 @@ function runValidators(
           }
         },
         (modifiedValue) => {
-          node.transformedValuesObject[vldr.key] = modifiedValue;
+          setTransformedValue(node, vldr.key, modifiedValue);
         },
       );
       // Standard validator function
@@ -751,7 +784,9 @@ function runValidators(
     }
   }
   // Run unsafe validators
-  for (const vldr of node.unSafeValidators) {
+  const unSafeValidators = node.unSafeValidators;
+  for (let i = 0; i < unSafeValidators.length; i++) {
+    const vldr = unSafeValidators[i];
     // Run test
     try {
       const vldrFn: AnyFunction = vldr.fn,
@@ -759,7 +794,7 @@ function runValidators(
       let result;
       if (isTransformFn(vldrFn)) {
         result = vldrFn(toValidate, (newValue) => {
-          node.transformedValuesObject[vldr.key] = newValue;
+          setTransformedValue(node, vldr.key, newValue);
         });
       } else {
         result = vldrFn(toValidate);
@@ -804,20 +839,22 @@ function runValidatorsNoErrors(node: Node, runId: number): boolean {
     node.parent.seen[parentIdx] = runId;
   }
   // Run safe validators
-  const nodeVal = node.valueObject;
-  for (const vldr of node.safeValidators) {
-    const vldrFn: AnyFunction = vldr.fn,
+  const nodeVal = node.valueObject,
+    safeValidators = node.safeValidators;
+  for (let i = 0; i < safeValidators.length; i++) {
+    const vldr = safeValidators[i],
+      vldrFn: AnyFunction = vldr.fn,
       toValidate = nodeVal[vldr.key];
     // Transform validator function
     if (isTransformFn(vldrFn)) {
       const result = vldrFn(toValidate, (newValue) => {
-        node.transformedValuesObject[vldr.key] = newValue;
+        setTransformedValue(node, vldr.key, newValue);
       });
       if (!result) return false;
       // Nested testObject function
     } else if (isTestObjectCoreFn(vldrFn)) {
       const result = vldrFn(toValidate, undefined, (modifiedValue) => {
-        node.transformedValuesObject[vldr.key] = modifiedValue;
+        setTransformedValue(node, vldr.key, modifiedValue);
       });
       if (!result) return false;
       // Standard validator function
@@ -827,14 +864,16 @@ function runValidatorsNoErrors(node: Node, runId: number): boolean {
     node.seen[vldr.idx] = runId;
   }
   // Run unsafe validators
-  for (const vldr of node.unSafeValidators) {
+  const unSafeValidators = node.unSafeValidators;
+  for (let i = 0; i < unSafeValidators.length; i++) {
+    const vldr = unSafeValidators[i];
     try {
       const vldrFn: AnyFunction = vldr.fn,
         toValidate = nodeVal[vldr.key];
       let result;
       if (isTransformFn(vldrFn)) {
         result = vldrFn(toValidate, (newValue) => {
-          node.transformedValuesObject[vldr.key] = newValue;
+          setTransformedValue(node, vldr.key, newValue);
         });
       } else {
         result = vldrFn(toValidate);
