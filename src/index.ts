@@ -1,5 +1,11 @@
-// Export Basic Stuff
-export {
+import * as basicValidatorsRaw from './basic.js';
+import { markSafeIterative } from './utils/parseObject/mark-safe.js';
+
+/******************************************************************************
+                                  Export
+******************************************************************************/
+
+export const {
   // Nullables
   isUndef,
   isNull,
@@ -166,6 +172,15 @@ export {
   isOptionalObjectArray,
   isNullableObjectArray,
   isNullishObjectArray,
+  // Plain Object
+  isPlainObject,
+  isOptionalPlainObject,
+  isNullablePlainObject,
+  isNullishPlainObject,
+  isPlainObjectArray,
+  isOptionalPlainObjectArray,
+  isNullablePlainObjectArray,
+  isNullishPlainObjectArray,
   // Function
   isFunction,
   isOptionalFunction,
@@ -175,9 +190,10 @@ export {
   isOptionalFunctionArray,
   isNullableFunctionArray,
   isNullishFunctionArray,
-} from './basic.js';
+} = markSafeIterative(basicValidatorsRaw);
 
-// Complex-validators
+export { type PlainObject } from './basic.js';
+
 export {
   // Is in array
   isInArray,

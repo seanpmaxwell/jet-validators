@@ -1,1072 +1,852 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-nocheck
-
 import { describe, expect, test } from 'vitest';
 
-import * as RootExports from '../src';
-import * as UtilExports from '../src/utils';
+import * as validators from '../src';
+import * as utils from '../src/utils';
 
-const ROOT_FUNCTION_EXPORTS = [
-  'isUndef',
-  'isNull',
-  'isNullish',
-  'isBoolean',
-  'isOptionalBoolean',
-  'isNullableBoolean',
-  'isNullishBoolean',
-  'isBooleanArray',
-  'isOptionalBooleanArray',
-  'isNullableBooleanArray',
-  'isNullishBooleanArray',
-  'isValidBoolean',
-  'isOptionalValidBoolean',
-  'isNullableValidBoolean',
-  'isNullishValidBoolean',
-  'isValidBooleanArray',
-  'isOptionalValidBooleanArray',
-  'isNullableValidBooleanArray',
-  'isNullishValidBooleanArray',
-  'isNumber',
-  'isOptionalNumber',
-  'isNullableNumber',
-  'isNullishNumber',
-  'isNumberArray',
-  'isOptionalNumberArray',
-  'isNullableNumberArray',
-  'isNullishNumberArray',
-  'isPositiveNumber',
-  'isOptionalPositiveNumber',
-  'isNullablePositiveNumber',
-  'isNullishPositiveNumber',
-  'isPositiveNumberArray',
-  'isOptionalPositiveNumberArray',
-  'isNullablePositiveNumberArray',
-  'isNullishPositiveNumberArray',
-  'isNegativeNumber',
-  'isOptionalNegativeNumber',
-  'isNullableNegativeNumber',
-  'isNullishNegativeNumber',
-  'isNegativeNumberArray',
-  'isOptionalNegativeNumberArray',
-  'isNullableNegativeNumberArray',
-  'isNullishNegativeNumberArray',
-  'isUnsignedNumber',
-  'isOptionalUnsignedNumber',
-  'isNullableUnsignedNumber',
-  'isNullishUnsignedNumber',
-  'isUnsignedNumberArray',
-  'isOptionalUnsignedNumberArray',
-  'isNullableUnsignedNumberArray',
-  'isNullishUnsignedNumberArray',
-  'isInteger',
-  'isOptionalInteger',
-  'isNullableInteger',
-  'isNullishInteger',
-  'isIntegerArray',
-  'isOptionalIntegerArray',
-  'isNullableIntegerArray',
-  'isNullishIntegerArray',
-  'isPositiveInteger',
-  'isOptionalPositiveInteger',
-  'isNullablePositiveInteger',
-  'isNullishPositiveInteger',
-  'isPositiveIntegerArray',
-  'isOptionalPositiveIntegerArray',
-  'isNullablePositiveIntegerArray',
-  'isNullishPositiveIntegerArray',
-  'isNegativeInteger',
-  'isOptionalNegativeInteger',
-  'isNullableNegativeInteger',
-  'isNullishNegativeInteger',
-  'isNegativeIntegerArray',
-  'isOptionalNegativeIntegerArray',
-  'isNullableNegativeIntegerArray',
-  'isNullishNegativeIntegerArray',
-  'isUnsignedInteger',
-  'isOptionalUnsignedInteger',
-  'isNullableUnsignedInteger',
-  'isNullishUnsignedInteger',
-  'isUnsignedIntegerArray',
-  'isOptionalUnsignedIntegerArray',
-  'isNullableUnsignedIntegerArray',
-  'isNullishUnsignedIntegerArray',
-  'isBigInt',
-  'isOptionalBigInt',
-  'isNullableBigInt',
-  'isNullishBigInt',
-  'isBigIntArray',
-  'isOptionalBigIntArray',
-  'isNullableBigIntArray',
-  'isNullishBigIntArr',
-  'isValidNumber',
-  'isOptionalValidNumber',
-  'isNullableValidNumber',
-  'isNullishValidNumber',
-  'isValidNumberArray',
-  'isOptionalValidNumberArray',
-  'isNullableValidNumberArray',
-  'isNishValidNumArr',
-  'isString',
-  'isOptionalString',
-  'isNullableString',
-  'isNullishString',
-  'isStringArray',
-  'isOptionalStringArray',
-  'isNullableStringArray',
-  'isNullishStringArray',
-  'isNonEmptyString',
-  'isOptionalNonEmptyString',
-  'isNullableNonEmptyString',
-  'isNullishNonEmptyString',
-  'isNonEmptyStringArray',
-  'isOptionalNonEmptyStringArray',
-  'isNullableNonEmptyStringArray',
-  'isNullishNonEmptyStringArray',
-  'isSymbol',
-  'isOptionalSymbol',
-  'isNullableSymbol',
-  'isNullishSymbol',
-  'isSymbolArray',
-  'isOptionalSymbolArray',
-  'isNullableSymbolArray',
-  'isNullishSymbolArray',
-  'isDate',
-  'isOptionalDate',
-  'isNullableDate',
-  'isNullishDate',
-  'isDateArray',
-  'isOptionalDateArray',
-  'isNullableDateArray',
-  'isNullishDateArray',
-  'isValidDate',
-  'isOptionalValidDate',
-  'isNullableValidDate',
-  'isNullishValidDate',
-  'isValidDateArray',
-  'isOptionalValidDateArray',
-  'isNullableValidDateArray',
-  'isNullishValidDateArray',
-  'isObject',
-  'isOptionalObject',
-  'isNullableObject',
-  'isNullishObject',
-  'isObjectArray',
-  'isOptionalObjectArray',
-  'isNullableObjectArray',
-  'isNullishObjectArray',
-  'isFunction',
-  'isOptionalFunction',
-  'isNullableFunction',
-  'isNullishFunction',
-  'isFunctionArray',
-  'isOptionalFunctionArray',
-  'isNullableFunctionArray',
-  'isNullishFunctionArray',
-  'isInArray',
-  'isOptionalInArray',
-  'isNullableInArray',
-  'isNullishInArray',
-  'isInRange',
-  'isOptionalInRange',
-  'isNullableInRange',
-  'isNullishInRange',
-  'isInRangeArray',
-  'isOptionalInRangeArray',
-  'isNullableInRangeArray',
-  'isNullishInRangeArray',
-  'isKeyOf',
-  'isOptionalKeyOf',
-  'isNullableKeyOf',
-  'isNullishKeyOf',
-  'isValueOf',
-  'isOptionalValueOf',
-  'isNullableValueOf',
-  'isNullishValueOf',
-] as const;
+type AnyFn = (...args: unknown[]) => unknown;
+type ValidatorFn = (arg: unknown) => boolean;
+type ModuleExports = Record<string, unknown>;
 
-const UTIL_FUNCTION_EXPORTS = [
-  'nonNullable',
-  'makeOptional',
-  'makeNullable',
-  'makeNullish',
-  'transform',
-  'parseBoolean',
-  'parseOptionalBoolean',
-  'parseNullableBoolean',
-  'parseNullishBoolean',
-  'parseJson',
-  'parseOptionalJson',
-  'parseNullableJson',
-  'parseNullishJson',
-  'parseObject',
-  'parseOptionalObject',
-  'parseNullableObject',
-  'parseNullishObject',
-  'parseObjectArray',
-  'parseOptionalObjectArray',
-  'parseNullableObjectArray',
-  'parseNullishObjectArray',
-  'looseParseObject',
-  'looseParseOptionalObject',
-  'looseParseNullableObject',
-  'looseParseNullishObject',
-  'looseParseObjectArray',
-  'looseParseOptionalObjectArray',
-  'looseParseNullableObjectArray',
-  'looseParseNullishObjectArray',
-  'strictParseObject',
-  'strictParseOptionalObject',
-  'strictParseNullableObject',
-  'strictParseNullishObject',
-  'strictParseObjectArray',
-  'strictParseOptionalObjectArray',
-  'strictParseNullableObjectArray',
-  'strictParseNullishObjectArray',
-  'testObject',
-  'testOptionalObject',
-  'testNullableObject',
-  'testNullishObject',
-  'testObjectArray',
-  'testOptionalObjectArray',
-  'testNullableObjectArray',
-  'testNullishObjectArray',
-  'looseTestObject',
-  'looseTestOptionalObject',
-  'looseTestNullableObject',
-  'looseTestNullishObject',
-  'looseTestObjectArray',
-  'looseTestOptionalObjectArray',
-  'looseTestNullableObjectArray',
-  'looseTestNullishObjectArray',
-  'strictTestObject',
-  'strictTestOptionalObject',
-  'strictTestNullableObject',
-  'strictTestNullishObject',
-  'strictTestObjectArray',
-  'strictTestOptionalObjectArray',
-  'strictTestNullableObjectArray',
-  'strictTestNullishObjectArray',
-] as const;
+const validatorExports = validators as ModuleExports;
+const utilsExports = utils as ModuleExports;
 
-type RootFnName = (typeof ROOT_FUNCTION_EXPORTS)[number];
-type UtilFnName = (typeof UTIL_FUNCTION_EXPORTS)[number];
+const expectFunctionExport = (
+  moduleExports: ModuleExports,
+  name: string,
+): AnyFn => {
+  const fn = moduleExports[name];
+  expect(fn, `${name} should be exported`).toBeTypeOf('function');
+  return fn as AnyFn;
+};
 
-const rootFns = RootExports as Record<string, unknown>;
-const utilFns = UtilExports as Record<string, unknown>;
+const expectValidatorResults = (
+  moduleExports: ModuleExports,
+  name: string,
+  passValues: unknown[],
+  failValues: unknown[],
+) => {
+  const fn = expectFunctionExport(
+    moduleExports,
+    name,
+  ) as unknown as ValidatorFn;
+  passValues.forEach((value) => {
+    expect(fn(value)).toBe(true);
+  });
+  failValues.forEach((value) => {
+    expect(fn(value)).toBe(false);
+  });
+};
 
-const testedRootFns = new Set<RootFnName>();
-const testedUtilFns = new Set<UtilFnName>();
-
-function getRootFunction<T extends RootFnName>(name: T) {
-  const fn = rootFns[name];
-  if (typeof fn !== 'function') {
-    throw new Error(
-      `Expected ${name} to be exported as a function from src/index.ts.`,
+describe('basic nullish helpers', () => {
+  test('isUndef', () => {
+    expectValidatorResults(
+      validatorExports,
+      'isUndef',
+      [undefined],
+      [null, 0, '', false],
     );
-  }
-  testedRootFns.add(name);
-  return fn as (...args: never[]) => unknown;
-}
+  });
 
-function getUtilFunction<T extends UtilFnName>(name: T) {
-  const fn = utilFns[name];
-  if (typeof fn !== 'function') {
-    throw new Error(
-      `Expected ${name} to be exported as a function from src/utils/index.ts.`,
+  test('isNull', () => {
+    expectValidatorResults(
+      validatorExports,
+      'isNull',
+      [null],
+      [undefined, 0, '', false],
     );
-  }
-  testedUtilFns.add(name);
-  return fn as (...args: never[]) => unknown;
-}
+  });
 
-describe('primitive nullish validators', () => {
-  test('isUndef/isNull/isNullish', () => {
-    const isUndef = getRootFunction('isUndef');
-    const isNull = getRootFunction('isNull');
-    const isNullish = getRootFunction('isNullish');
-
-    expect(isUndef(undefined)).toBe(true);
-    expect(isUndef(null)).toBe(false);
-
-    expect(isNull(null)).toBe(true);
-    expect(isNull(undefined)).toBe(false);
-
-    expect(isNullish(null)).toBe(true);
-    expect(isNullish(undefined)).toBe(true);
-    expect(isNullish(0)).toBe(false);
+  test('isNullish', () => {
+    expectValidatorResults(
+      validatorExports,
+      'isNullish',
+      [null, undefined],
+      [0, '', false],
+    );
   });
 });
 
-type ValidatorScenario = {
-  base: RootFnName;
-  optional: RootFnName;
-  nullable: RootFnName;
-  nullish: RootFnName;
-  array: RootFnName;
-  optionalArray: RootFnName;
-  nullableArray: RootFnName;
-  nullishArray: RootFnName;
-  valid: unknown[];
-  invalid: unknown[];
+type ValidatorNameMap = {
+  base: string;
+  optional: string;
+  nullable: string;
+  nullish: string;
+  array: string;
+  optionalArray: string;
+  nullableArray: string;
+  nullishArray: string;
 };
 
-const symbolSample = Symbol('sym');
-const dateSample = new Date('2024-01-01T00:00:00Z');
-const fnSample = () => true;
+type StandardValidatorSpec = {
+  label: string;
+  baseName: string;
+  valid: unknown[];
+  invalid: unknown[];
+  arrayValid?: unknown[][];
+  arrayInvalid?: unknown[][];
+  overrides?: Partial<ValidatorNameMap>;
+  baseAcceptsNull?: boolean;
+  baseAcceptsUndefined?: boolean;
+};
 
-const validatorScenarios: ValidatorScenario[] = [
+const createValidatorNames = (
+  baseName: string,
+  overrides: Partial<ValidatorNameMap> = {},
+): ValidatorNameMap => ({
+  base: overrides.base ?? `is${baseName}`,
+  optional: overrides.optional ?? `isOptional${baseName}`,
+  nullable: overrides.nullable ?? `isNullable${baseName}`,
+  nullish: overrides.nullish ?? `isNullish${baseName}`,
+  array: overrides.array ?? `is${baseName}Array`,
+  optionalArray: overrides.optionalArray ?? `isOptional${baseName}Array`,
+  nullableArray: overrides.nullableArray ?? `isNullable${baseName}Array`,
+  nullishArray: overrides.nullishArray ?? `isNullish${baseName}Array`,
+});
+
+const validatorGroups: StandardValidatorSpec[] = [
   {
-    base: 'isBoolean',
-    optional: 'isOptionalBoolean',
-    nullable: 'isNullableBoolean',
-    nullish: 'isNullishBoolean',
-    array: 'isBooleanArray',
-    optionalArray: 'isOptionalBooleanArray',
-    nullableArray: 'isNullableBooleanArray',
-    nullishArray: 'isNullishBooleanArray',
+    label: 'Boolean validators',
+    baseName: 'Boolean',
     valid: [true, false],
-    invalid: ['true', 1, null],
+    invalid: [1, 'true', {}, []],
   },
   {
-    base: 'isValidBoolean',
-    optional: 'isOptionalValidBoolean',
-    nullable: 'isNullableValidBoolean',
-    nullish: 'isNullishValidBoolean',
-    array: 'isValidBooleanArray',
-    optionalArray: 'isOptionalValidBooleanArray',
-    nullableArray: 'isNullableValidBooleanArray',
-    nullishArray: 'isNullishValidBooleanArray',
-    valid: [true, false, 'yes', 'No', '1', '0', 0, 1],
-    invalid: ['test', 2],
+    label: 'Valid boolean validators',
+    baseName: 'ValidBoolean',
+    valid: [true, false, 'true', 'FALSE', 'yes', 'No', 1, 0],
+    invalid: ['foo', 2, {}, []],
   },
   {
-    base: 'isNumber',
-    optional: 'isOptionalNumber',
-    nullable: 'isNullableNumber',
-    nullish: 'isNullishNumber',
-    array: 'isNumberArray',
-    optionalArray: 'isOptionalNumberArray',
-    nullableArray: 'isNullableNumberArray',
-    nullishArray: 'isNullishNumberArray',
-    valid: [0, 12.3],
-    invalid: ['1', NaN, null],
+    label: 'Number validators',
+    baseName: 'Number',
+    valid: [0, 1.5, -3],
+    invalid: ['1', NaN, true, {}, []],
   },
   {
-    base: 'isPositiveNumber',
-    optional: 'isOptionalPositiveNumber',
-    nullable: 'isNullablePositiveNumber',
-    nullish: 'isNullishPositiveNumber',
-    array: 'isPositiveNumberArray',
-    optionalArray: 'isOptionalPositiveNumberArray',
-    nullableArray: 'isNullablePositiveNumberArray',
-    nullishArray: 'isNullishPositiveNumberArray',
-    valid: [1, 3.5],
-    invalid: [-1, 0],
+    label: 'Positive number validators',
+    baseName: 'PositiveNumber',
+    valid: [0.1, 5],
+    invalid: [0, -1, '1', []],
   },
   {
-    base: 'isNegativeNumber',
-    optional: 'isOptionalNegativeNumber',
-    nullable: 'isNullableNegativeNumber',
-    nullish: 'isNullishNegativeNumber',
-    array: 'isNegativeNumberArray',
-    optionalArray: 'isOptionalNegativeNumberArray',
-    nullableArray: 'isNullableNegativeNumberArray',
-    nullishArray: 'isNullishNegativeNumberArray',
-    valid: [-1, -3.5],
-    invalid: [0, 1],
+    label: 'Negative number validators',
+    baseName: 'NegativeNumber',
+    valid: [-0.1, -5],
+    invalid: [0, 3, '1', []],
   },
   {
-    base: 'isUnsignedNumber',
-    optional: 'isOptionalUnsignedNumber',
-    nullable: 'isNullableUnsignedNumber',
-    nullish: 'isNullishUnsignedNumber',
-    array: 'isUnsignedNumberArray',
-    optionalArray: 'isOptionalUnsignedNumberArray',
-    nullableArray: 'isNullableUnsignedNumberArray',
-    nullishArray: 'isNullishUnsignedNumberArray',
+    label: 'Unsigned number validators',
+    baseName: 'UnsignedNumber',
+    valid: [0, 10],
+    invalid: [-1, '5', []],
+  },
+  {
+    label: 'Integer validators',
+    baseName: 'Integer',
+    valid: [-10, 0, 12],
+    invalid: [1.2, '2', []],
+  },
+  {
+    label: 'Positive integer validators',
+    baseName: 'PositiveInteger',
+    valid: [1, 5],
+    invalid: [0, -1, 2.5, '2'],
+  },
+  {
+    label: 'Negative integer validators',
+    baseName: 'NegativeInteger',
+    valid: [-1, -5],
+    invalid: [0, 1, -2.5, '2'],
+  },
+  {
+    label: 'Unsigned integer validators',
+    baseName: 'UnsignedInteger',
     valid: [0, 5],
-    invalid: [-1],
+    invalid: [-1, 1.5, '2'],
   },
   {
-    base: 'isInteger',
-    optional: 'isOptionalInteger',
-    nullable: 'isNullableInteger',
-    nullish: 'isNullishInteger',
-    array: 'isIntegerArray',
-    optionalArray: 'isOptionalIntegerArray',
-    nullableArray: 'isNullableIntegerArray',
-    nullishArray: 'isNullishIntegerArray',
-    valid: [0, 3],
-    invalid: [1.5, '3'],
+    label: 'BigInt validators',
+    baseName: 'BigInt',
+    valid: [0n, 5n],
+    invalid: [0, '5', []],
+    overrides: {
+      nullishArray: 'isNullishBigIntArr',
+    },
   },
   {
-    base: 'isPositiveInteger',
-    optional: 'isOptionalPositiveInteger',
-    nullable: 'isNullablePositiveInteger',
-    nullish: 'isNullishPositiveInteger',
-    array: 'isPositiveIntegerArray',
-    optionalArray: 'isOptionalPositiveIntegerArray',
-    nullableArray: 'isNullablePositiveIntegerArray',
-    nullishArray: 'isNullishPositiveIntegerArray',
-    valid: [1, 4],
-    invalid: [0, -1],
+    label: 'Valid number validators',
+    baseName: 'ValidNumber',
+    valid: ['5', 5, '0.2', 0, true],
+    invalid: ['foo', {}, () => null],
+    overrides: {
+      nullishArray: 'isNishValidNumArr',
+    },
+    baseAcceptsNull: true,
   },
   {
-    base: 'isNegativeInteger',
-    optional: 'isOptionalNegativeInteger',
-    nullable: 'isNullableNegativeInteger',
-    nullish: 'isNullishNegativeInteger',
-    array: 'isNegativeIntegerArray',
-    optionalArray: 'isOptionalNegativeIntegerArray',
-    nullableArray: 'isNullableNegativeIntegerArray',
-    nullishArray: 'isNullishNegativeIntegerArray',
-    valid: [-1, -4],
-    invalid: [0, 1],
+    label: 'String validators',
+    baseName: 'String',
+    valid: ['abc', ''],
+    invalid: [0, true, {}, []],
   },
   {
-    base: 'isUnsignedInteger',
-    optional: 'isOptionalUnsignedInteger',
-    nullable: 'isNullableUnsignedInteger',
-    nullish: 'isNullishUnsignedInteger',
-    array: 'isUnsignedIntegerArray',
-    optionalArray: 'isOptionalUnsignedIntegerArray',
-    nullableArray: 'isNullableUnsignedIntegerArray',
-    nullishArray: 'isNullishUnsignedIntegerArray',
-    valid: [0, 5],
-    invalid: [-1, 1.5],
+    label: 'Non-empty string validators',
+    baseName: 'NonEmptyString',
+    valid: ['abc', ' '],
+    invalid: ['', 0, false],
   },
   {
-    base: 'isBigInt',
-    optional: 'isOptionalBigInt',
-    nullable: 'isNullableBigInt',
-    nullish: 'isNullishBigInt',
-    array: 'isBigIntArray',
-    optionalArray: 'isOptionalBigIntArray',
-    nullableArray: 'isNullableBigIntArray',
-    nullishArray: 'isNullishBigIntArr',
-    valid: [1n, -5n],
-    invalid: [1, '1'],
+    label: 'Symbol validators',
+    baseName: 'Symbol',
+    valid: [Symbol('a')],
+    invalid: ['a', 1, {}],
   },
   {
-    base: 'isValidNumber',
-    optional: 'isOptionalValidNumber',
-    nullable: 'isNullableValidNumber',
-    nullish: 'isNullishValidNumber',
-    array: 'isValidNumberArray',
-    optionalArray: 'isOptionalValidNumberArray',
-    nullableArray: 'isNullableValidNumberArray',
-    nullishArray: 'isNishValidNumArr',
-    valid: ['1', '3.4', true, 2],
-    invalid: ['abc', { bad: true }],
+    label: 'Date validators',
+    baseName: 'Date',
+    valid: [new Date('2024-01-01')],
+    invalid: [new Date('invalid'), '2024-01-01', 0],
   },
   {
-    base: 'isString',
-    optional: 'isOptionalString',
-    nullable: 'isNullableString',
-    nullish: 'isNullishString',
-    array: 'isStringArray',
-    optionalArray: 'isOptionalStringArray',
-    nullableArray: 'isNullableStringArray',
-    nullishArray: 'isNullishStringArray',
-    valid: ['hello'],
-    invalid: [1, null],
+    label: 'Valid date validators',
+    baseName: 'ValidDate',
+    valid: [new Date('2024-01-01'), '2023-02-02', 1700000000],
+    invalid: ['bad-date', {}, []],
   },
   {
-    base: 'isNonEmptyString',
-    optional: 'isOptionalNonEmptyString',
-    nullable: 'isNullableNonEmptyString',
-    nullish: 'isNullishNonEmptyString',
-    array: 'isNonEmptyStringArray',
-    optionalArray: 'isOptionalNonEmptyStringArray',
-    nullableArray: 'isNullableNonEmptyStringArray',
-    nullishArray: 'isNullishNonEmptyStringArray',
-    valid: ['abc'],
-    invalid: ['', null],
+    label: 'Object validators',
+    baseName: 'Object',
+    valid: [{}, [], new Date()],
+    invalid: [null, 'a', 1],
   },
   {
-    base: 'isSymbol',
-    optional: 'isOptionalSymbol',
-    nullable: 'isNullableSymbol',
-    nullish: 'isNullishSymbol',
-    array: 'isSymbolArray',
-    optionalArray: 'isOptionalSymbolArray',
-    nullableArray: 'isNullableSymbolArray',
-    nullishArray: 'isNullishSymbolArray',
-    valid: [symbolSample],
-    invalid: ['sym', 1],
+    label: 'Plain object validators',
+    baseName: 'PlainObject',
+    valid: [{ foo: 'bar' }, Object.create(null)],
+    invalid: [[], null, 1],
   },
   {
-    base: 'isDate',
-    optional: 'isOptionalDate',
-    nullable: 'isNullableDate',
-    nullish: 'isNullishDate',
-    array: 'isDateArray',
-    optionalArray: 'isOptionalDateArray',
-    nullableArray: 'isNullableDateArray',
-    nullishArray: 'isNullishDateArray',
-    valid: [dateSample],
-    invalid: ['2024-01-01', new Date('invalid')],
-  },
-  {
-    base: 'isValidDate',
-    optional: 'isOptionalValidDate',
-    nullable: 'isNullableValidDate',
-    nullish: 'isNullishValidDate',
-    array: 'isValidDateArray',
-    optionalArray: 'isOptionalValidDateArray',
-    nullableArray: 'isNullableValidDateArray',
-    nullishArray: 'isNullishValidDateArray',
-    valid: ['2024-01-01', dateSample, 0],
-    invalid: ['bad-date', symbolSample],
-  },
-  {
-    base: 'isObject',
-    optional: 'isOptionalObject',
-    nullable: 'isNullableObject',
-    nullish: 'isNullishObject',
-    array: 'isObjectArray',
-    optionalArray: 'isOptionalObjectArray',
-    nullableArray: 'isNullableObjectArray',
-    nullishArray: 'isNullishObjectArray',
-    valid: [{ id: 1 }],
-    invalid: ['not-object', 5],
-  },
-  {
-    base: 'isFunction',
-    optional: 'isOptionalFunction',
-    nullable: 'isNullableFunction',
-    nullish: 'isNullishFunction',
-    array: 'isFunctionArray',
-    optionalArray: 'isOptionalFunctionArray',
-    nullableArray: 'isNullableFunctionArray',
-    nullishArray: 'isNullishFunctionArray',
-    valid: [fnSample],
-    invalid: [{}, 'fn'],
+    label: 'Function validators',
+    baseName: 'Function',
+    valid: [() => null, function named() {}],
+    invalid: [{}, 1, 'fn'],
   },
 ];
 
-describe('root validator behaviors', () => {
-  validatorScenarios.forEach((scenario) => {
-    test(`${scenario.base} and related modifiers`, () => {
-      const baseFn = getRootFunction(scenario.base);
-      scenario.valid.forEach((value) => expect(baseFn(value)).toBe(true));
-      scenario.invalid.forEach((value) => expect(baseFn(value)).toBe(false));
-      if (scenario.base === 'isObject') {
-        expect(baseFn(null)).toBe(false);
-      }
+const buildArrayValues = (values: unknown[]): unknown[][] => [
+  [values[0]],
+  [values[0], values[values.length - 1] ?? values[0]],
+];
 
-      const optionalFn = getRootFunction(scenario.optional);
-      expect(optionalFn(undefined)).toBe(true);
-      expect(optionalFn(scenario.invalid[0])).toBe(false);
+validatorGroups.forEach((group) => {
+  const names = createValidatorNames(group.baseName, group.overrides);
+  const arrayValid = group.arrayValid ?? buildArrayValues(group.valid);
+  const arrayInvalid = group.arrayInvalid ?? [
+    [...arrayValid[0], group.invalid[0]],
+    'not-an-array',
+  ];
+  const invalidSansNull = group.invalid.filter((value) => value !== null);
+  const invalidSansUndefined = group.invalid.filter(
+    (value) => value !== undefined,
+  );
+  const invalidSansNullish = group.invalid.filter(
+    (value) => value !== null && value !== undefined,
+  );
+  const arrayInvalidSansNull = arrayInvalid.filter((value) => value !== null);
+  const arrayInvalidSansUndefined = arrayInvalid.filter(
+    (value) => value !== undefined,
+  );
+  const arrayInvalidSansNullish = arrayInvalid.filter(
+    (value) => value !== null && value !== undefined,
+  );
 
-      const nullableFn = getRootFunction(scenario.nullable);
-      expect(nullableFn(null)).toBe(true);
-      expect(nullableFn(scenario.invalid[0])).toBe(false);
+  describe(group.label, () => {
+    test(names.base, () => {
+      const baseFailValues = [
+        ...group.invalid,
+        ...(group.baseAcceptsNull ? [] : [null]),
+        ...(group.baseAcceptsUndefined ? [] : [undefined]),
+      ];
+      expectValidatorResults(validatorExports, names.base, group.valid, [
+        ...baseFailValues,
+      ]);
+    });
 
-      const nullishFn = getRootFunction(scenario.nullish);
-      expect(nullishFn(null)).toBe(true);
-      expect(nullishFn(undefined)).toBe(true);
-      expect(nullishFn(scenario.invalid[0])).toBe(false);
+    test(names.optional, () => {
+      const optionalFailValues = [
+        ...invalidSansUndefined,
+        ...(group.baseAcceptsNull ? [] : [null]),
+      ];
+      expectValidatorResults(
+        validatorExports,
+        names.optional,
+        [...group.valid, undefined],
+        optionalFailValues,
+      );
+    });
 
-      const arrayFn = getRootFunction(scenario.array);
-      expect(arrayFn([scenario.valid[0], scenario.valid[0]])).toBe(true);
-      expect(arrayFn([scenario.valid[0], scenario.invalid[0]])).toBe(false);
-      expect(arrayFn(scenario.valid[0])).toBe(false);
+    test(names.nullable, () => {
+      const nullableFailValues = [
+        ...invalidSansNull,
+        ...(group.baseAcceptsUndefined ? [] : [undefined]),
+      ];
+      expectValidatorResults(
+        validatorExports,
+        names.nullable,
+        [...group.valid, null],
+        nullableFailValues,
+      );
+    });
 
-      const optionalArrayFn = getRootFunction(scenario.optionalArray);
-      expect(optionalArrayFn(undefined)).toBe(true);
-      expect(optionalArrayFn([scenario.valid[0]])).toBe(true);
+    test(names.nullish, () => {
+      expectValidatorResults(
+        validatorExports,
+        names.nullish,
+        [...group.valid, null, undefined],
+        invalidSansNullish,
+      );
+    });
 
-      const nullableArrayFn = getRootFunction(scenario.nullableArray);
-      expect(nullableArrayFn(null)).toBe(true);
-      expect(nullableArrayFn([scenario.valid[0]])).toBe(true);
+    test(names.array, () => {
+      expectValidatorResults(validatorExports, names.array, arrayValid, [
+        ...arrayInvalid,
+        null,
+        undefined,
+      ]);
+    });
 
-      const nullishArrayFn = getRootFunction(scenario.nullishArray);
-      expect(nullishArrayFn(undefined)).toBe(true);
-      expect(nullishArrayFn(null)).toBe(true);
-      expect(nullishArrayFn([scenario.valid[0]])).toBe(true);
-      expect(nullishArrayFn([scenario.valid[0], scenario.invalid[0]])).toBe(
-        false,
+    test(names.optionalArray, () => {
+      expectValidatorResults(
+        validatorExports,
+        names.optionalArray,
+        [...arrayValid, undefined],
+        [...arrayInvalidSansUndefined, null],
+      );
+    });
+
+    test(names.nullableArray, () => {
+      expectValidatorResults(
+        validatorExports,
+        names.nullableArray,
+        [...arrayValid, null],
+        [...arrayInvalidSansNull, undefined],
+      );
+    });
+
+    test(names.nullishArray, () => {
+      expectValidatorResults(
+        validatorExports,
+        names.nullishArray,
+        [...arrayValid, null, undefined],
+        arrayInvalidSansNullish,
       );
     });
   });
 });
 
-describe('complex root validators', () => {
-  test('isInArray variations respect optionality rules', () => {
+describe('complex validators', () => {
+  describe('isInArray family', () => {
     const colors = ['red', 'blue'] as const;
-    const base = getRootFunction('isInArray')(colors);
-    expect(base('red')).toBe(true);
-    expect(base('green')).toBe(false);
 
-    const optional = getRootFunction('isOptionalInArray')(colors);
-    expect(optional(undefined)).toBe(true);
-    expect(optional('blue')).toBe(true);
-    expect(optional('pink')).toBe(false);
+    test('isInArray', () => {
+      const fn = expectFunctionExport(validatorExports, 'isInArray') as <
+        T extends readonly unknown[],
+      >(
+        arr: T,
+      ) => (arg: unknown) => boolean;
+      const validator = fn(colors);
+      expect(validator('red')).toBe(true);
+      expect(validator('green')).toBe(false);
+      expect(validator(undefined)).toBe(false);
+      expect(validator(null)).toBe(false);
+    });
 
-    const nullable = getRootFunction('isNullableInArray')(colors);
-    expect(nullable(null)).toBe(true);
-    expect(nullable('red')).toBe(true);
-    expect(nullable('pink')).toBe(false);
+    test('isOptionalInArray', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isOptionalInArray',
+      ) as <T extends readonly unknown[]>(arr: T) => (arg: unknown) => boolean;
+      const validator = fn(colors);
+      expect(validator('blue')).toBe(true);
+      expect(validator(undefined)).toBe(true);
+      expect(validator(null)).toBe(false);
+    });
 
-    const nullish = getRootFunction('isNullishInArray')(colors);
-    expect(nullish(null)).toBe(true);
-    expect(nullish(undefined)).toBe(true);
-    expect(nullish('green')).toBe(false);
+    test('isNullableInArray', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isNullableInArray',
+      ) as <T extends readonly unknown[]>(arr: T) => (arg: unknown) => boolean;
+      const validator = fn(colors);
+      expect(validator('blue')).toBe(true);
+      expect(validator(null)).toBe(true);
+      expect(validator(undefined)).toBe(false);
+    });
+
+    test('isNullishInArray', () => {
+      const fn = expectFunctionExport(validatorExports, 'isNullishInArray') as <
+        T extends readonly unknown[],
+      >(
+        arr: T,
+      ) => (arg: unknown) => boolean;
+      const validator = fn(colors);
+      expect(validator(null)).toBe(true);
+      expect(validator(undefined)).toBe(true);
+      expect(validator('orange')).toBe(false);
+    });
   });
 
-  test('isInRange family enforces numeric boundaries', () => {
-    const validArgs = [2, 3, '4', '5'];
-    const invalidArgs = ['bad', 6, -1];
-    const build = (name: RootFnName) => getRootFunction(name)([1], [5]);
+  describe('isInRange family', () => {
+    const min: [number] = [0]; // inclusive lower bound
+    const max = 5; // exclusive upper bound
 
-    const base = build('isInRange');
-    validArgs.forEach((arg) => expect(base(arg)).toBe(true));
-    invalidArgs.forEach((arg) => expect(base(arg)).toBe(false));
+    test('isInRange', () => {
+      const fn = expectFunctionExport(validatorExports, 'isInRange') as AnyFn;
+      const validator = fn(min, max) as ValidatorFn;
+      expect(validator(0)).toBe(true);
+      expect(validator('4')).toBe(true);
+      expect(validator(5)).toBe(false);
+      expect(validator('abc')).toBe(false);
+    });
 
-    const optional = build('isOptionalInRange');
-    expect(optional(undefined)).toBe(true);
-    expect(optional(2)).toBe(true);
+    test('isOptionalInRange', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isOptionalInRange',
+      ) as AnyFn;
+      const validator = fn(min, max) as ValidatorFn;
+      expect(validator(undefined)).toBe(true);
+      expect(validator(null)).toBe(false);
+    });
 
-    const nullable = build('isNullableInRange');
-    expect(nullable(null)).toBe(true);
-    expect(nullable(3)).toBe(true);
+    test('isNullableInRange', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isNullableInRange',
+      ) as AnyFn;
+      const validator = fn(min, max) as ValidatorFn;
+      expect(validator(null)).toBe(true);
+      expect(validator(undefined)).toBe(false);
+    });
 
-    const nullish = build('isNullishInRange');
-    expect(nullish(null)).toBe(true);
-    expect(nullish(undefined)).toBe(true);
-    expect(nullish(10)).toBe(false);
+    test('isNullishInRange', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isNullishInRange',
+      ) as AnyFn;
+      const validator = fn(min, max) as ValidatorFn;
+      expect(validator(null)).toBe(true);
+      expect(validator(undefined)).toBe(true);
+      expect(validator(10)).toBe(false);
+    });
 
-    const array = build('isInRangeArray');
-    expect(array([2, 4])).toBe(true);
-    expect(array([2, 6])).toBe(false);
-    expect(array(2)).toBe(false);
+    test('isInRangeArray variants', () => {
+      const base = expectFunctionExport(
+        validatorExports,
+        'isInRangeArray',
+      ) as AnyFn;
+      const optional = expectFunctionExport(
+        validatorExports,
+        'isOptionalInRangeArray',
+      ) as AnyFn;
+      const nullable = expectFunctionExport(
+        validatorExports,
+        'isNullableInRangeArray',
+      ) as AnyFn;
+      const nullish = expectFunctionExport(
+        validatorExports,
+        'isNullishInRangeArray',
+      ) as AnyFn;
 
-    const optionalArray = build('isOptionalInRangeArray');
-    expect(optionalArray(undefined)).toBe(true);
-    expect(optionalArray([2])).toBe(true);
+      const baseValidator = base(min, max) as ValidatorFn;
+      const optionalValidator = optional(min, max) as ValidatorFn;
+      const nullableValidator = nullable(min, max) as ValidatorFn;
+      const nullishValidator = nullish(min, max) as ValidatorFn;
 
-    const nullableArray = build('isNullableInRangeArray');
-    expect(nullableArray(null)).toBe(true);
-    expect(nullableArray([2])).toBe(true);
+      expect(baseValidator([0, 1, '4'])).toBe(true);
+      expect(baseValidator([0, 5])).toBe(false);
+      expect(baseValidator('not array')).toBe(false);
 
-    const nullishArray = build('isNullishInRangeArray');
-    expect(nullishArray(null)).toBe(true);
-    expect(nullishArray(undefined)).toBe(true);
-    expect(nullishArray([2, 8])).toBe(false);
+      expect(optionalValidator(undefined)).toBe(true);
+      expect(optionalValidator([1, 2])).toBe(true);
+
+      expect(nullableValidator(null)).toBe(true);
+      expect(nullableValidator([0, 4])).toBe(true);
+
+      expect(nullishValidator(undefined)).toBe(true);
+      expect(nullishValidator(null)).toBe(true);
+      expect(nullishValidator([0, 'oops'])).toBe(false);
+    });
   });
 
-  test('isKeyOf variations enforce object keys', () => {
-    const lookup = { foo: 1, bar: 2 } as const;
+  describe('isKeyOf family', () => {
+    const obj = { a: 1, b: 2 } as const;
 
-    const base = getRootFunction('isKeyOf')(lookup);
-    expect(base('foo')).toBe(true);
-    expect(base('baz')).toBe(false);
+    const runKeyOf = (
+      name: string,
+      passValues: unknown[],
+      failValues: unknown[],
+    ) => {
+      const fn = expectFunctionExport(validatorExports, name) as AnyFn;
+      const validator = fn(obj) as ValidatorFn;
+      passValues.forEach((value) => expect(validator(value)).toBe(true));
+      failValues.forEach((value) => expect(validator(value)).toBe(false));
+    };
 
-    const optional = getRootFunction('isOptionalKeyOf')(lookup);
-    expect(optional(undefined)).toBe(true);
-    expect(optional('bar')).toBe(true);
-    expect(optional('nope')).toBe(false);
+    test('isKeyOf', () => {
+      runKeyOf('isKeyOf', ['a', 'b'], ['c', 1]);
+    });
 
-    const nullable = getRootFunction('isNullableKeyOf')(lookup);
-    expect(nullable(null)).toBe(true);
-    expect(nullable('foo')).toBe(true);
-    expect(nullable('nope')).toBe(false);
+    test('isOptionalKeyOf', () => {
+      runKeyOf('isOptionalKeyOf', ['a', undefined], ['c', null]);
+    });
 
-    const nullish = getRootFunction('isNullishKeyOf')(lookup);
-    expect(nullish(null)).toBe(true);
-    expect(nullish(undefined)).toBe(true);
-    expect(nullish('nope')).toBe(false);
+    test('isNullableKeyOf', () => {
+      runKeyOf('isNullableKeyOf', ['a', null], ['c', undefined]);
+    });
+
+    test('isNullishKeyOf', () => {
+      runKeyOf('isNullishKeyOf', ['a', null, undefined], ['c', 1]);
+    });
   });
 
-  test('isValueOf variations enforce object values', () => {
-    const lookup = { foo: 'a', bar: 'b' } as const;
+  describe('isValueOf family', () => {
+    const obj = { a: 1, b: 2 } as const;
 
-    const base = getRootFunction('isValueOf')(lookup);
-    expect(base('a')).toBe(true);
-    expect(base('c')).toBe(false);
+    const runValueOf = (
+      name: string,
+      passValues: unknown[],
+      failValues: unknown[],
+    ) => {
+      const fn = expectFunctionExport(validatorExports, name) as AnyFn;
+      const validator = fn(obj) as ValidatorFn;
+      passValues.forEach((value) => expect(validator(value)).toBe(true));
+      failValues.forEach((value) => expect(validator(value)).toBe(false));
+    };
 
-    const optional = getRootFunction('isOptionalValueOf')(lookup);
-    expect(optional(undefined)).toBe(true);
-    expect(optional('b')).toBe(true);
+    test('isValueOf', () => {
+      runValueOf('isValueOf', [1, 2], ['1', 3]);
+    });
 
-    const nullable = getRootFunction('isNullableValueOf')(lookup);
-    expect(nullable(null)).toBe(true);
-    expect(nullable('a')).toBe(true);
+    test('isOptionalValueOf', () => {
+      runValueOf('isOptionalValueOf', [1, undefined], ['1', null]);
+    });
 
-    const nullish = getRootFunction('isNullishValueOf')(lookup);
-    expect(nullish(undefined)).toBe(true);
-    expect(nullish(null)).toBe(true);
-    expect(nullish('x')).toBe(false);
+    test('isNullableValueOf', () => {
+      runValueOf('isNullableValueOf', [1, null], ['1', undefined]);
+    });
+
+    test('isNullishValueOf', () => {
+      runValueOf('isNullishValueOf', [1, null, undefined], ['1', 3]);
+    });
   });
 });
 
-describe('utility simple helpers', () => {
-  test('nonNullable removes nullish allowance', () => {
-    const base = (value: unknown): value is number | null | undefined =>
-      value === 1 || value === null || value === undefined;
-    const wrapped = getUtilFunction('nonNullable')(base);
-    expect(wrapped(1)).toBe(true);
-    expect(wrapped(null)).toBe(false);
-    expect(wrapped(undefined)).toBe(false);
+describe('simple utils', () => {
+  describe('nullish wrappers', () => {
+    const basePredicate = (value: unknown): value is string =>
+      typeof value === 'string';
+
+    test('nonNullable', () => {
+      const fn = utils.nonNullable(basePredicate);
+      expect(fn('value')).toBe(true);
+      expect(fn(null)).toBe(false);
+      expect(fn(undefined)).toBe(false);
+      expect(fn(5)).toBe(false);
+    });
+
+    test('makeOptional', () => {
+      const fn = utils.makeOptional(basePredicate);
+      expect(fn('value')).toBe(true);
+      expect(fn(undefined)).toBe(true);
+      expect(fn(null)).toBe(false);
+    });
+
+    test('makeNullable', () => {
+      const fn = utils.makeNullable(basePredicate);
+      expect(fn('value')).toBe(true);
+      expect(fn(null)).toBe(true);
+      expect(fn(undefined)).toBe(false);
+    });
+
+    test('makeNullish', () => {
+      const fn = utils.makeNullish(basePredicate);
+      expect(fn('value')).toBe(true);
+      expect(fn(null)).toBe(true);
+      expect(fn(undefined)).toBe(true);
+      expect(fn(5)).toBe(false);
+    });
   });
 
-  test('makeOptional, makeNullable, makeNullish extend validators', () => {
-    const isNumber = (value: unknown): value is number =>
-      typeof value === 'number';
-    const optional = getUtilFunction('makeOptional')(isNumber);
-    const nullable = getUtilFunction('makeNullable')(isNumber);
-    const nullish = getUtilFunction('makeNullish')(isNumber);
-
-    expect(optional(undefined)).toBe(true);
-    expect(optional('1')).toBe(false);
-
-    expect(nullable(null)).toBe(true);
-    expect(nullable('1')).toBe(false);
-
-    expect(nullish(undefined)).toBe(true);
-    expect(nullish(null)).toBe(true);
-    expect(nullish('1')).toBe(false);
-  });
-
-  test('transform mutates the checked value before validation', () => {
-    const transform = getUtilFunction(
-      'transform',
-    ) as typeof UtilExports.transform;
-    const validator = transform(
-      (arg: unknown) => Number(arg),
-      (arg: unknown): arg is number => {
-        return typeof arg === 'number' && arg > 0;
-      },
+  test('transform applies conversion before validation', () => {
+    const transformedValues: unknown[] = [];
+    const transformFn = utils.transform(
+      (value) => Number(value),
+      validators.isPositiveNumber,
     );
-    const payload = { value: '5' };
-    expect(
-      validator(payload.value, (newVal) => {
-        payload.value = newVal;
-      }),
-    ).toBe(true);
-    expect(payload.value).toBe(5);
-    expect(validator.isTransformFunction).toBe(true);
-    expect(validator('bad')).toBe(false);
+    expect(transformFn('5', (value) => transformedValues.push(value))).toBe(
+      true,
+    );
+    expect(transformFn('0')).toBe(false);
+    expect(transformedValues).toStrictEqual([5]);
+  });
+
+  describe('parseBoolean family', () => {
+    test('parseBoolean', () => {
+      expect(utils.parseBoolean(true)).toBe(true);
+      expect(utils.parseBoolean('yes')).toBe(true);
+      expect(utils.parseBoolean('0')).toBe(false);
+      expect(() => utils.parseBoolean('maybe')).toThrowError(
+        'Argument must be a valid boolean.',
+      );
+    });
+
+    test('parseOptionalBoolean', () => {
+      expect(utils.parseOptionalBoolean(undefined)).toBeUndefined();
+      expect(utils.parseOptionalBoolean('1')).toBe(true);
+      expect(() => utils.parseOptionalBoolean('nope')).toThrowError(
+        'Argument must be a valid boolean | undefined.',
+      );
+    });
+
+    test('parseNullableBoolean', () => {
+      expect(utils.parseNullableBoolean(null)).toBeNull();
+      expect(utils.parseNullableBoolean('false')).toBe(false);
+      expect(() => utils.parseNullableBoolean('nope')).toThrowError(
+        'Argument must be a valid boolean | null.',
+      );
+    });
+
+    test('parseNullishBoolean', () => {
+      expect(utils.parseNullishBoolean(null)).toBeNull();
+      expect(utils.parseNullishBoolean(undefined)).toBeUndefined();
+      expect(utils.parseNullishBoolean('yes')).toBe(true);
+      expect(() => utils.parseNullishBoolean('nope')).toThrowError(
+        'Argument must be a valid boolean | null | undefined.',
+      );
+    });
+  });
+
+  describe('parseJson family', () => {
+    const payload = JSON.stringify({ id: 1 });
+
+    test('parseJson', () => {
+      expect(utils.parseJson<{ id: number }>(payload)).toStrictEqual({
+        id: 1,
+      });
+      expect(() => utils.parseJson(5)).toThrowError(
+        'JSON parse argument must be a string.',
+      );
+    });
+
+    test('parseOptionalJson', () => {
+      expect(utils.parseOptionalJson(payload)).toStrictEqual({ id: 1 });
+      expect(utils.parseOptionalJson(undefined)).toBeUndefined();
+      expect(() => utils.parseOptionalJson(5)).toThrowError(
+        'JSON parse argument must be string or undefined.',
+      );
+    });
+
+    test('parseNullableJson', () => {
+      expect(utils.parseNullableJson(payload)).toStrictEqual({ id: 1 });
+      expect(utils.parseNullableJson(null)).toBeNull();
+      expect(() => utils.parseNullableJson(5)).toThrowError(
+        'JSON parse argument must be string or null.',
+      );
+    });
+
+    test('parseNullishJson', () => {
+      expect(utils.parseNullishJson(payload)).toStrictEqual({ id: 1 });
+      expect(utils.parseNullishJson(null)).toBeNull();
+      expect(utils.parseNullishJson(undefined)).toBeUndefined();
+      expect(() => utils.parseNullishJson(5)).toThrowError(
+        'JSON parse argument must be string, null, or undefined.',
+      );
+    });
   });
 });
 
-describe('parse boolean helpers', () => {
-  test('parseBoolean variations', () => {
-    const parseBoolean = getUtilFunction('parseBoolean');
-    const parseOptionalBoolean = getUtilFunction('parseOptionalBoolean');
-    const parseNullableBoolean = getUtilFunction('parseNullableBoolean');
-    const parseNullishBoolean = getUtilFunction('parseNullishBoolean');
+type ParseMode = 'normal' | 'loose' | 'strict';
 
-    expect(parseBoolean(true)).toBe(true);
-    expect(parseBoolean('yes')).toBe(true);
-    expect(() => parseBoolean('bad')).toThrowError();
-
-    expect(parseOptionalBoolean(undefined)).toBeUndefined();
-    expect(parseOptionalBoolean('no')).toBe(false);
-    expect(() => parseOptionalBoolean('bad')).toThrowError();
-
-    expect(parseNullableBoolean(null)).toBeNull();
-    expect(parseNullableBoolean(1)).toBe(true);
-    expect(() => parseNullableBoolean('bad')).toThrowError();
-
-    expect(parseNullishBoolean(null)).toBeNull();
-    expect(parseNullishBoolean(undefined)).toBeUndefined();
-    expect(parseNullishBoolean('1')).toBe(true);
-    expect(() => parseNullishBoolean('bad')).toThrowError();
-  });
-});
-
-describe('parse JSON helpers', () => {
-  test('parseJson variations', () => {
-    const parseJson = getUtilFunction('parseJson');
-    const parseOptionalJson = getUtilFunction('parseOptionalJson');
-    const parseNullableJson = getUtilFunction('parseNullableJson');
-    const parseNullishJson = getUtilFunction('parseNullishJson');
-
-    expect(parseJson('{"a":1}')).toStrictEqual({ a: 1 });
-    expect(() => parseJson(1)).toThrowError();
-
-    expect(parseOptionalJson(undefined)).toBeUndefined();
-    expect(parseOptionalJson('{"b":2}')).toStrictEqual({ b: 2 });
-    expect(() => parseOptionalJson(1)).toThrowError();
-
-    expect(parseNullableJson(null)).toBeNull();
-    expect(parseNullableJson('{"c":3}')).toStrictEqual({ c: 3 });
-    expect(() => parseNullableJson(2)).toThrowError();
-
-    expect(parseNullishJson(undefined)).toBeUndefined();
-    expect(parseNullishJson(null)).toBeNull();
-    expect(parseNullishJson('{"d":4}')).toStrictEqual({ d: 4 });
-    expect(() => parseNullishJson(3)).toThrowError();
-  });
-});
-
-type ParseVariant = {
-  name: UtilFnName;
-  allowsUndefined: boolean;
-  allowsNull: boolean;
-  isArray: boolean;
-  safety: 'default' | 'loose' | 'strict';
-  keepExtras: boolean;
-  type: 'parse' | 'test';
+type ParseCombo = {
+  suffix: string;
+  optional: boolean;
+  nullable: boolean;
+  array: boolean;
 };
 
-const modeConfigs = [
-  {
-    suffix: 'Object',
-    allowsUndefined: false,
-    allowsNull: false,
-    isArray: false,
-  },
-  {
-    suffix: 'OptionalObject',
-    allowsUndefined: true,
-    allowsNull: false,
-    isArray: false,
-  },
-  {
-    suffix: 'NullableObject',
-    allowsUndefined: false,
-    allowsNull: true,
-    isArray: false,
-  },
-  {
-    suffix: 'NullishObject',
-    allowsUndefined: true,
-    allowsNull: true,
-    isArray: false,
-  },
-  {
-    suffix: 'ObjectArray',
-    allowsUndefined: false,
-    allowsNull: false,
-    isArray: true,
-  },
+const parseCombos: ParseCombo[] = [
+  { suffix: 'Object', optional: false, nullable: false, array: false },
+  { suffix: 'OptionalObject', optional: true, nullable: false, array: false },
+  { suffix: 'NullableObject', optional: false, nullable: true, array: false },
+  { suffix: 'NullishObject', optional: true, nullable: true, array: false },
+  { suffix: 'ObjectArray', optional: false, nullable: false, array: true },
   {
     suffix: 'OptionalObjectArray',
-    allowsUndefined: true,
-    allowsNull: false,
-    isArray: true,
+    optional: true,
+    nullable: false,
+    array: true,
   },
   {
     suffix: 'NullableObjectArray',
-    allowsUndefined: false,
-    allowsNull: true,
-    isArray: true,
+    optional: false,
+    nullable: true,
+    array: true,
   },
-  {
-    suffix: 'NullishObjectArray',
-    allowsUndefined: true,
-    allowsNull: true,
-    isArray: true,
-  },
-] as const;
+  { suffix: 'NullishObjectArray', optional: true, nullable: true, array: true },
+];
 
-const safetyConfigs = [
-  { prefix: '', safety: 'default', keepExtras: false },
-  { prefix: 'loose', safety: 'loose', keepExtras: true },
-  { prefix: 'strict', safety: 'strict', keepExtras: false },
-] as const;
+const parseVariants: { prefix: string; mode: ParseMode }[] = [
+  { prefix: 'parse', mode: 'normal' },
+  { prefix: 'looseParse', mode: 'loose' },
+  { prefix: 'strictParse', mode: 'strict' },
+];
 
-const parseVariants: ParseVariant[] = [];
-const testVariants: ParseVariant[] = [];
+const testVariants: { prefix: string; mode: ParseMode }[] = [
+  { prefix: 'test', mode: 'normal' },
+  { prefix: 'looseTest', mode: 'loose' },
+  { prefix: 'strictTest', mode: 'strict' },
+];
 
-for (const { prefix, safety, keepExtras } of safetyConfigs) {
-  for (const mode of modeConfigs) {
-    const parseName =
-      `${prefix}${prefix ? 'Parse' : 'parse'}${mode.suffix}` as UtilFnName;
-    parseVariants.push({
-      name: parseName,
-      allowsUndefined: mode.allowsUndefined,
-      allowsNull: mode.allowsNull,
-      isArray: mode.isArray,
-      safety,
-      keepExtras,
-      type: 'parse',
-    });
-    const testName =
-      `${prefix}${prefix ? 'Test' : 'test'}${mode.suffix}` as UtilFnName;
-    testVariants.push({
-      name: testName,
-      allowsUndefined: mode.allowsUndefined,
-      allowsNull: mode.allowsNull,
-      isArray: mode.isArray,
-      safety,
-      keepExtras,
-      type: 'test',
-    });
-  }
-}
-
-const createValidUser = () => ({
-  id: 10,
-  name: 'Jet',
-  nested: { active: true },
-  extra: 'remove-me',
-});
-
-const createSanitizedUser = () => ({
-  id: 10,
-  name: 'Jet',
-  nested: { active: true },
-});
-
-const createInvalidUser = () => ({
-  ...createSanitizedUser(),
-  id: 'nope',
-});
-
-const userSchema = {
-  id: getRootFunction('isNumber'),
-  name: getRootFunction('isString'),
-  nested: {
-    active: getRootFunction('isBoolean'),
-  },
+const schema = {
+  id: validators.isNumber,
+  name: validators.isString,
 };
 
-const expectOptionality = (
-  fn: (arg: unknown) => unknown,
-  allowsUndefined: boolean,
-  allowsNull: boolean,
-  type: 'parse' | 'test',
+const baseUser = { id: 1, name: 'Jet' } as const;
+const baseUser2 = { id: 2, name: 'Jane' } as const;
+const userWithExtra = { ...baseUser, role: 'admin' };
+const userWithExtra2 = { ...baseUser2, role: 'admin' };
+const invalidUser = { id: 'oops', name: 'Jet' } as const;
+
+const buildValidPayload = (mode: ParseMode, isArray: boolean) => {
+  const single = mode === 'strict' ? { ...baseUser } : { ...userWithExtra };
+  const second = mode === 'strict' ? { ...baseUser2 } : { ...userWithExtra2 };
+  return isArray ? [single, second] : single;
+};
+
+const buildExpectedResult = (mode: ParseMode, isArray: boolean) => {
+  const single = mode === 'loose' ? { ...userWithExtra } : { ...baseUser };
+  const second = mode === 'loose' ? { ...userWithExtra2 } : { ...baseUser2 };
+  return isArray ? [single, second] : single;
+};
+
+const buildInvalidPayload = (isArray: boolean) => {
+  if (isArray) {
+    return [{ ...userWithExtra }, { ...invalidUser }];
+  }
+  return { ...invalidUser };
+};
+
+const buildPayloadWithExtra = (isArray: boolean) => {
+  if (isArray) {
+    return [{ ...userWithExtra }, { ...userWithExtra2 }];
+  }
+  return { ...userWithExtra };
+};
+
+const expectOptionalBehavior = (
+  fn: AnyFn,
+  { optional, nullable }: Pick<ParseCombo, 'optional' | 'nullable'>,
 ) => {
   const undefinedResult = fn(undefined);
-  if (allowsUndefined) {
-    if (type === 'parse') {
-      expect(undefinedResult).toBeUndefined();
-    } else {
-      expect(undefinedResult).toBe(true);
-    }
+  if (optional) {
+    expect(undefinedResult).toBeUndefined();
   } else {
     expect(undefinedResult).toBe(false);
   }
 
   const nullResult = fn(null);
-  if (allowsNull) {
-    if (type === 'parse') {
-      expect(nullResult).toBeNull();
-    } else {
-      expect(nullResult).toBe(true);
-    }
+  if (nullable) {
+    expect(nullResult).toBeNull();
   } else {
     expect(nullResult).toBe(false);
   }
 };
 
+const expectTesterOptionalBehavior = (
+  fn: AnyFn,
+  { optional, nullable }: Pick<ParseCombo, 'optional' | 'nullable'>,
+) => {
+  if (optional) {
+    expect(fn(undefined)).toBe(true);
+  } else {
+    expect(fn(undefined)).toBe(false);
+  }
+
+  if (nullable) {
+    expect(fn(null)).toBe(true);
+  } else {
+    expect(fn(null)).toBe(false);
+  }
+};
+
+const expectOnErrorInvocation = (fn: AnyFn, badPayload: unknown) => {
+  const errors: unknown[][] = [];
+  const result = fn(badPayload, (err: unknown[]) => errors.push(err));
+  expect(result).toBe(false);
+  expect(errors.length).toBeGreaterThan(0);
+};
+
 describe('parseObject variants', () => {
-  parseVariants.forEach((variant) => {
-    test(`${variant.name} handles optionality, arrays, and safety`, () => {
-      const factory = getUtilFunction(
-        variant.name,
-      ) as typeof UtilExports.parseObject;
-      const parser = factory(userSchema);
+  parseVariants.forEach(({ prefix, mode }) => {
+    describe(`${prefix}* functions`, () => {
+      parseCombos.forEach((combo) => {
+        const fnName = `${prefix}${combo.suffix}`;
+        test(fnName, () => {
+          const factory = expectFunctionExport(utilsExports, fnName) as AnyFn;
+          const parseFn = factory(schema) as AnyFn;
 
-      expectOptionality(
-        parser,
-        variant.allowsUndefined,
-        variant.allowsNull,
-        'parse',
-      );
+          const payload = buildValidPayload(mode, combo.array);
+          const expected = buildExpectedResult(mode, combo.array);
+          expect(parseFn(payload)).toStrictEqual(expected);
 
-      const validInput = variant.isArray
-        ? [createValidUser(), createValidUser()]
-        : createValidUser();
-      const sanitizedInput = variant.isArray
-        ? [createSanitizedUser(), createSanitizedUser()]
-        : createSanitizedUser();
-      const invalidInput = variant.isArray
-        ? [createValidUser(), createInvalidUser()]
-        : createInvalidUser();
+          const invalidPayload = buildInvalidPayload(combo.array);
+          expectOnErrorInvocation(parseFn, invalidPayload);
 
-      const result = parser(validInput);
-      if (variant.safety === 'strict') {
-        expect(result).toBe(false);
-      } else {
-        expect(result).not.toBe(false);
-        if (!variant.keepExtras) {
-          if (variant.isArray) {
-            (result as Record<string, unknown>[]).forEach((item) => {
-              expect(item).toStrictEqual(createSanitizedUser());
-            });
-          } else {
-            expect(result).toStrictEqual(createSanitizedUser());
+          expectOptionalBehavior(parseFn, combo);
+
+          if (mode === 'strict') {
+            const payloadWithExtra = buildPayloadWithExtra(combo.array);
+            expect(parseFn(payloadWithExtra)).toBe(false);
           }
-        } else {
-          if (variant.isArray) {
-            (result as Record<string, unknown>[]).forEach((item) => {
-              expect(item.extra).toBe('remove-me');
-            });
-          } else {
-            expect((result as Record<string, unknown>).extra).toBe('remove-me');
-          }
-        }
-      }
-
-      const strictSafeInput = parser(sanitizedInput);
-      expect(strictSafeInput).not.toBe(false);
-
-      expect(parser(invalidInput)).toBe(false);
-      if (variant.isArray) {
-        expect(parser(createValidUser())).toBe(false);
-      } else {
-        expect(parser([createValidUser()])).toBe(false);
-      }
+        });
+      });
     });
   });
 });
 
 describe('testObject variants', () => {
-  testVariants.forEach((variant) => {
-    test(`${variant.name} mirrors parse behavior`, () => {
-      const factory = getUtilFunction(
-        variant.name,
-      ) as typeof UtilExports.testObject;
-      const tester = factory(userSchema);
+  testVariants.forEach(({ prefix, mode }) => {
+    describe(`${prefix}* functions`, () => {
+      parseCombos.forEach((combo) => {
+        const fnName = `${prefix}${combo.suffix}`;
+        test(fnName, () => {
+          const factory = expectFunctionExport(utilsExports, fnName) as AnyFn;
+          const testFn = factory(schema) as AnyFn;
 
-      expectOptionality(
-        tester,
-        variant.allowsUndefined,
-        variant.allowsNull,
-        'test',
-      );
+          const payload = buildValidPayload(mode, combo.array);
+          const expected = buildExpectedResult(mode, combo.array);
+          let modified: unknown;
+          const result = testFn(
+            payload,
+            undefined,
+            (value: unknown) => (modified = value),
+          );
+          expect(result).toBe(true);
+          expect(modified).toStrictEqual(expected);
 
-      const validInput = variant.isArray
-        ? [createValidUser(), createSanitizedUser()]
-        : createValidUser();
-      const sanitizedInput = variant.isArray
-        ? [createSanitizedUser(), createSanitizedUser()]
-        : createSanitizedUser();
-      const invalidInput = variant.isArray
-        ? [createValidUser(), createInvalidUser()]
-        : createInvalidUser();
+          const invalidPayload = buildInvalidPayload(combo.array);
+          expect(testFn(invalidPayload)).toBe(false);
 
-      expect(tester(invalidInput)).toBe(false);
-      if (variant.isArray) {
-        expect(tester(createValidUser())).toBe(false);
-      } else {
-        expect(tester([createValidUser()])).toBe(false);
-      }
+          expectTesterOptionalBehavior(testFn, combo);
 
-      if (variant.safety === 'strict') {
-        expect(tester(validInput)).toBe(false);
-        expect(tester(sanitizedInput)).toBe(true);
-      } else {
-        expect(tester(validInput)).toBe(true);
-        expect(tester(sanitizedInput)).toBe(true);
-      }
+          if (mode === 'strict') {
+            const payloadWithExtra = buildPayloadWithExtra(combo.array);
+            expect(testFn(payloadWithExtra)).toBe(false);
+          }
+        });
+      });
     });
   });
-});
-
-test('all root validators were asserted', () => {
-  expect(Array.from(testedRootFns).sort()).toStrictEqual(
-    [...ROOT_FUNCTION_EXPORTS].sort(),
-  );
-});
-
-test('all utility helpers were asserted', () => {
-  expect(Array.from(testedUtilFns).sort()).toStrictEqual(
-    [...UTIL_FUNCTION_EXPORTS].sort(),
-  );
 });

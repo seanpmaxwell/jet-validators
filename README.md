@@ -187,7 +187,16 @@ Accepts `Date`, `string`, or `number` and validates via `new Date(...)`.
 
 ### `isObject`
 
+Is non-nullable object
+
 * `isObject` (+ variants)
+
+
+### `isPlainObject`
+
+Is it an object of type `Record<string, unknown>` and nothing else (i.e. `Date`, `Array`, `etc`).
+
+* `isPlainObject` (+ variants)
 
 ---
 
@@ -377,6 +386,32 @@ Supports:
 
 ---
 
+### Error handling
+
+You can pass a callback as the second argument to the `parseObject` function or the function returned from it which will provide an array of errors if there are any. Each error object has the format:
+
+| Field           | Type        | Description |
+|-----------------|------------|-------------|
+| `info`          | `string`   | General information about the validation failure. |
+| `functionName`  | `string`   | Name of the validator function that failed. |
+| `value`         | `unknown`  | The value that caused the validation failure (optional). |
+| `caught`        | `string`   | Error message caught from an unsafe validator function, if any. |
+| `key`           | `string`   | The key at which the failure occurred but only when it happened at the root level.|
+| `keyPath`       | `string[]` | Full path to the failing value for anything other than a key at the rror level. If the failure occurs while inside an array variant (e.g. `parseObjectArray`), the first element represents the array index of the failing item. |
+
+#### Example
+
+```ts
+const parseUsersArrray([{ name: 'sean'}, {name: 123 }]) = ()
+{
+  info: 'Validator function returned false.',
+  functionName: "isString",
+  value: 123,
+  keyPath: ["1", "name"]
+}
+
+---
+
 ### `testObject`
 
 Same behavior as `parseObject`, but returns a **type predicate**.
@@ -409,7 +444,15 @@ can be used in schemas.
 
 ### Wrapping parse/test
 
-When wrapping these utilities, ensure your generics extend `TSchema<T>` to preserve type safety.
+When wrapping these utilities, ensure your generics extend `Schema<T>` to preserve type safety.
+
+```typescript
+import { type Schema, ParseError } from 'jet-validators/utils';
+
+const myCustomParse = <T, S extends Schema<T>>(schema: S) => {
+  return parseObject(schema, (errors: ParseError[]) => `...do stuff`);
+}
+```
 
 ---
 

@@ -17,13 +17,14 @@ import {
   parseOptionalObject,
   testObject,
   transform,
-  type TSchema,
-  type IParseObjectError,
   testOptionalObject,
   testObjectArray,
   strictParseObject,
   looseParseObject,
   looseTestObject,
+  type Schema,
+  type ParseError,
+  strictTestOptionalObject,
 } from '../../src/utils';
 
 /******************************************************************************
@@ -40,7 +41,7 @@ test('test "parseObject()" function', () => {
   }
 
   // Basic Test
-  const parseUser = parseObject({
+  const parseUser = parseObject<IUser>({
     id: transform(Number, isNumber),
     name: isString,
   });
@@ -113,6 +114,7 @@ test('test "parseObject()" function', () => {
       zip: 98111,
     },
   });
+  // const blah: number = userWithAddr.address.city; // should cause type error
   expect(userWithAddr).toStrictEqual({
     id: 5,
     name: 'john',
@@ -141,7 +143,7 @@ test('test "parseObject()" function', () => {
       name: isString,
     },
     (err) => {
-      expect(err[0].prop).toStrictEqual('id');
+      expect(err[0].key).toStrictEqual('id');
       expect(err[0].value).toStrictEqual('5');
     },
   );
@@ -156,10 +158,10 @@ test('test "parseObject()" function', () => {
       id: isNumber,
       name: isString,
     },
-    (err) => {
-      expect(err[0].prop).toStrictEqual('id');
-      expect(err[0].value).toStrictEqual('3');
-      expect(err[0].index).toStrictEqual(2);
+    (errors) => {
+      expect(errors[0].value).toStrictEqual('3');
+      expect(errors[0].keyPath?.[0]).toStrictEqual('2');
+      expect(errors[0].keyPath?.[1]).toStrictEqual('id');
     },
   );
   parseUserArrWithError([
@@ -183,7 +185,7 @@ test('test "parseObject()" function', () => {
       name: isStrWithErr,
     },
     (err) => {
-      expect(err[0].prop).toStrictEqual('name');
+      expect(err[0].key).toStrictEqual('name');
       expect(err[0].value).toStrictEqual(null);
       expect(err[0].caught).toStrictEqual('Value was not a valid string.');
     },
@@ -194,7 +196,7 @@ test('test "parseObject()" function', () => {
   });
 
   // ** Wrap parseObject ** //
-  const customParse = <U extends TSchema>(schema: U) =>
+  const customParse = <U extends Schema<unknown>>(schema: U) =>
     parseObject(schema, (err) => {
       throw new Error(JSON.stringify(err));
     });
@@ -206,19 +208,27 @@ test('test "parseObject()" function', () => {
   expect(() => parseUserAlt('horse')).toThrowError();
 
   // ** Test onError for multiple properties ** //
-  let errArr: IParseObjectError[] = [];
+  let errArr: ParseError[] = [];
   parseObject(
     {
       id: isNumber,
       name: isString,
     },
-    (err) => {
-      errArr = err;
-    },
+    (err) => (errArr = err),
   )({ id: 'joe', name: 5 });
   expect(errArr).toStrictEqual([
-    { prop: 'id', value: 'joe', info: 'Validator-function returned false.' },
-    { prop: 'name', value: 5, info: 'Validator-function returned false.' },
+    {
+      functionName: 'isNumber',
+      info: 'Validator function returned false.',
+      key: 'id',
+      value: 'joe',
+    },
+    {
+      functionName: 'isString',
+      info: 'Validator function returned false.',
+      key: 'name',
+      value: 5,
+    },
   ]);
 });
 
@@ -246,7 +256,7 @@ test('test "testObject()" function', () => {
   expect(result).toStrictEqual(true);
 
   // Test combination of "parseObject" and "testObject"
-  let errArr: IParseObjectError[] = [];
+  let errArr: ParseError[] = [];
   const testCombo = parseObject(
     {
       id: isNumber,
@@ -280,6 +290,7 @@ test('test "testObject()" function', () => {
       zip: 98109,
     },
   });
+
   testCombo({
     id: 5,
     name: 'john',
@@ -294,26 +305,16 @@ test('test "testObject()" function', () => {
   });
   expect(errArr).toStrictEqual([
     {
-      info: 'Nested validation failed.',
-      prop: 'address',
-      children: [
-        {
-          info: 'Validator-function returned false.',
-          prop: 'zip',
-          value: 'horse',
-        },
-        {
-          info: 'Nested validation failed.',
-          prop: 'country',
-          children: [
-            {
-              info: 'Validator-function returned false.',
-              prop: 'code',
-              value: '1234',
-            },
-          ],
-        },
-      ],
+      functionName: 'isNumber',
+      info: 'Validator function returned false.',
+      keyPath: ['address', 'country', 'code'],
+      value: '1234',
+    },
+    {
+      functionName: 'transform-isNumber',
+      info: 'Validator function returned false.',
+      keyPath: ['address', 'zip'],
+      value: 'horse',
     },
   ]);
 
@@ -397,7 +398,7 @@ test('test different safety options', () => {
   });
 
   // Strict
-  let errArr: IParseObjectError[] = [];
+  let errArr: ParseError[] = [];
   const strictParseUser = strictParseObject(
     {
       id: isNumber,
@@ -415,13 +416,15 @@ test('test different safety options', () => {
   expect(resp3).toStrictEqual(false);
   expect(errArr).toStrictEqual([
     {
-      info: 'strict-safety failed, prop not in schema.',
-      prop: 'address',
+      functionName: '<strict>',
+      info: 'Strict mode found an unknown or invalid property.',
+      key: 'address',
+      value: 'blah',
     },
   ]);
 
   // Combo
-  let errArr2: IParseObjectError[] = [];
+  let errArr2: ParseError[] = [];
 
   const comboParse = strictParseObject(
     {
@@ -468,14 +471,10 @@ test('test different safety options', () => {
   expect(resp4).toStrictEqual(false);
   expect(errArr2).toStrictEqual([
     {
-      info: 'Nested validation failed.',
-      prop: 'address',
-      children: [
-        {
-          info: 'strict-safety failed, prop not in schema.',
-          prop: 'city',
-        },
-      ],
+      functionName: '<strict>',
+      info: 'Strict mode found an unknown or invalid property.',
+      keyPath: ['address', 'city'],
+      value: 'Seattle',
     },
   ]);
 });
@@ -485,35 +484,35 @@ test('test different safety options', () => {
  * response object.
  */
 test('Fix "transform" appending undefined properties to object', () => {
-  interface IUser {
+  interface User {
     id: number;
     name: string;
     birthdate?: Date;
   }
 
-  const transIsOptionalDate = transform(
+  const transformIsOptionalDate = transform(
     (arg) => (isUndef(arg) ? arg : new Date(arg as string)),
     (arg: unknown): arg is Date | undefined => isOptionalValidDate(arg),
   );
 
-  const parseUser = parseObject<IUser>({
+  const parseUser = parseObject<User>({
     id: isNumber,
     name: isString,
-    birthdate: transIsOptionalDate,
+    birthdate: transformIsOptionalDate,
   });
 
-  const user: IUser = {
+  const user: User = {
     id: 1,
     name: 'joe',
   };
 
-  const user2: IUser = {
+  const user2: User = {
     id: 2,
     name: 'john',
     birthdate: undefined,
   };
 
-  const user3: IUser = {
+  const user3: User = {
     id: 3,
     name: 'jane',
     birthdate: '2025-05-31T18:13:34.990Z' as unknown as Date,
@@ -537,7 +536,7 @@ test('Fix "transform" appending undefined properties to object', () => {
       birthdate: 'horse',
     },
     (errors) => {
-      expect(errors[0].prop).toStrictEqual('birthdate');
+      expect(errors[0].key).toStrictEqual('birthdate');
     },
   );
 });
@@ -546,17 +545,22 @@ test('Fix "transform" appending undefined properties to object', () => {
  * 12/16/2025 add the flatten function to remove recursion for the schema
  * holding the validator functions.
  */
-test.only('Test for update which removed recursion', () => {
+test('Test for update which removed recursion', () => {
   interface IUser {
     id: number;
     name: string;
     address: {
       street: string;
       city: string;
-      // country?: { // <-- Cannot use undefined for nested schemas unless using parse/testObject function
+      // country?: { // <-- Cannot use undefined for nested schemas unless
+      // using parse/testObject function
       country: {
         code: number;
         name: string;
+      };
+      state?: {
+        abbreviation: string;
+        name?: string;
       };
     };
     email?: string;
@@ -572,6 +576,10 @@ test.only('Test for update which removed recursion', () => {
         code: isNumber,
         name: isString,
       },
+      state: strictTestOptionalObject({
+        abbreviation: isString,
+        name: isString,
+      }),
     },
     email: isOptionalString,
   });
@@ -591,7 +599,7 @@ test.only('Test for update which removed recursion', () => {
   };
 
   const result = parseUser(user);
-  expect(result).toStrictEqual(user);
+  expect(result).toStrictEqual(user); // Should return deepClone of user
 
   const user2: IUser = {
     id: 1,
@@ -603,6 +611,12 @@ test.only('Test for update which removed recursion', () => {
         code: '123' as unknown as number,
         name: 'USA',
       },
+      state: {
+        abbreviation: 'WA',
+        name: 'Washington',
+        foo: 'bar',
+        dog: 'cat',
+      } as IUser['address']['state'],
     },
     email: 123 as unknown as string,
   };
@@ -610,31 +624,35 @@ test.only('Test for update which removed recursion', () => {
   parseUser(user2, (errors) => {
     expect(errors).toStrictEqual([
       {
-        prop: 'address',
-        info: 'Nested validation failed.',
-        children: [
-          {
-            info: 'Validator-function returned false.',
-            prop: 'city',
-            value: 1234,
-          },
-          {
-            prop: 'country',
-            info: 'Nested validation failed.',
-            children: [
-              {
-                info: 'Validator-function returned false.',
-                prop: 'code',
-                value: '123',
-              },
-            ],
-          },
-        ],
+        functionName: 'isOptionalString',
+        info: 'Validator function returned false.',
+        key: 'email',
+        value: 123,
       },
       {
-        info: 'Validator-function returned false.',
-        prop: 'email',
-        value: 123,
+        functionName: 'isString',
+        info: 'Validator function returned false.',
+        keyPath: ['address', 'city'],
+        value: 1234,
+      },
+
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['state', 'foo'],
+        value: 'bar',
+      },
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['state', 'dog'],
+        value: 'cat',
+      },
+      {
+        functionName: 'isNumber',
+        info: 'Validator function returned false.',
+        keyPath: ['address', 'country', 'code'],
+        value: '123',
       },
     ]);
   });

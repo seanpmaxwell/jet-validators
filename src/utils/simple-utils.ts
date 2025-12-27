@@ -1,90 +1,10 @@
-import { isString } from '../basic.js';
-import { type IParseValidatorFn, type TParseOnError } from './parseObject.js';
+import { isFunction, isString, type AnyFunction } from '../basic.js';
 
-// **** Types **** //
+/******************************************************************************
+                             Constants
+******************************************************************************/
 
-export interface ITransformValidatorFn<T> {
-  (arg: unknown, cb?: (arg: T) => void): arg is T;
-  isTransformFunction?: true;
-}
-
-// **** Simple Util **** //
-
-/**
- * Extract null/undefined from a validator function. Have to provide an errorCb in case
- * we are wrapping a nested schema function.
- */
-export function nonNullable<T>(cb: IParseValidatorFn<T>) {
-  return (arg: unknown, onError?: TParseOnError): arg is NonNullable<T> => {
-    if (arg === null || arg === undefined) {
-      return false;
-    } else {
-      return cb(arg, onError);
-    }
-  };
-}
-
-/**
- * Allow param to be undefined
- */
-export function makeOptional<T>(cb: (arg: unknown) => arg is T) {
-  return (arg: unknown): arg is T | undefined => {
-    if (arg === undefined) {
-      return true;
-    } else {
-      return cb(arg);
-    }
-  };
-}
-
-/**
- * Allow param to be undefined
- */
-export function makeNullable<T>(cb: (arg: unknown) => arg is T) {
-  return (arg: unknown): arg is T | null => {
-    if (arg === null) {
-      return true;
-    } else {
-      return cb(arg);
-    }
-  };
-}
-
-/**
- * Allow param to be undefined
- */
-export function makeNullish<T>(cb: (arg: unknown) => arg is T) {
-  return (arg: unknown): arg is T | null | undefined => {
-    if (arg === null || arg === undefined) {
-      return true;
-    } else {
-      return cb(arg);
-    }
-  };
-}
-
-/**
- * Transform a value before checking it.
- */
-export function transform<T>(
-  transformFn: (arg: unknown) => T,
-  validate: (arg: unknown) => arg is T,
-): ITransformValidatorFn<T> {
-  const retFn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
-    if (arg !== undefined) {
-      arg = transformFn(arg);
-    }
-    cb?.(arg as T);
-    return validate(arg);
-  };
-  Object.defineProperty(retFn, 'isTransformFunction', {
-    value: true,
-    writable: false,
-  });
-  return retFn;
-}
-
-// **** ParseBoolean **** //
+const kTransformFunction = Symbol('transform-function');
 
 const BOOLEAN_MAP: Record<string, boolean> = {
   true: true,
@@ -95,10 +15,98 @@ const BOOLEAN_MAP: Record<string, boolean> = {
   '0': false,
 } as const;
 
+/******************************************************************************
+                              Types
+******************************************************************************/
+
+export type ValidatorFnWithTransformCb<T> = (
+  arg: unknown,
+  cb?: (arg: T) => void,
+) => arg is T;
+
+/******************************************************************************
+                               Functions
+******************************************************************************/
+
+// **** Nullables **** //
+
+export function nonNullable<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is NonNullable<T> => {
+    if (arg === null || arg === undefined) {
+      return false;
+    } else {
+      return cb(arg);
+    }
+  };
+}
+
+export function makeOptional<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is T | undefined => {
+    if (arg === undefined) {
+      return true;
+    } else {
+      return cb(arg);
+    }
+  };
+}
+
+export function makeNullable<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is T | null => {
+    if (arg === null) {
+      return true;
+    } else {
+      return cb(arg);
+    }
+  };
+}
+
+export function makeNullish<T>(cb: (arg: unknown) => arg is T) {
+  return (arg: unknown): arg is T | null | undefined => {
+    if (arg === null || arg === undefined) {
+      return true;
+    } else {
+      return cb(arg);
+    }
+  };
+}
+
+// **** Transform a value before validating it **** //
+
+export function transform<T, U = T>(
+  transformFn: (arg: unknown) => T,
+  validate: (arg: unknown) => arg is U,
+): ValidatorFnWithTransformCb<T> {
+  // Initialize the function
+  const fn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
+    if (arg !== undefined) {
+      arg = transformFn(arg);
+    }
+    cb?.(arg as T);
+    return validate(arg);
+  };
+  // Set properties
+  (fn as unknown as Record<symbol, unknown>)[kTransformFunction] = true;
+  Object.defineProperty(fn, 'name', {
+    value: `transform-${validate.name}`,
+  });
+  // Return
+  return fn;
+}
+
 /**
- * Convert all string/number boolean types to a boolean. If not a valid boolean
- * return "undefined".
+ * Check if a function is a transform function by looking at the symbol.
  */
+export function isTransformFn(
+  arg: AnyFunction,
+): arg is ValidatorFnWithTransformCb<unknown> {
+  return (
+    isFunction(arg) &&
+    (arg as unknown as Record<symbol, unknown>)[kTransformFunction] === true
+  );
+}
+
+// **** ParseBoolean **** //
+
 export function parseBoolean(arg: unknown, errMsg?: string): boolean {
   if (typeof arg === 'boolean') return arg;
   if (typeof arg === 'number') {
@@ -112,9 +120,6 @@ export function parseBoolean(arg: unknown, errMsg?: string): boolean {
   throw new Error(errMsg ?? 'Argument must be a valid boolean.');
 }
 
-/***
- * Parse optional boolean.
- */
 export function parseOptionalBoolean(arg: unknown): boolean | undefined {
   if (arg === undefined) {
     return arg;
@@ -123,9 +128,6 @@ export function parseOptionalBoolean(arg: unknown): boolean | undefined {
   }
 }
 
-/***
- * Parse nullable boolean.
- */
 export function parseNullableBoolean(arg: unknown): boolean | null {
   if (arg === null) {
     return arg;
@@ -134,9 +136,6 @@ export function parseNullableBoolean(arg: unknown): boolean | null {
   }
 }
 
-/***
- * Parse nullish boolean.
- */
 export function parseNullishBoolean(arg: unknown): boolean | null | undefined {
   if (arg === null || arg === undefined) {
     return arg;
@@ -150,9 +149,6 @@ export function parseNullishBoolean(arg: unknown): boolean | null | undefined {
 
 // **** ParseJson **** //
 
-/**
- * Parse a JSON string.
- */
 export function parseJson<T>(arg: unknown): T {
   if (isString(arg)) {
     return JSON.parse(arg) as T;
@@ -161,9 +157,6 @@ export function parseJson<T>(arg: unknown): T {
   }
 }
 
-/**
- * Parse a JSON string.
- */
 export function parseOptionalJson<T>(arg: unknown): T | undefined {
   if (arg === undefined) {
     return arg;
@@ -174,9 +167,6 @@ export function parseOptionalJson<T>(arg: unknown): T | undefined {
   }
 }
 
-/**
- * Parse a JSON string.
- */
 export function parseNullableJson<T>(arg: unknown): T | null {
   if (arg === null) {
     return arg;
@@ -187,9 +177,6 @@ export function parseNullableJson<T>(arg: unknown): T | null {
   }
 }
 
-/**
- * Parse a JSON string.
- */
 export function parseNullishJson<T>(arg: unknown): T | null | undefined {
   if (arg === null || arg === undefined) {
     return arg;
