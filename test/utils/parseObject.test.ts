@@ -601,7 +601,7 @@ test('Test for update which removed recursion', () => {
   const result = parseUser(user);
   expect(result).toStrictEqual(user); // Should return deepClone of user
 
-  const user2: IUser = {
+  const user2: IUser = Object.freeze({
     id: 1,
     name: 'sean',
     address: {
@@ -619,7 +619,7 @@ test('Test for update which removed recursion', () => {
       } as IUser['address']['state'],
     },
     email: 123 as unknown as string,
-  };
+  });
 
   parseUser(user2, (errors) => {
     expect(errors).toStrictEqual([

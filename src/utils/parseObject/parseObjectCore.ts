@@ -128,23 +128,14 @@ function parseObjectCore(
   // Return user facing function
   return (param: unknown, localOnError?: OnErrorCallback) => {
     // Initialize error state
-    const collectErrors = !!(onError || localOnError),
-      errorState: ErrorState | null = collectErrors ? { errors: [] } : null;
-    // Call the onError callbacks if there are errors
-    const fireOnErrorCb = () => {
-      if (!!errorState && errorState.errors.length > 0) {
-        if (!!localOnError) {
-          localOnError(errorState.errors);
-        } else if (onError) {
-          onError(errorState.errors);
-        }
-      }
-    };
+    const errorCb = onError ?? localOnError,
+      errorState: ErrorState | null = !!errorCb ? { errors: [] } : null,
+      sendErrors = () => errorCb?.(errorState?.errors ?? []);
     // Check for nullables
     const resp = checkNullables(isOptional, isNullable, param, errorState);
     if (!resp) {
       if (resp === false) {
-        fireOnErrorCb();
+        sendErrors();
         return false;
       } else {
         return resp;
@@ -155,12 +146,12 @@ function parseObjectCore(
       runId = 1;
       resetSeen(root);
     }
-    const parseFn = selectParseFn(!!collectErrors);
+    const parseFn = selectParseFn(!!errorCb);
     // If an array
     if (isArray) {
       const result = parseArray(param, errorState, root, runId, parseFn);
       if (result === false) {
-        fireOnErrorCb();
+        sendErrors();
       }
       return result;
     }
@@ -174,13 +165,13 @@ function parseObjectCore(
           key: '',
         });
       }
-      fireOnErrorCb();
+      sendErrors();
       return false;
     }
-    // Run parseFunction
+    // Run parseFunction, shadow clone root param so we can change pointers.
     const result = parseFn(param, root, runId, errorState);
     if (result === false) {
-      fireOnErrorCb();
+      sendErrors();
       return false;
     } else {
       return result;
@@ -338,7 +329,7 @@ function parseStrict(
   runId: number,
   errorState: ErrorState,
 ) {
-  root.valueObject = param;
+  root.valueObject = { ...param };
   const stack: Frame[] = [
     {
       node: root,
@@ -348,8 +339,8 @@ function parseStrict(
   ];
   // Iterate
   while (stack.length) {
-    const frame = stack[stack.length - 1];
-    const node = frame.node;
+    const frame = stack[stack.length - 1],
+      node = frame.node;
     if (!frame.entered) {
       frame.entered = true;
       const canDescend = runValidators(node, runId, errorState);
@@ -395,12 +386,9 @@ function sanitizeStrict(
       });
     }
     // Don't need to clone if there are errors
-    if (errorState.errors.length === 0) {
+    if (errorState.errors.length === 0 && transformedValues) {
       let v = nodeVal[key];
-      if (
-        transformedValues &&
-        Object.prototype.hasOwnProperty.call(transformedValues, key)
-      ) {
+      if (Object.prototype.hasOwnProperty.call(transformedValues, key)) {
         v = transformedValues[key];
       }
       clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
@@ -420,7 +408,7 @@ function sanitizeStrict(
  * parse in strict mode
  */
 function parseStrictNoErrors(param: PlainObject, root: Node, runId: number) {
-  root.valueObject = param;
+  root.valueObject = { ...param };
   const stack: Frame[] = [
     {
       node: root,
@@ -492,7 +480,7 @@ function parseNormal(
   runId: number,
   errorState: ErrorState,
 ) {
-  root.valueObject = param;
+  root.valueObject = { ...param };
   const stack: Frame[] = [
     {
       node: root,
@@ -528,7 +516,7 @@ function parseNormal(
  * Parse for normal mode
  */
 function parseNormalNoErrors(param: PlainObject, root: Node, runId: number) {
-  root.valueObject = param;
+  root.valueObject = { ...param };
   const stack: Frame[] = [
     {
       node: root,
@@ -591,7 +579,7 @@ function parseLoose(
   runId: number,
   errorState: ErrorState,
 ) {
-  root.valueObject = param;
+  root.valueObject = { ...param };
   const stack: Frame[] = [
     {
       node: root,
@@ -627,7 +615,7 @@ function parseLoose(
  * Parse for loose mode
  */
 function parseLooseNoErrors(param: PlainObject, root: Node, runId: number) {
-  root.valueObject = param;
+  root.valueObject = { ...param };
   const stack: Frame[] = [
     {
       node: root,
@@ -730,7 +718,7 @@ function runValidators(
       });
       return false;
     }
-    node.valueObject = nodeVal;
+    node.valueObject = { ...nodeVal };
     const parentIdx = node.parent.keyIndex[node.key];
     node.parent.seen[parentIdx] = runId;
   }
@@ -800,7 +788,6 @@ function runValidators(
         result = vldrFn(toValidate);
       }
       if (!result) throw null;
-      node.seen[vldr.idx] = runId;
       // Catch any thrown errors
     } catch (err) {
       let errMsg = null;
@@ -834,7 +821,7 @@ function runValidatorsNoErrors(node: Node, runId: number): boolean {
     if (!isPlainObject(nodeVal)) {
       return false;
     }
-    node.valueObject = nodeVal;
+    node.valueObject = { ...nodeVal };
     const parentIdx = node.parent.keyIndex[node.key];
     node.parent.seen[parentIdx] = runId;
   }
@@ -883,7 +870,6 @@ function runValidatorsNoErrors(node: Node, runId: number): boolean {
     } catch {
       return false;
     }
-    node.seen[vldr.idx] = runId;
   }
   // Return
   return true;
