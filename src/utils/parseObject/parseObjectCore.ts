@@ -30,8 +30,8 @@ export const ERRORS = {
   NotObject: 'Root argument is not an object',
   NotArray: 'Root argument is not an array.',
   ValidatorFn: 'Validator function returned false.',
-  StrictSafety: 'Strict mode: unknown or invalid property',
-  SchemaProp: 'Schema property must be a function or nested schema',
+  StrictSafety: 'Strict mode found an unknown or invalid property.',
+  SchemaProp: 'Schema property must be a function or nested schema.',
 } as const;
 
 /******************************************************************************

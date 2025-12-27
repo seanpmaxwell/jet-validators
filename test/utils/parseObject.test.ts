@@ -24,6 +24,7 @@ import {
   looseTestObject,
   type Schema,
   type ParseError,
+  strictTestOptionalObject,
 } from '../../src/utils';
 
 /******************************************************************************
@@ -416,7 +417,7 @@ test('test different safety options', () => {
   expect(errArr).toStrictEqual([
     {
       functionName: '<strict>',
-      info: 'Strict mode: unknown or invalid property',
+      info: 'Strict mode found an unknown or invalid property.',
       key: 'address',
       value: 'blah',
     },
@@ -471,7 +472,7 @@ test('test different safety options', () => {
   expect(errArr2).toStrictEqual([
     {
       functionName: '<strict>',
-      info: 'Strict mode: unknown or invalid property',
+      info: 'Strict mode found an unknown or invalid property.',
       keyPath: ['address', 'city'],
       value: 'Seattle',
     },
@@ -557,6 +558,10 @@ test('Test for update which removed recursion', () => {
         code: number;
         name: string;
       };
+      state?: {
+        abbreviation: string;
+        name?: string;
+      };
     };
     email?: string;
   }
@@ -571,6 +576,10 @@ test('Test for update which removed recursion', () => {
         code: isNumber,
         name: isString,
       },
+      state: strictTestOptionalObject({
+        abbreviation: isString,
+        name: isString,
+      }),
     },
     email: isOptionalString,
   });
@@ -602,6 +611,12 @@ test('Test for update which removed recursion', () => {
         code: '123' as unknown as number,
         name: 'USA',
       },
+      state: {
+        abbreviation: 'WA',
+        name: 'Washington',
+        foo: 'bar',
+        dog: 'cat',
+      } as IUser['address']['state'],
     },
     email: 123 as unknown as string,
   };
@@ -619,6 +634,19 @@ test('Test for update which removed recursion', () => {
         info: 'Validator function returned false.',
         keyPath: ['address', 'city'],
         value: 1234,
+      },
+
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['state', 'foo'],
+        value: 'bar',
+      },
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['state', 'dog'],
+        value: 'cat',
       },
       {
         functionName: 'isNumber',
