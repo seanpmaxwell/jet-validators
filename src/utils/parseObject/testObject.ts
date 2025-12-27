@@ -1,11 +1,11 @@
-import { type OnErrorCallback, SAFETY } from './parseObjectCore';
-import testObjectCore from './testObjectCore';
+import { type OnErrorCallback, SAFETY } from './parseObjectCore.js';
+import testObjectCore from './testObjectCore.js';
 
 import type {
   InferredReturnValue,
   Schema,
   TypedReturnValue,
-} from './parseObject';
+} from './parseObject.js';
 
 /******************************************************************************
                               testObject

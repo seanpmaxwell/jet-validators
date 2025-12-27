@@ -2,7 +2,7 @@ import parseObjectCore, {
   SAFETY,
   type OnErrorCallback,
   type ValidatorFn,
-} from './parseObjectCore';
+} from './parseObjectCore.js';
 
 /******************************************************************************
                                  Types
