@@ -7,7 +7,7 @@ import { parseBoolean } from './utils/index.js';
 const objectProto = Object.prototype;
 export type PlainObject = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Function = (...args: any[]) => any;
+export type AnyFunction = (...args: any[]) => any;
 
 /******************************************************************************
                                 Functions
@@ -1908,25 +1908,27 @@ export function isNullishPlainObjectArray(
 
 // **** Function **** //
 
-export function isFunction(arg: unknown): arg is Function {
+export function isFunction(arg: unknown): arg is AnyFunction {
   return typeof arg === 'function';
 }
 
-export function isOptionalFunction(arg: unknown): arg is Function | undefined {
+export function isOptionalFunction(
+  arg: unknown,
+): arg is AnyFunction | undefined {
   return arg === undefined || typeof arg === 'function';
 }
 
-export function isNullableFunction(arg: unknown): arg is Function | null {
+export function isNullableFunction(arg: unknown): arg is AnyFunction | null {
   return arg === null || typeof arg === 'function';
 }
 
 export function isNullishFunction(
   arg: unknown,
-): arg is Function | null | undefined {
+): arg is AnyFunction | null | undefined {
   return arg === null || arg === undefined || typeof arg === 'function';
 }
 
-export function isFunctionArray(arg: unknown): arg is Function[] {
+export function isFunctionArray(arg: unknown): arg is AnyFunction[] {
   if (!Array.isArray(arg)) {
     return false;
   }
@@ -1941,7 +1943,7 @@ export function isFunctionArray(arg: unknown): arg is Function[] {
 
 export function isOptionalFunctionArray(
   arg: unknown,
-): arg is Function[] | undefined {
+): arg is AnyFunction[] | undefined {
   if (arg === undefined) {
     return true;
   }
@@ -1959,7 +1961,7 @@ export function isOptionalFunctionArray(
 
 export function isNullableFunctionArray(
   arg: unknown,
-): arg is Function[] | null {
+): arg is AnyFunction[] | null {
   if (arg === null) {
     return true;
   }
@@ -1977,7 +1979,7 @@ export function isNullableFunctionArray(
 
 export function isNullishFunctionArray(
   arg: unknown,
-): arg is Function[] | null | undefined {
+): arg is AnyFunction[] | null | undefined {
   if (arg === null || arg === undefined) {
     return true;
   }

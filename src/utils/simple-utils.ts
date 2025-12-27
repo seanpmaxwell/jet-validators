@@ -1,4 +1,4 @@
-import { isFunction, isString, type Function } from '../basic.js';
+import { isFunction, isString, type AnyFunction } from '../basic.js';
 
 /******************************************************************************
                              Constants
@@ -97,7 +97,7 @@ export function transform<T, U = T>(
  * Check if a function is a transform function by looking at the symbol.
  */
 export function isTransformFn(
-  arg: Function,
+  arg: AnyFunction,
 ): arg is ValidatorFnWithTransformCb<unknown> {
   return (
     isFunction(arg) &&

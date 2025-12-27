@@ -192,6 +192,8 @@ export const {
   isNullishFunctionArray,
 } = markSafeIterative(basicValidatorsRaw);
 
+export { type PlainObject } from './basic.js';
+
 export {
   // Is in array
   isInArray,
