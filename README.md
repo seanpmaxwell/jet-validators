@@ -456,6 +456,28 @@ const myCustomParse = <T, S extends Schema<T>>(schema: S) => {
 
 ---
 
+### Getting the type for a "parse/test"Object function
+
+If you need the type for a parse function you created, simply use the utility type `ReturnType` and pass the `typeof "whichever parse function your using"` with a generic.
+
+```ts
+ interface IUser {
+    id: number;
+    name: string;
+  }
+
+  const parseUser = parseObject<IUser>({
+    id: isNumber,
+    name: isString,
+  });
+
+  // Test getting the object type
+  type ParseFn<T extends object> = ReturnType<typeof parseObject<T>>;
+  const customParse: ParseFn<IUser> = parseUser;
+```
+
+---
+
 ## Safety Modes <a name="safety-modes"></a>
 
 Control how extra object properties are handled:

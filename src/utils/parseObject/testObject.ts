@@ -13,6 +13,14 @@ import type {
 
 // **** testObject **** //
 
+export function testObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, false, false>;
+
 export function testObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -21,19 +29,19 @@ export function testObject<T>(
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, false, false>;
 
-export function testObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, false, false>;
-
 export function testObject(schema: Schema<unknown>, onError?: OnErrorCallback) {
   return testObjectCore(false, false, false, schema, SAFETY.Normal, onError);
 }
 
 // **** testOptionalObject **** //
+
+export function testOptionalObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, false, false>;
 
 export function testOptionalObject<T>(
   schema: Schema<T>,
@@ -42,14 +50,6 @@ export function testOptionalObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, false, false>;
-
-export function testOptionalObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, false>;
 
 export function testOptionalObject(
   schema: Schema<unknown>,
@@ -60,6 +60,14 @@ export function testOptionalObject(
 
 // **** testNullableObject **** //
 
+export function testNullableObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, true, false>;
+
 export function testNullableObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -67,14 +75,6 @@ export function testNullableObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, true, false>;
-
-export function testNullableObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, false>;
 
 export function testNullableObject(
   schema: Schema<unknown>,
@@ -85,6 +85,14 @@ export function testNullableObject(
 
 // **** testNullishObject **** //
 
+export function testNullishObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, true, false>;
+
 export function testNullishObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -92,14 +100,6 @@ export function testNullishObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, true, false>;
-
-export function testNullishObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, false>;
 
 export function testNullishObject(
   schema: Schema<unknown>,
@@ -110,6 +110,14 @@ export function testNullishObject(
 
 // **** testObjectArray **** //
 
+export function testObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, false, true>;
+
 export function testObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -117,14 +125,6 @@ export function testObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, false, true>;
-
-export function testObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, false, true>;
 
 export function testObjectArray(
   schema: Schema<unknown>,
@@ -135,6 +135,14 @@ export function testObjectArray(
 
 // **** testOpionalObjectArray **** //
 
+export function testOptionalObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, false, true>;
+
 export function testOptionalObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -142,14 +150,6 @@ export function testOptionalObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, false, true>;
-
-export function testOptionalObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, true>;
 
 export function testOptionalObjectArray(
   schema: Schema<unknown>,
@@ -160,6 +160,14 @@ export function testOptionalObjectArray(
 
 // **** testNullableObjectArray **** //
 
+export function testNullableObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, true, true>;
+
 export function testNullableObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -167,14 +175,6 @@ export function testNullableObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, true, true>;
-
-export function testNullableObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, true>;
 
 export function testNullableObjectArray(
   schema: Schema<unknown>,
@@ -185,6 +185,14 @@ export function testNullableObjectArray(
 
 // **** testNullishObjectArray **** //
 
+export function testNullishObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, true, true>;
+
 export function testNullishObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -192,14 +200,6 @@ export function testNullishObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, true, true>;
-
-export function testNullishObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, true>;
 
 export function testNullishObjectArray(
   schema: Schema<unknown>,
@@ -214,6 +214,14 @@ export function testNullishObjectArray(
 
 // **** strictTestObject **** //
 
+export function strictTestObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, false, false>;
+
 export function strictTestObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -221,14 +229,6 @@ export function strictTestObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, false, false>;
-
-export function strictTestObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, false, false>;
 
 export function strictTestObject(
   schema: Schema<unknown>,
@@ -239,6 +239,14 @@ export function strictTestObject(
 
 // **** strictTestOptionalObject **** //
 
+export function strictTestOptionalObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, false, false>;
+
 export function strictTestOptionalObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -246,14 +254,6 @@ export function strictTestOptionalObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, false, false>;
-
-export function strictTestOptionalObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, false>;
 
 export function strictTestOptionalObject(
   schema: Schema<unknown>,
@@ -264,6 +264,14 @@ export function strictTestOptionalObject(
 
 // **** strictTestNullableObject **** //
 
+export function strictTestNullableObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, true, false>;
+
 export function strictTestNullableObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -271,14 +279,6 @@ export function strictTestNullableObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, true, false>;
-
-export function strictTestNullableObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, false>;
 
 export function strictTestNullableObject(
   schema: Schema<unknown>,
@@ -289,6 +289,14 @@ export function strictTestNullableObject(
 
 // **** strictTestNullishObject **** //
 
+export function strictTestNullishObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, true, false>;
+
 export function strictTestNullishObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -296,14 +304,6 @@ export function strictTestNullishObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, true, false>;
-
-export function strictTestNullishObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, false>;
 
 export function strictTestNullishObject(
   schema: Schema<unknown>,
@@ -314,6 +314,14 @@ export function strictTestNullishObject(
 
 // **** strictTestObjectArray **** //
 
+export function strictTestObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, false, true>;
+
 export function strictTestObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -321,14 +329,6 @@ export function strictTestObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, false, true>;
-
-export function strictTestObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, false, true>;
 
 export function strictTestObjectArray(
   schema: Schema<unknown>,
@@ -339,6 +339,14 @@ export function strictTestObjectArray(
 
 // **** strictTestOpionalObjectArray **** //
 
+export function strictTestOptionalObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, false, true>;
+
 export function strictTestOptionalObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -346,16 +354,6 @@ export function strictTestOptionalObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, false, true>;
-
-export function strictTestOptionalObjectArray<
-  S extends Record<string, unknown>,
->(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, true>;
 
 export function strictTestOptionalObjectArray(
   schema: Schema<unknown>,
@@ -366,6 +364,14 @@ export function strictTestOptionalObjectArray(
 
 // **** strictTestNullableObjectArray **** //
 
+export function strictTestNullableObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, true, true>;
+
 export function strictTestNullableObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -373,16 +379,6 @@ export function strictTestNullableObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, true, true>;
-
-export function strictTestNullableObjectArray<
-  S extends Record<string, unknown>,
->(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, true>;
 
 export function strictTestNullableObjectArray(
   schema: Schema<unknown>,
@@ -393,6 +389,14 @@ export function strictTestNullableObjectArray(
 
 // **** strictTestNullishObjectArray **** //
 
+export function strictTestNullishObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, true, true>;
+
 export function strictTestNullishObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -400,14 +404,6 @@ export function strictTestNullishObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, true, true>;
-
-export function strictTestNullishObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, true>;
 
 export function strictTestNullishObjectArray(
   schema: Schema<unknown>,
@@ -422,6 +418,14 @@ export function strictTestNullishObjectArray(
 
 // **** looseTestObject **** //
 
+export function looseTestObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, false, false>;
+
 export function looseTestObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -429,14 +433,6 @@ export function looseTestObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, false, false>;
-
-export function looseTestObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, false, false>;
 
 export function looseTestObject(
   schema: Schema<unknown>,
@@ -447,6 +443,14 @@ export function looseTestObject(
 
 // **** looseTestOptionalObject **** //
 
+export function looseTestOptionalObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, false, false>;
+
 export function looseTestOptionalObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -454,14 +458,6 @@ export function looseTestOptionalObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, false, false>;
-
-export function looseTestOptionalObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, false>;
 
 export function looseTestOptionalObject(
   schema: Schema<unknown>,
@@ -472,6 +468,14 @@ export function looseTestOptionalObject(
 
 // **** looseTestNullableObject **** //
 
+export function looseTestNullableObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, true, false>;
+
 export function looseTestNullableObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -479,14 +483,6 @@ export function looseTestNullableObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, true, false>;
-
-export function looseTestNullableObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, false>;
 
 export function looseTestNullableObject(
   schema: Schema<unknown>,
@@ -497,6 +493,14 @@ export function looseTestNullableObject(
 
 // **** looseTestNullishObject **** //
 
+export function looseTestNullishObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, true, false>;
+
 export function looseTestNullishObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -504,14 +508,6 @@ export function looseTestNullishObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, true, false>;
-
-export function looseTestNullishObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, false>;
 
 export function looseTestNullishObject(
   schema: Schema<unknown>,
@@ -522,6 +518,14 @@ export function looseTestNullishObject(
 
 // **** looseTestObjectArray **** //
 
+export function looseTestObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, false, true>;
+
 export function looseTestObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -529,14 +533,6 @@ export function looseTestObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, false, true>;
-
-export function looseTestObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, false, true>;
 
 export function looseTestObjectArray(
   schema: Schema<unknown>,
@@ -547,6 +543,14 @@ export function looseTestObjectArray(
 
 // **** looseTestOpionalObjectArray **** //
 
+export function looseTestOptionalObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, false, true>;
+
 export function looseTestOptionalObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -554,14 +558,6 @@ export function looseTestOptionalObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, false, true>;
-
-export function looseTestOptionalObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, true>;
 
 export function looseTestOptionalObjectArray(
   schema: Schema<unknown>,
@@ -572,6 +568,14 @@ export function looseTestOptionalObjectArray(
 
 // **** looseTestNullableObjectArray **** //
 
+export function looseTestNullableObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, false, true, true>;
+
 export function looseTestNullableObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -579,14 +583,6 @@ export function looseTestNullableObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, false, true, true>;
-
-export function looseTestNullableObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, true>;
 
 export function looseTestNullableObjectArray(
   schema: Schema<unknown>,
@@ -597,6 +593,14 @@ export function looseTestNullableObjectArray(
 
 // **** looseTestNullishObjectArray **** //
 
+export function looseTestNullishObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => arg is InferredReturnValue<S, true, true, true>;
+
 export function looseTestNullishObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -604,14 +608,6 @@ export function looseTestNullishObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => arg is TypedReturnValue<T, true, true, true>;
-
-export function looseTestNullishObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, true>;
 
 export function looseTestNullishObjectArray(
   schema: Schema<unknown>,

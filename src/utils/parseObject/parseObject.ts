@@ -47,6 +47,14 @@ export type Schema<T> = {
 
 // **** parseObject **** //
 
+export function parseObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, false, false>;
+
 export function parseObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -54,14 +62,6 @@ export function parseObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, false, false>;
-
-export function parseObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, false, false>;
 
 export function parseObject(
   schema: Schema<unknown>,
@@ -72,6 +72,14 @@ export function parseObject(
 
 // **** parseOptionalObject **** //
 
+export function parseOptionalObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, false, false>;
+
 export function parseOptionalObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -79,14 +87,6 @@ export function parseOptionalObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, false, false>;
-
-export function parseOptionalObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, false>;
 
 export function parseOptionalObject(
   schema: Schema<unknown>,
@@ -97,6 +97,14 @@ export function parseOptionalObject(
 
 // **** parseNullableObject **** //
 
+export function parseNullableObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, true, false>;
+
 export function parseNullableObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -104,14 +112,6 @@ export function parseNullableObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, true, false>;
-
-export function parseNullableObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, false>;
 
 export function parseNullableObject(
   schema: Schema<unknown>,
@@ -122,6 +122,14 @@ export function parseNullableObject(
 
 // **** parseNullishObject **** //
 
+export function parseNullishObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, true, false>;
+
 export function parseNullishObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -129,14 +137,6 @@ export function parseNullishObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, true, false>;
-
-export function parseNullishObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, false>;
 
 export function parseNullishObject(
   schema: Schema<unknown>,
@@ -147,6 +147,14 @@ export function parseNullishObject(
 
 // **** parseObjectArray **** //
 
+export function parseObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, false, true>;
+
 export function parseObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -154,14 +162,6 @@ export function parseObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, false, true>;
-
-export function parseObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, false, true>;
 
 export function parseObjectArray(
   schema: Schema<unknown>,
@@ -172,6 +172,14 @@ export function parseObjectArray(
 
 // **** parseOpionalObjectArray **** //
 
+export function parseOptionalObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, false, true>;
+
 export function parseOptionalObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -179,14 +187,6 @@ export function parseOptionalObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, false, true>;
-
-export function parseOptionalObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, true>;
 
 export function parseOptionalObjectArray(
   schema: Schema<unknown>,
@@ -197,6 +197,14 @@ export function parseOptionalObjectArray(
 
 // **** parseNullableObjectArray **** //
 
+export function parseNullableObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, true, true>;
+
 export function parseNullableObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -204,14 +212,6 @@ export function parseNullableObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, true, true>;
-
-export function parseNullableObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, true>;
 
 export function parseNullableObjectArray(
   schema: Schema<unknown>,
@@ -222,6 +222,14 @@ export function parseNullableObjectArray(
 
 // **** parseNullishObjectArray **** //
 
+export function parseNullishObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, true, true>;
+
 export function parseNullishObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -229,14 +237,6 @@ export function parseNullishObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, true, true>;
-
-export function parseNullishObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, true>;
 
 export function parseNullishObjectArray(
   schema: Schema<unknown>,
@@ -251,6 +251,14 @@ export function parseNullishObjectArray(
 
 // **** strictParseObject **** //
 
+export function strictParseObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, false, false>;
+
 export function strictParseObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -258,14 +266,6 @@ export function strictParseObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, false, false>;
-
-export function strictParseObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, false, false>;
 
 export function strictParseObject(
   schema: Schema<unknown>,
@@ -276,6 +276,14 @@ export function strictParseObject(
 
 // **** strictParseOptionalObject **** //
 
+export function strictParseOptionalObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, false, false>;
+
 export function strictParseOptionalObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -283,14 +291,6 @@ export function strictParseOptionalObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, false, false>;
-
-export function strictParseOptionalObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, false>;
 
 export function strictParseOptionalObject(
   schema: Schema<unknown>,
@@ -301,6 +301,14 @@ export function strictParseOptionalObject(
 
 // **** strictParseNullableObject **** //
 
+export function strictParseNullableObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, true, false>;
+
 export function strictParseNullableObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -308,14 +316,6 @@ export function strictParseNullableObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, true, false>;
-
-export function strictParseNullableObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, false>;
 
 export function strictParseNullableObject(
   schema: Schema<unknown>,
@@ -326,6 +326,14 @@ export function strictParseNullableObject(
 
 // **** strictParseNullishObject **** //
 
+export function strictParseNullishObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, true, false>;
+
 export function strictParseNullishObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -333,14 +341,6 @@ export function strictParseNullishObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, true, false>;
-
-export function strictParseNullishObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, false>;
 
 export function strictParseNullishObject(
   schema: Schema<unknown>,
@@ -351,6 +351,14 @@ export function strictParseNullishObject(
 
 // **** strictParseObjectArray **** //
 
+export function strictParseObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, false, true>;
+
 export function strictParseObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -358,14 +366,6 @@ export function strictParseObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, false, true>;
-
-export function strictParseObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, false, true>;
 
 export function strictParseObjectArray(
   schema: Schema<unknown>,
@@ -376,6 +376,14 @@ export function strictParseObjectArray(
 
 // **** strictParseOpionalObjectArray **** //
 
+export function strictParseOptionalObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, false, true>;
+
 export function strictParseOptionalObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -383,16 +391,6 @@ export function strictParseOptionalObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, false, true>;
-
-export function strictParseOptionalObjectArray<
-  S extends Record<string, unknown>,
->(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, true>;
 
 export function strictParseOptionalObjectArray(
   schema: Schema<unknown>,
@@ -403,6 +401,14 @@ export function strictParseOptionalObjectArray(
 
 // **** strictParseNullableObjectArray **** //
 
+export function strictParseNullableObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, true, true>;
+
 export function strictParseNullableObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -410,16 +416,6 @@ export function strictParseNullableObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, true, true>;
-
-export function strictParseNullableObjectArray<
-  S extends Record<string, unknown>,
->(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, true>;
 
 export function strictParseNullableObjectArray(
   schema: Schema<unknown>,
@@ -430,6 +426,14 @@ export function strictParseNullableObjectArray(
 
 // **** strictParseNullishObjectArray **** //
 
+export function strictParseNullishObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, true, true>;
+
 export function strictParseNullishObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -437,16 +441,6 @@ export function strictParseNullishObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, true, true>;
-
-export function strictParseNullishObjectArray<
-  S extends Record<string, unknown>,
->(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, true>;
 
 export function strictParseNullishObjectArray(
   schema: Schema<unknown>,
@@ -461,6 +455,14 @@ export function strictParseNullishObjectArray(
 
 // **** looseParseObject **** //
 
+export function looseParseObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, false, false>;
+
 export function looseParseObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -468,14 +470,6 @@ export function looseParseObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, false, false>;
-
-export function looseParseObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, false, false>;
 
 export function looseParseObject(
   schema: Schema<unknown>,
@@ -486,6 +480,14 @@ export function looseParseObject(
 
 // **** looseParseOptionalObject **** //
 
+export function looseParseOptionalObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, false, false>;
+
 export function looseParseOptionalObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -493,14 +495,6 @@ export function looseParseOptionalObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, false, false>;
-
-export function looseParseOptionalObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, false>;
 
 export function looseParseOptionalObject(
   schema: Schema<unknown>,
@@ -511,6 +505,14 @@ export function looseParseOptionalObject(
 
 // **** looseParseNullableObject **** //
 
+export function looseParseNullableObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, true, false>;
+
 export function looseParseNullableObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -518,14 +520,6 @@ export function looseParseNullableObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, true, false>;
-
-export function looseParseNullableObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, false>;
 
 export function looseParseNullableObject(
   schema: Schema<unknown>,
@@ -536,6 +530,14 @@ export function looseParseNullableObject(
 
 // **** looseParseNullishObject **** //
 
+export function looseParseNullishObject<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, true, false>;
+
 export function looseParseNullishObject<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -543,14 +545,6 @@ export function looseParseNullishObject<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, true, false>;
-
-export function looseParseNullishObject<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, false>;
 
 export function looseParseNullishObject(
   schema: Schema<unknown>,
@@ -561,6 +555,14 @@ export function looseParseNullishObject(
 
 // **** looseParseObjectArray **** //
 
+export function looseParseObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, false, true>;
+
 export function looseParseObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -568,14 +570,6 @@ export function looseParseObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, false, true>;
-
-export function looseParseObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, false, true>;
 
 export function looseParseObjectArray(
   schema: Schema<unknown>,
@@ -586,6 +580,14 @@ export function looseParseObjectArray(
 
 // **** looseParseOpionalObjectArray **** //
 
+export function looseParseOptionalObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, false, true>;
+
 export function looseParseOptionalObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -593,16 +595,6 @@ export function looseParseOptionalObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, false, true>;
-
-export function looseParseOptionalObjectArray<
-  S extends Record<string, unknown>,
->(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, true>;
 
 export function looseParseOptionalObjectArray(
   schema: Schema<unknown>,
@@ -613,6 +605,14 @@ export function looseParseOptionalObjectArray(
 
 // **** looseParseNullableObjectArray **** //
 
+export function looseParseNullableObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, false, true, true>;
+
 export function looseParseNullableObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -620,16 +620,6 @@ export function looseParseNullableObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, false, true, true>;
-
-export function looseParseNullableObjectArray<
-  S extends Record<string, unknown>,
->(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, true>;
 
 export function looseParseNullableObjectArray(
   schema: Schema<unknown>,
@@ -640,6 +630,14 @@ export function looseParseNullableObjectArray(
 
 // **** looseParseNullishObjectArray **** //
 
+export function looseParseNullishObjectArray<S extends object>(
+  schema: S,
+  onError?: OnErrorCallback,
+): (
+  arg: unknown,
+  onError?: OnErrorCallback,
+) => InferredReturnValue<S, true, true, true>;
+
 export function looseParseNullishObjectArray<T>(
   schema: Schema<T>,
   onError?: OnErrorCallback,
@@ -647,14 +645,6 @@ export function looseParseNullishObjectArray<T>(
   arg: unknown,
   onError?: OnErrorCallback,
 ) => TypedReturnValue<T, true, true, true>;
-
-export function looseParseNullishObjectArray<S extends Record<string, unknown>>(
-  schema: S,
-  onError?: OnErrorCallback,
-): (
-  arg: unknown,
-  onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, true>;
 
 export function looseParseNullishObjectArray(
   schema: Schema<unknown>,

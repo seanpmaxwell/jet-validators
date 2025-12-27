@@ -484,7 +484,7 @@ test('test different safety options', () => {
  * response object.
  */
 test('Fix "transform" appending undefined properties to object', () => {
-  interface User {
+  interface IUser {
     id: number;
     name: string;
     birthdate?: Date;
@@ -495,24 +495,24 @@ test('Fix "transform" appending undefined properties to object', () => {
     (arg: unknown): arg is Date | undefined => isOptionalValidDate(arg),
   );
 
-  const parseUser = parseObject<User>({
+  const parseUser = parseObject<IUser>({
     id: isNumber,
     name: isString,
     birthdate: transformIsOptionalDate,
   });
 
-  const user: User = {
+  const user: IUser = {
     id: 1,
     name: 'joe',
   };
 
-  const user2: User = {
+  const user2: IUser = {
     id: 2,
     name: 'john',
     birthdate: undefined,
   };
 
-  const user3: User = {
+  const user3: IUser = {
     id: 3,
     name: 'jane',
     birthdate: '2025-05-31T18:13:34.990Z' as unknown as Date,
@@ -656,4 +656,29 @@ test('Test for update which removed recursion', () => {
       },
     ]);
   });
+});
+
+test.skip('Test setting a type for the parseFunction', () => {
+  interface IUser {
+    id: number;
+    name: string;
+  }
+
+  const parseUser = parseObject<IUser>({
+    id: isNumber,
+    name: isString,
+  });
+
+  // Test getting the object type
+  type ParseFn<T extends object> = ReturnType<typeof parseObject<T>>;
+  const customParse: ParseFn<IUser> = parseUser;
+
+  const testUser = testObject<IUser>({
+    id: isNumber,
+    name: isString,
+  });
+
+  // Test getting the object type
+  type TestFn<T extends object> = ReturnType<typeof testObject<T>>;
+  const customTest: TestFn<IUser> = testUser;
 });
