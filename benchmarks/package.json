@@ -1,0 +1,19 @@
+{
+  "name": "jet-validators_benchmarks",
+  "version": "1.0.0",
+  "description": "Run ben",
+  "type": "module",
+  "scripts": {
+    "build": "tsx run-benchmarks.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seanpmaxwell/jet-validators.git"
+  },
+  "devDependencies": {
+    "jet-validators": "file:../",
+    "joi": "^18.0.2",
+    "yup": "^1.7.1",
+    "zod": "^4.2.1"
+  }
+}
