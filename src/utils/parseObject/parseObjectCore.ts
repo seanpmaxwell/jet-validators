@@ -5,7 +5,7 @@ import {
 
 import { isPlainObject } from '../../basic.js';
 import { isSafe } from './mark-safe.js';
-import { isTestObjectCoreFn } from './testObjectCore.js';
+import { isTestObjectCoreFn, type TestObjectFn } from './testObjectCore.js';
 
 /******************************************************************************
                                 Constants
@@ -45,13 +45,16 @@ type AnyFunction = (...args: any[]) => any;
 
 // **** Validation Schema **** //
 
-interface CoreSchema {
-  [key: string]: ValidatorFn<unknown> | CoreSchema;
-}
+export type Schema<T> = {
+  [K in keyof T]: T[K] extends PlainObject
+    ? Schema<T[K]> | ValidatorFn<T[K]>
+    : ValidatorFn<T[K]>;
+};
 
 export type ValidatorFn<T> =
   | ((arg: unknown) => arg is T)
-  | ValidatorFnWithTransformCb<T>;
+  | ValidatorFnWithTransformCb<T>
+  | TestObjectFn<T>;
 
 interface ValidatorItem {
   key: string;
@@ -116,7 +119,7 @@ function parseObjectCore(
   isOptional: boolean,
   isNullable: boolean,
   isArray: boolean,
-  schema: CoreSchema,
+  schema: Schema<unknown>,
   safety: Safety,
   onError?: OnErrorCallback,
 ) {
@@ -183,7 +186,7 @@ function parseObjectCore(
  * Setup fast validator tree
  */
 function setupValidatorTree(
-  schema: CoreSchema,
+  schema: Schema<unknown>,
   parentNode: Node | null,
   paramKey: string,
 ): Node {
@@ -208,8 +211,8 @@ function setupValidatorTree(
   };
   // Iterate the schema
   for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    const item = schema[key];
+    const key = keys[i],
+      item = (schema as Record<string, ValidatorFn<unknown>>)[key];
     if (typeof item === 'function') {
       const idx = keyIndex[key],
         name = item.name || '<anonymous>';

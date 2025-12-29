@@ -3,7 +3,7 @@ import parseObjectCore, {
   type Safety,
 } from './parseObjectCore.js';
 
-import type { Schema } from './parseObject.js';
+import type { Schema } from './parseObjectCore.js';
 import { markSafe } from './mark-safe.js';
 
 /******************************************************************************
@@ -15,11 +15,11 @@ type SafeFunction = Record<symbol, boolean>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type TFunc = (...args: any[]) => any;
 
-type TestObjectFn = (
-  arg: unknown,
+export type TestObjectFn<T> = (
+  arg: T,
   onError?: OnErrorCallback,
-  modifiedValueCb?: (modifiedValue: unknown) => void,
-) => arg is unknown;
+  modifiedValueCb?: (modifiedValue: T) => void,
+) => arg is T;
 
 /******************************************************************************
                                 Helpers
@@ -65,7 +65,7 @@ function testObjectCore<T>(
 /**
  * Check is the function a testObjectCore function
  */
-export function isTestObjectCoreFn(arg: TFunc): arg is TestObjectFn {
+export function isTestObjectCoreFn(arg: TFunc): arg is TestObjectFn<unknown> {
   return (arg as unknown as SafeFunction)[symTestObjectFn] === true;
 }
 

@@ -360,6 +360,33 @@ test('test "testObject()" function', () => {
     testCombo2GoodDataResult,
   );
   expect(testCombo2(testCombo2FailData)).toStrictEqual(false);
+
+  // ** Test combo 3 ** //
+  type User = {
+    id: number;
+    name: string;
+    address: {
+      street: string;
+      zip: number;
+    };
+  };
+  const User1: User = {
+    id: 1,
+    name: 'jon',
+    address: {
+      street: 'foo',
+      zip: 1234,
+    },
+  };
+  const testCombo3 = parseObject<User>({
+    id: isNumber,
+    name: isString,
+    address: testObject<User['address']>({
+      street: isString,
+      zip: isNumber,
+    }),
+  });
+  expect(testCombo3(User1)).toStrictEqual(User1);
 });
 
 /**

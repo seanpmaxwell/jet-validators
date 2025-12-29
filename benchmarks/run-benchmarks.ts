@@ -6,10 +6,13 @@ import Joi from 'joi';
 import {
   parseObject,
   strictParseObject,
+  looseParseObject,
   type Schema,
+  strictTestObject,
 } from 'jet-validators/utils';
 import {
   isBoolean,
+  isInArray,
   isNonEmptyString,
   isNumber,
   isUnsignedInteger,
@@ -87,15 +90,15 @@ const parseWithJet = strictParseObject<UserProfile>({
   email: isNonEmptyString,
   age: isUnsignedInteger,
   active: isBoolean,
-  role: isNonEmptyString,
+  role: isInArray(roles),
   score: isNumber,
-  address: {
+  address: strictTestObject<Address>({
     street: isNonEmptyString,
     city: isNonEmptyString,
     postalCode: isNonEmptyString,
     lat: isNumber,
     lng: isNumber,
-  },
+  }),
 });
 const zodSchema = z
   .object({
