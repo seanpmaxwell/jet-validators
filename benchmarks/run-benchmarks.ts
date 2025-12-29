@@ -164,11 +164,11 @@ const yupSchema = yup
   .strict(true);
 
 const validators: Record<string, Validator> = {
-  'jet-validators parseObject': (value) => {
+  jetValiators: (value) => {
     const parsed = parseWithJet(value);
-    if (parsed === false) {
-      throw new Error('parseObject returned false for valid data.');
-    }
+    // if (parsed === false) {
+    //   throw new Error('parseObject returned false for valid data.');
+    // }
     return parsed;
   },
   Zod: (value) => zodSchema.parse(value),

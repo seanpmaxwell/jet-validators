@@ -5,7 +5,11 @@ import {
 
 import { isPlainObject } from '../../basic.js';
 import { isSafe } from './mark-safe.js';
-import { isTestObjectCoreFn, type TestObjectFn } from './testObjectCore.js';
+
+import testObjectCore, {
+  isTestObjectCoreFn,
+  type TestObjectFn,
+} from './testObjectCore.js';
 
 /******************************************************************************
                                 Constants
@@ -17,13 +21,6 @@ export const SAFETY = {
   Strict: 3,
 } as const;
 
-const PARSE_TABLE = [
-  null, // index 0 unused
-  [parseLooseNoErrors, parseLoose],
-  [parseNormalNoErrors, parseNormal],
-  [parseStrictNoErrors, parseStrict],
-] as const;
-
 export const ERRORS = {
   NotOptional: 'Root argument is undefined but not optional.',
   NotNullable: 'Root argument is null but not nullable.',
@@ -31,7 +28,9 @@ export const ERRORS = {
   NotArray: 'Root argument is not an array.',
   ValidatorFn: 'Validator function returned false.',
   StrictSafety: 'Strict mode found an unknown or invalid property.',
-  SchemaProp: 'Schema property must be a function or nested schema.',
+  SchemaProp(key: string) {
+    return `Schema property "${key}" must be a function or nested schema.`;
+  },
 } as const;
 
 /******************************************************************************
@@ -59,29 +58,16 @@ export type ValidatorFn<T> =
 interface ValidatorItem {
   key: string;
   fn: ValidatorFn<unknown>;
-  idx: number;
   name: string;
 }
 
-interface Node {
-  key: string;
+interface ValidatorObject {
   safeValidators: ValidatorItem[];
   unSafeValidators: ValidatorItem[];
-  parent: Node | null;
-  path: string[];
-  children: Node[];
   valueObject: PlainObject;
+  keySet: Set<string>;
   transformedValuesObject: PlainObject | null;
-  // Track validations
-  keyIndex: Record<string, number>;
-  seen: Uint32Array;
 }
-
-type Frame = {
-  node: Node;
-  lastChildAddedToStack: number;
-  entered: boolean;
-};
 
 // **** Error Handling **** //
 
@@ -101,11 +87,6 @@ export type ParseError = {
     }
 );
 
-interface ErrorState {
-  errors: ParseError[];
-  index?: number;
-}
-
 export type OnErrorCallback = (errors: ParseError[]) => void;
 
 /******************************************************************************
@@ -123,61 +104,37 @@ function parseObjectCore(
   safety: Safety,
   onError?: OnErrorCallback,
 ) {
-  // Intialize tree and final parse function
-  const root = setupValidatorTree(schema, null, ''),
-    selectParseFn = setupSelectParseFn(safety);
-  let runId = 0;
-
-  // Return user facing function
+  const validatorObject = setupValidatorTree(schema, safety);
   return (param: unknown, localOnError?: OnErrorCallback) => {
-    // Initialize error state
-    const errorCb = onError ?? localOnError,
-      errorState: ErrorState | null = !!errorCb ? { errors: [] } : null,
-      sendErrors = () => errorCb?.(errorState?.errors ?? []);
-    // Check for nullables
-    const resp = checkNullables(isOptional, isNullable, param, errorState);
-    if (!resp) {
-      if (resp === false) {
-        sendErrors();
+    const errorCb = onError ?? localOnError;
+    // Run the parse function
+    if (!errorCb) {
+      return parseObjectCoreHelper(
+        isOptional,
+        isNullable,
+        isArray,
+        validatorObject,
+        safety,
+        param,
+      );
+      // Run the parse function with an error array
+    } else {
+      const errors: ParseError[] = [];
+      const result = parseObjectCoreHelperWithErrors(
+        isOptional,
+        isNullable,
+        isArray,
+        validatorObject,
+        safety,
+        errors,
+        param,
+      );
+      if (result === false) {
+        errorCb(errors);
         return false;
       } else {
-        return resp;
+        return result;
       }
-    }
-    // Reset the runId if it gets to 4billion
-    if (++runId === 0xffffffff) {
-      runId = 1;
-      resetSeen(root);
-    }
-    const parseFn = selectParseFn(!!errorCb);
-    // If an array
-    if (isArray) {
-      const result = parseArray(param, errorState, root, runId, parseFn);
-      if (result === false) {
-        sendErrors();
-      }
-      return result;
-    }
-    // Make sure an object if not null, undefined, or array
-    if (!isPlainObject(param)) {
-      if (!!errorState) {
-        errorState.errors.push({
-          info: ERRORS.NotObject,
-          functionName: '<isPlainObject>',
-          value: param,
-          key: '',
-        });
-      }
-      sendErrors();
-      return false;
-    }
-    // Run parseFunction, shadow clone root param so we can change pointers.
-    const result = parseFn(param, root, runId, errorState);
-    if (result === false) {
-      sendErrors();
-      return false;
-    } else {
-      return result;
     }
   };
 }
@@ -187,120 +144,144 @@ function parseObjectCore(
  */
 function setupValidatorTree(
   schema: Schema<unknown>,
-  parentNode: Node | null,
-  paramKey: string,
-): Node {
-  // Setup keys
-  const keys = Object.keys(schema),
-    keyIndex: Record<string, number> = Object.create(null);
-  for (let i = 0; i < keys.length; i++) {
-    keyIndex[keys[i]] = i;
-  }
+  safety: Safety,
+): ValidatorObject {
   // Initialize new node
-  const node: Node = {
-    key: paramKey,
+  const keys = Object.keys(schema);
+  const vo: ValidatorObject = {
     safeValidators: [],
     unSafeValidators: [],
-    parent: parentNode,
-    children: [],
-    path: parentNode ? [...parentNode.path, paramKey] : [],
     valueObject: {},
+    keySet: new Set(keys),
     transformedValuesObject: null,
-    keyIndex,
-    seen: new Uint32Array(keys.length),
   };
   // Iterate the schema
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i],
       item = (schema as Record<string, ValidatorFn<unknown>>)[key];
     if (typeof item === 'function') {
-      const idx = keyIndex[key],
-        name = item.name || '<anonymous>';
+      const name = item.name || '<anonymous>';
       if (isSafe(item)) {
-        node.safeValidators.push({ key, fn: item, idx, name });
+        vo.safeValidators.push({ key, fn: item, name });
       } else {
-        node.unSafeValidators.push({ key, fn: item, idx, name });
+        vo.unSafeValidators.push({ key, fn: item, name });
       }
       // Recurse down the tree
+    } else if (isPlainObject(schema)) {
+      const nestedSchema = schema[key] as Schema<unknown>,
+        fn = testObjectCore(false, false, false, nestedSchema, safety);
+      vo.safeValidators.push({ key, fn, name: '' });
+      // Throw error
     } else {
-      const childNode = setupValidatorTree(item, node, key);
-      node.children.push(childNode);
+      throw new Error(ERRORS.SchemaProp(key));
     }
   }
   // Return
-  return node;
+  return vo;
 }
 
 /**
- * Check for things like optiona, array, etc.
+ * Do basic checks before core parsing
  */
-function checkNullables(
+function parseObjectCoreHelper(
   isOptional: boolean,
   isNullable: boolean,
+  isArray: boolean,
+  vo: ValidatorObject,
+  safety: Safety,
   param: unknown,
-  errorState: ErrorState | null,
+) {
+  // Check nullables
+  if (param === undefined) {
+    return isOptional ? undefined : false;
+  }
+  if (param === null) {
+    return isNullable ? undefined : false;
+  }
+  // Check array
+  if (isArray) {
+    if (!Array.isArray(param)) {
+      return false;
+    }
+    // Run the parseFn without an individual error state
+    const paramClone = new Array(param.length);
+    for (let i = 0; i < param.length; i++) {
+      const result = validateAndSanitize(param[i], vo, safety);
+      if (result !== false) {
+        paramClone[i] = result;
+      } else {
+        return false;
+      }
+    }
+    return paramClone;
+  }
+}
+
+/**
+ * Do basic checks before core parsing with errors.
+ */
+function parseObjectCoreHelperWithErrors(
+  isOptional: boolean,
+  isNullable: boolean,
+  isArray: boolean,
+  vo: ValidatorObject,
+  safety: Safety,
+  errors: ParseError[],
+  param: unknown,
 ) {
   // Check undefined
   if (param === undefined) {
-    if (isOptional) return undefined;
-    if (!!errorState) {
-      errorState.errors.push({
+    if (isOptional) {
+      return undefined;
+    } else {
+      errors.push({
         info: ERRORS.NotOptional,
         functionName: '<optional>',
         value: undefined,
         key: '',
       });
+      return false;
     }
-    return false;
   }
   // Check null
   if (param === null) {
-    if (isNullable) return null;
-    if (!!errorState) {
-      errorState.errors.push({
+    if (isNullable) {
+      return null;
+    } else {
+      errors.push({
         info: ERRORS.NotNullable,
         functionName: '<nullable>',
         value: null,
         key: '',
       });
+      return false;
     }
-    return false;
   }
-  // Return
-  return true;
-}
-
-/**
- * Run parseFn for each index if in an array.
- */
-function parseArray(
-  param: unknown,
-  errorState: ErrorState | null,
-  root: Node,
-  runId: number,
-  parseFn: AnyFunction,
-) {
   // Make sure param is an array
-  if (!Array.isArray(param)) {
-    if (!!errorState) {
-      errorState.errors.push({
+  if (isArray) {
+    if (!Array.isArray(param)) {
+      errors.push({
         info: ERRORS.NotArray,
         functionName: '<isArray>',
         value: param,
         key: '',
       });
+      return false;
     }
-    return false;
-  }
-  // Run the parseFn with an individual error state
-  if (!!errorState) {
+    // Run the parseFn with an individual error state
     const paramClone = new Array(param.length);
     let isValid = true;
     for (let i = 0; i < param.length; i++) {
-      const arrayItemErrorState = { errors: [], index: i },
-        result = parseFn(param[i], root, runId, arrayItemErrorState);
-      if (arrayItemErrorState.errors.length > 0) {
-        errorState.errors.push(...arrayItemErrorState.errors);
+      const nestedErrors: ParseError[] = [],
+        result = validateAndSanitizeWithErrors(
+          param[i],
+          vo,
+          safety,
+          nestedErrors,
+        );
+      if (nestedErrors.length > 0) {
+        prependErrorKeyPaths(nestedErrors, i);
+        errors.push(...nestedErrors);
       }
       if (result !== false && isValid) {
         paramClone[i] = result;
@@ -310,482 +291,161 @@ function parseArray(
     }
     return isValid ? paramClone : false;
   }
-  // Run the parseFn without an individual error state
-  const paramClone = new Array(param.length);
-  for (let i = 0; i < param.length; i++) {
-    const result = parseFn(param[i], root, runId);
-    if (result !== false) {
-      paramClone[i] = result;
-    } else {
-      return false;
-    }
-  }
-  return paramClone;
 }
 
 /**
- * parse in strict mode
+ * Run the validators and return a cleaned clone object.
  */
-function parseStrict(
-  param: PlainObject,
-  root: Node,
-  runId: number,
-  errorState: ErrorState,
-) {
-  root.valueObject = { ...param };
-  const stack: Frame[] = [
-    {
-      node: root,
-      lastChildAddedToStack: 0,
-      entered: false,
-    },
-  ];
-  // Iterate
-  while (stack.length) {
-    const frame = stack[stack.length - 1],
-      node = frame.node;
-    if (!frame.entered) {
-      frame.entered = true;
-      const canDescend = runValidators(node, runId, errorState);
-      if (canDescend && frame.lastChildAddedToStack < node.children.length) {
-        const child = node.children[frame.lastChildAddedToStack];
-        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
-        frame.lastChildAddedToStack++;
-        continue;
-      }
-    }
-    sanitizeStrict(node, runId, errorState);
-    stack.pop();
-  }
-  // Return
-  const finalValue = root.valueObject;
-  root.valueObject = {};
-  return errorState.errors.length === 0 ? finalValue : false;
-}
-
-/**
- * sanitize/clone for strict mode
- */
-function sanitizeStrict(
-  node: Node,
-  runId: number,
-  errorState: ErrorState,
-): void {
-  // Setup a clean object and check for extras
-  const nodeVal = node.valueObject,
-    clean: PlainObject = {},
-    keys = Object.keys(nodeVal),
-    transformedValues = node.transformedValuesObject,
-    keysLength = keys.length;
-  for (let i = 0; i < keysLength; i++) {
-    const key = keys[i],
-      kIdx = node.keyIndex[key];
-    if (kIdx === undefined || node.seen[kIdx] !== runId) {
-      errorState.errors.push({
-        info: ERRORS.StrictSafety,
-        functionName: '<strict>',
-        value: nodeVal[key],
-        ...getKeyPath(node, errorState, key),
-      });
-    }
-    // Don't need to clone if there are errors
-    if (errorState.errors.length === 0 && transformedValues) {
-      let v = nodeVal[key];
-      if (Object.prototype.hasOwnProperty.call(transformedValues, key)) {
-        v = transformedValues[key];
-      }
-      clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
-    }
-  }
-  node.transformedValuesObject = null;
-  // If no errors, replace current value with cloned value
-  if (errorState.errors.length === 0) {
-    node.valueObject = clean;
-    if (node.parent) {
-      node.parent.valueObject[node.key] = clean;
-    }
-  }
-}
-
-/**
- * parse in strict mode
- */
-function parseStrictNoErrors(param: PlainObject, root: Node, runId: number) {
-  root.valueObject = { ...param };
-  const stack: Frame[] = [
-    {
-      node: root,
-      lastChildAddedToStack: 0,
-      entered: false,
-    },
-  ];
-  // Iterate
-  while (stack.length) {
-    const frame = stack[stack.length - 1];
-    const node = frame.node;
-    if (!frame.entered) {
-      frame.entered = true;
-      if (!runValidatorsNoErrors(node, runId)) return false;
-      if (frame.lastChildAddedToStack < node.children.length) {
-        const child = node.children[frame.lastChildAddedToStack];
-        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
-        frame.lastChildAddedToStack++;
-        continue;
-      }
-    }
-    if (!sanitizeStrictNoErrors(node, runId)) return false;
-    stack.pop();
-  }
-  // Return
-  return root.valueObject;
-}
-
-/**
- * sanitize/clone for strict mode
- */
-function sanitizeStrictNoErrors(node: Node, runId: number): boolean {
-  const nodeVal = node.valueObject,
-    clean: PlainObject = {},
-    transformedValues = node.transformedValuesObject;
-  // Clean object
-  const keys = Object.keys(nodeVal),
-    keysLength = keys.length;
-  for (let i = 0; i < keysLength; i++) {
-    const key = keys[i],
-      kIdx = node.keyIndex[key];
-    if (kIdx === undefined || node.seen[kIdx] !== runId) {
-      return false;
-    }
-    let v = nodeVal[key];
-    if (
-      transformedValues &&
-      Object.prototype.hasOwnProperty.call(transformedValues, key)
-    ) {
-      v = transformedValues[key];
-    }
-    clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
-  }
-  node.valueObject = clean;
-  node.transformedValuesObject = null;
-  // Set the parent pointer to cleaned value
-  if (node.parent) {
-    node.parent.valueObject[node.key] = clean;
-  }
-  return true;
-}
-
-/**
- * Parse for normal mode
- */
-function parseNormal(
-  param: PlainObject,
-  root: Node,
-  runId: number,
-  errorState: ErrorState,
-) {
-  root.valueObject = { ...param };
-  const stack: Frame[] = [
-    {
-      node: root,
-      lastChildAddedToStack: 0,
-      entered: false,
-    },
-  ];
-  while (stack.length) {
-    const frame = stack[stack.length - 1],
-      node = frame.node;
-    if (!frame.entered) {
-      frame.entered = true;
-      const canDescend = runValidators(node, runId, errorState);
-      if (canDescend && frame.lastChildAddedToStack < node.children.length) {
-        const child = node.children[frame.lastChildAddedToStack];
-        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
-        frame.lastChildAddedToStack++;
-        continue;
-      }
-    }
-    if (errorState.errors.length === 0) {
-      sanitizeNormal(node, runId);
-    }
-    stack.pop();
-  }
-  // Return
-  const finalValue = root.valueObject;
-  root.valueObject = {};
-  return errorState.errors.length === 0 ? finalValue : false;
-}
-
-/**
- * Parse for normal mode
- */
-function parseNormalNoErrors(param: PlainObject, root: Node, runId: number) {
-  root.valueObject = { ...param };
-  const stack: Frame[] = [
-    {
-      node: root,
-      lastChildAddedToStack: 0,
-      entered: false,
-    },
-  ];
-  while (stack.length) {
-    const frame = stack[stack.length - 1],
-      node = frame.node;
-    if (!frame.entered) {
-      frame.entered = true;
-      if (!runValidatorsNoErrors(node, runId)) return false;
-      if (frame.lastChildAddedToStack < node.children.length) {
-        const child = node.children[frame.lastChildAddedToStack];
-        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
-        frame.lastChildAddedToStack++;
-        continue;
-      }
-    }
-    sanitizeNormal(node, runId);
-    stack.pop();
-  }
-  return root.valueObject;
-}
-
-/**
- * Sanitize in for normal mode
- */
-function sanitizeNormal(node: Node, runId: number): void {
-  const nodeVal = node.valueObject,
-    clean: PlainObject = {},
-    keys = Object.keys(nodeVal),
-    transformedValues = node.transformedValuesObject;
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i],
-      kIdx = node.keyIndex[key];
-    if (kIdx !== undefined && node.seen[kIdx] === runId) {
-      let v = nodeVal[key];
-      if (
-        transformedValues &&
-        Object.prototype.hasOwnProperty.call(transformedValues, key)
-      ) {
-        v = transformedValues[key];
-      }
-      clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
-    }
-  }
-  node.valueObject = clean;
-  node.transformedValuesObject = null;
-  if (node.parent) node.parent.valueObject[node.key] = clean;
-}
-
-/**
- * Parse for loose mode with errors.
- */
-function parseLoose(
-  param: PlainObject,
-  root: Node,
-  runId: number,
-  errorState: ErrorState,
-) {
-  root.valueObject = { ...param };
-  const stack: Frame[] = [
-    {
-      node: root,
-      lastChildAddedToStack: 0,
-      entered: false,
-    },
-  ];
-  while (stack.length) {
-    const frame = stack[stack.length - 1];
-    const node = frame.node;
-    if (!frame.entered) {
-      frame.entered = true;
-      const canDescend = runValidators(node, runId, errorState);
-      if (canDescend && frame.lastChildAddedToStack < node.children.length) {
-        const child = node.children[frame.lastChildAddedToStack];
-        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
-        frame.lastChildAddedToStack++;
-        continue;
-      }
-    }
-    if (errorState.errors.length === 0) {
-      sanitizeLoose(node);
-    }
-    stack.pop();
-  }
-  // Return
-  const finalValue = root.valueObject;
-  root.valueObject = {};
-  return errorState.errors.length === 0 ? finalValue : false;
-}
-
-/**
- * Parse for loose mode
- */
-function parseLooseNoErrors(param: PlainObject, root: Node, runId: number) {
-  root.valueObject = { ...param };
-  const stack: Frame[] = [
-    {
-      node: root,
-      lastChildAddedToStack: 0,
-      entered: false,
-    },
-  ];
-  while (stack.length) {
-    const frame = stack[stack.length - 1];
-    const node = frame.node;
-    if (!frame.entered) {
-      frame.entered = true;
-      if (!runValidatorsNoErrors(node, runId)) return false;
-      if (frame.lastChildAddedToStack < node.children.length) {
-        const child = node.children[frame.lastChildAddedToStack];
-        stack.push({ node: child, lastChildAddedToStack: 0, entered: false });
-        frame.lastChildAddedToStack++;
-        continue;
-      }
-    }
-    sanitizeLoose(node);
-    stack.pop();
-  }
-  return root.valueObject;
-}
-
-/**
- * Sanitize for loose mode
- */
-function sanitizeLoose(node: Node): void {
-  const nodeVal = node.valueObject,
-    clean: PlainObject = {},
-    keys = Object.keys(nodeVal),
-    transformedValues = node.transformedValuesObject;
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i];
-    let v = nodeVal[key];
-    if (
-      transformedValues &&
-      Object.prototype.hasOwnProperty.call(transformedValues, key)
-    ) {
-      v = transformedValues[key];
-    }
-    clean[key] = v !== null && typeof v === 'object' ? deepClone(v) : v;
-  }
-  node.valueObject = clean;
-  node.transformedValuesObject = null;
-  if (node.parent) {
-    node.parent.valueObject[node.key] = clean;
-  }
-}
-
-/******************************************************************************
-                                Helpers
-            Helpers kept in same file for minor performance
-******************************************************************************/
-
-/**
- * Fastest way to select the parse function.
- */
-function setupSelectParseFn(safety: Safety): AnyFunction {
-  const innerArray = PARSE_TABLE[safety];
-  return (collectErrors: boolean) => {
-    return innerArray[collectErrors ? 1 : 0];
-  };
-}
-
-/**
- * Lazily record transformed values so sanitize passes can skip extra work.
- */
-function setTransformedValue(node: Node, key: string, value: unknown): void {
-  const store = node.transformedValuesObject;
-  if (store === null) {
-    const newStore: PlainObject = Object.create(null);
-    newStore[key] = value;
-    node.transformedValuesObject = newStore;
-  } else {
-    store[key] = value;
-  }
-}
-
-/**
- * For validation functions.
- */
-function runValidators(
-  node: Node,
-  runId: number,
-  errorState: ErrorState,
-): boolean {
-  // Set the value object on the child
-  if (node.parent) {
-    const parentNodeVal = node.parent.valueObject,
-      nodeVal = parentNodeVal[node.key];
-    if (!isPlainObject(nodeVal)) {
-      errorState.errors.push({
-        info: ERRORS.SchemaProp,
-        functionName: '<object>',
-        value: nodeVal,
-        ...getKeyPath(node, errorState, node.key),
-      });
-      return false;
-    }
-    node.valueObject = { ...nodeVal };
-    const parentIdx = node.parent.keyIndex[node.key];
-    node.parent.seen[parentIdx] = runId;
+function validateAndSanitize(
+  param: unknown,
+  vo: ValidatorObject,
+  safety: Safety,
+): PlainObject | false {
+  // Check param is object
+  if (!isPlainObject(param)) {
+    return false;
   }
   // Run safe validators
-  const nodeVal = node.valueObject,
-    safeValidators = node.safeValidators;
+  const safeValidators = vo.safeValidators,
+    clean: PlainObject = {};
   for (let i = 0; i < safeValidators.length; i++) {
     const vldr = safeValidators[i],
       vldrFn: AnyFunction = vldr.fn,
-      toValidate = nodeVal[vldr.key];
-    let result,
-      isNestedTestObjectFn = false;
+      vldrKey = vldr.key,
+      toValidate = param[vldrKey];
     // Transform validator function
     if (isTransformFn(vldrFn)) {
-      result = vldrFn(toValidate, (newValue) => {
-        setTransformedValue(node, vldr.key, newValue);
+      const result = vldrFn(toValidate, (newValue) => {
+        clean[vldrKey] = newValue;
       });
+      if (!result) return false;
       // Nested testObject function
     } else if (isTestObjectCoreFn(vldrFn)) {
-      isNestedTestObjectFn = true;
-      result = vldrFn(
-        toValidate,
-        (nestedErrors: ParseError[]) => {
-          for (const error of nestedErrors) {
-            if (error.key) {
-              (error as PlainObject).keyPath = [vldr.key, error.key];
-              delete (error as PlainObject).key;
-            } else {
-              error.keyPath = [vldr.key, ...(error.keyPath ?? [])];
-            }
-            errorState.errors.push(error);
-          }
-        },
-        (modifiedValue) => {
-          setTransformedValue(node, vldr.key, modifiedValue);
-        },
-      );
+      const result = vldrFn(toValidate, undefined, (modifiedValue) => {
+        clean[vldrKey] = modifiedValue;
+      });
+      if (!result) return false;
       // Standard validator function
     } else {
-      result = vldrFn(toValidate);
-    }
-    if (!result && !isNestedTestObjectFn) {
-      errorState.errors.push({
-        info: ERRORS.ValidatorFn,
-        functionName: vldr.name,
-        value: toValidate,
-        ...getKeyPath(node, errorState, vldr.key),
-      });
-    } else {
-      node.seen[vldr.idx] = runId;
+      if (!vldrFn(toValidate)) return false;
+      clean[vldrKey] = deepClone(toValidate);
     }
   }
   // Run unsafe validators
-  const unSafeValidators = node.unSafeValidators;
+  const unSafeValidators = vo.unSafeValidators;
   for (let i = 0; i < unSafeValidators.length; i++) {
     const vldr = unSafeValidators[i];
-    // Run test
     try {
       const vldrFn: AnyFunction = vldr.fn,
-        toValidate = nodeVal[vldr.key];
+        vldrKey = vldr.key,
+        toValidate = param[vldrKey];
       let result;
       if (isTransformFn(vldrFn)) {
         result = vldrFn(toValidate, (newValue) => {
-          setTransformedValue(node, vldr.key, newValue);
+          clean[vldrKey] = newValue;
+        });
+      } else {
+        result = vldrFn(toValidate);
+        clean[vldrKey] = deepClone(toValidate);
+      }
+      if (!result) throw null;
+    } catch {
+      return false;
+    }
+  }
+  // Sanitize
+  for (const key in param) {
+    if (!vo.keySet.has(key)) {
+      if (safety === SAFETY.Strict) {
+        return false;
+      } else if (safety === SAFETY.Normal) {
+        delete clean[key];
+      }
+    }
+  }
+  // Return clone
+  return clean;
+}
+
+/**
+ * Run the validators and return a cleaned clone object.
+ */
+function validateAndSanitizeWithErrors(
+  param: unknown,
+  vo: ValidatorObject,
+  safety: Safety,
+  errors: ParseError[],
+): PlainObject | false {
+  // ** Check param is object ** //
+  if (!isPlainObject(param)) {
+    errors.push({
+      info: ERRORS.NotObject,
+      functionName: '<isPlainObject>',
+      value: param,
+      key: '',
+    });
+    return false;
+  }
+  // ** Run safe validators ** //
+  const safeValidators = vo.safeValidators,
+    clean: PlainObject = {};
+  for (let i = 0; i < safeValidators.length; i++) {
+    const vldr = safeValidators[i],
+      vldrFn: AnyFunction = vldr.fn,
+      vldrKey = vldr.key,
+      toValidate = param[vldrKey];
+    // Transform validator function
+    if (isTransformFn(vldrFn)) {
+      const result = vldrFn(toValidate, (newValue) => {
+        clean[vldrKey] = newValue;
+      });
+      if (!result) {
+        errors.push({
+          info: ERRORS.ValidatorFn,
+          functionName: vldr.name,
+          value: toValidate,
+          key: vldrKey,
+        });
+        return false;
+      }
+      // Nested testObject function
+    } else if (isTestObjectCoreFn(vldrFn)) {
+      const result = vldrFn(
+        toValidate,
+        (nestedErrors: ParseError[]) => {
+          prependErrorKeyPaths(nestedErrors, vldrKey);
+          errors.push(...nestedErrors);
+        },
+        (modifiedValue) => (clean[vldrKey] = modifiedValue),
+      );
+      if (!result) return false;
+      // Standard validator function
+    } else {
+      if (!vldrFn(toValidate)) {
+        errors.push({
+          info: ERRORS.ValidatorFn,
+          functionName: vldr.name,
+          value: toValidate,
+          key: vldrKey,
+        });
+        return false;
+      }
+      clean[vldrKey] = deepClone(toValidate);
+    }
+  }
+  // ** Run unsafe validators ** //
+  const unSafeValidators = vo.unSafeValidators;
+  for (let i = 0; i < unSafeValidators.length; i++) {
+    const vldr = unSafeValidators[i],
+      vldrFn: AnyFunction = vldr.fn,
+      vldrKey = vldr.key,
+      toValidate = param[vldr.key];
+    // Run test
+    try {
+      let result;
+      if (isTransformFn(vldrFn)) {
+        result = vldrFn(toValidate, (newValue) => {
+          clean[vldrKey] = newValue;
         });
       } else {
         result = vldrFn(toValidate);
@@ -799,97 +459,54 @@ function runValidators(
       } else if (err !== null) {
         errMsg = String(err);
       }
-      errorState.errors.push({
+      errors.push({
         info: ERRORS.ValidatorFn,
         functionName: vldr.name,
-        value: nodeVal[vldr.key],
+        value: toValidate,
         ...(errMsg !== null ? { caught: errMsg } : {}),
-        ...getKeyPath(node, errorState, vldr.key),
+        key: vldrKey,
       });
     }
-    node.seen[vldr.idx] = runId;
   }
-  // Return
-  return true;
-}
-
-/**
- * For validation functions.
- */
-function runValidatorsNoErrors(node: Node, runId: number): boolean {
-  // Set the value object on the child
-  if (node.parent) {
-    const parentNodeVal = node.parent.valueObject,
-      nodeVal = parentNodeVal[node.key];
-    if (!isPlainObject(nodeVal)) {
-      return false;
-    }
-    node.valueObject = { ...nodeVal };
-    const parentIdx = node.parent.keyIndex[node.key];
-    node.parent.seen[parentIdx] = runId;
-  }
-  // Run safe validators
-  const nodeVal = node.valueObject,
-    safeValidators = node.safeValidators;
-  for (let i = 0; i < safeValidators.length; i++) {
-    const vldr = safeValidators[i],
-      vldrFn: AnyFunction = vldr.fn,
-      toValidate = nodeVal[vldr.key];
-    // Transform validator function
-    if (isTransformFn(vldrFn)) {
-      const result = vldrFn(toValidate, (newValue) => {
-        setTransformedValue(node, vldr.key, newValue);
-      });
-      if (!result) return false;
-      // Nested testObject function
-    } else if (isTestObjectCoreFn(vldrFn)) {
-      const result = vldrFn(toValidate, undefined, (modifiedValue) => {
-        setTransformedValue(node, vldr.key, modifiedValue);
-      });
-      if (!result) return false;
-      // Standard validator function
-    } else {
-      if (!vldrFn(toValidate)) return false;
-    }
-    node.seen[vldr.idx] = runId;
-  }
-  // Run unsafe validators
-  const unSafeValidators = node.unSafeValidators;
-  for (let i = 0; i < unSafeValidators.length; i++) {
-    const vldr = unSafeValidators[i];
-    try {
-      const vldrFn: AnyFunction = vldr.fn,
-        toValidate = nodeVal[vldr.key];
-      let result;
-      if (isTransformFn(vldrFn)) {
-        result = vldrFn(toValidate, (newValue) => {
-          setTransformedValue(node, vldr.key, newValue);
+  // ** Sanitize ** //
+  for (const key in param) {
+    if (!vo.keySet.has(key)) {
+      if (safety === SAFETY.Strict) {
+        errors.push({
+          info: ERRORS.StrictSafety,
+          functionName: '<strict>',
+          value: param[key],
+          key,
         });
-      } else {
-        result = vldrFn(toValidate);
+        return false;
+      } else if (safety === SAFETY.Normal) {
+        delete clean[key];
       }
-      if (!result) throw null;
-      node.seen[vldr.idx] = runId;
-    } catch {
-      return false;
     }
   }
-  // Return
-  return true;
+  // Return clone
+  return clean;
 }
 
+/******************************************************************************
+                                Helpers
+            Helpers kept in same file for minor performance
+******************************************************************************/
+
 /**
- * Get keyPath
+ * Prepend an array of error keyPaths
  */
-function getKeyPath(node: Node, errorState: ErrorState, key: string) {
-  let keyPath: string[] = [];
-  if (errorState.index !== undefined) {
-    keyPath = [errorState.index.toString()];
+function prependErrorKeyPaths(errors: ParseError[], prepend: string | number) {
+  for (const error of errors) {
+    if (error.key) {
+      (error as PlainObject).keyPath = [String(prepend), error.key];
+      delete (error as PlainObject).key;
+    } else {
+      error.keyPath = [String(prepend), ...(error.keyPath ?? [])];
+    }
+    errors.push(error);
   }
-  if (!!node.parent || keyPath.length > 0) {
-    keyPath = [...keyPath, ...node.path, key];
-  }
-  return keyPath.length > 1 ? { keyPath } : { key };
+  return errors;
 }
 
 /**
@@ -953,21 +570,6 @@ function deepClone<T>(value: T): T {
     (out as PlainObject)[k] = deepClone((value as PlainObject)[k]);
   }
   return out;
-}
-
-/**
- * This walks the validator tree once and clears all seen arrays.
- * it runs once every ~4 billion validations.
- */
-function resetSeen(root: Node): void {
-  const stack: Node[] = [root];
-  while (stack.length) {
-    const node = stack.pop()!;
-    node.seen.fill(0);
-    for (let i = 0; i < node.children.length; i++) {
-      stack.push(node.children[i]);
-    }
-  }
 }
 
 /******************************************************************************
