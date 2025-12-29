@@ -4,7 +4,7 @@
   "description": "Run ben",
   "type": "module",
   "scripts": {
-    "build": "tsx run-benchmarks.ts"
+    "build": "ts-node --esm run-benchmarks.ts"
   },
   "repository": {
     "type": "git",
@@ -13,6 +13,9 @@
   "devDependencies": {
     "jet-validators": "file:../",
     "joi": "^18.0.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
     "yup": "^1.7.1",
     "zod": "^4.2.1"
   }
