@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import Joi from 'joi';
 
-import { strictParseObject, strictTestObject } from 'jet-validators/utils';
+import { strictParseObject, testObject } from 'jet-validators/utils';
 import {
   isBoolean,
   isInArray,
@@ -29,6 +29,7 @@ import {
   pipe as vPipe,
   strictObject as vStrictObject,
   string as vString,
+  object as vObject,
 } from 'valibot';
 
 type Address = {
@@ -103,7 +104,7 @@ const parseWithJet = strictParseObject<UserProfile>({
   active: isBoolean,
   role: isInArray(roles),
   score: isNumber,
-  address: strictTestObject<Address>({
+  address: testObject<Address>({
     street: isNonEmptyString,
     city: isNonEmptyString,
     postalCode: isNonEmptyString,
@@ -119,7 +120,7 @@ const valibotSchema = vStrictObject({
   active: vBoolean(),
   role: vPicklist(roles),
   score: vNumber(),
-  address: vStrictObject({
+  address: vObject({
     street: vPipe(vString(), vNonEmpty()),
     city: vPipe(vString(), vNonEmpty()),
     postalCode: vPipe(vString(), vMinLength(5)),

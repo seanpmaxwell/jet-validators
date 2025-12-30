@@ -313,22 +313,19 @@ function validateAndSanitize(
     const vldr = safeValidators[i],
       vldrFn: AnyFunction = vldr.fn,
       vldrKey = vldr.key;
-    let value = param[vldrKey];
-    if (isTransformFn(vldrFn)) {
-      const isValid = vldrFn(value, (newValue) => {
-        value = newValue;
-      });
+    const value = param[vldrKey];
+    if (isTestObjectCoreFn(vldrFn)) {
+      let localValue = value;
+      const isValid = vldrFn(value, undefined, (nVal) => (localValue = nVal));
       if (!isValid) return false;
-    } else if (isTestObjectCoreFn(vldrFn)) {
-      const isValid = vldrFn(value, undefined, (nestedValue) => {
-        value = nestedValue;
-      });
-      if (!isValid) return false;
+      if (vldrKey in param) {
+        clean[vldrKey] = localValue;
+      }
     } else {
       if (!vldrFn(value)) return false;
-    }
-    if (vldrKey in param) {
-      clean[vldrKey] = deepClone(value);
+      if (vldrKey in param) {
+        clean[vldrKey] = deepClone(value);
+      }
     }
   }
   // Run unsafe validators
@@ -341,9 +338,7 @@ function validateAndSanitize(
       let value = param[vldrKey];
       let isValid;
       if (isTransformFn(vldrFn)) {
-        isValid = vldrFn(value, (newValue) => {
-          value = newValue;
-        });
+        isValid = vldrFn(value, (tVal) => (value = tVal));
       } else {
         isValid = vldrFn(value);
       }
@@ -397,29 +392,23 @@ function validateAndSanitizeWithErrors(
     const vldr = safeValidators[i],
       vldrFn: AnyFunction = vldr.fn,
       vldrKey = vldr.key;
-    let value = param[vldrKey];
+    const value = param[vldrKey];
     // Transform validator function
-    if (isTransformFn(vldrFn)) {
-      isValid = vldrFn(value, (newValue) => {
-        value = newValue;
-      });
-      if (!isValid) {
-        errors.push({
-          info: ERRORS.ValidatorFn,
-          functionName: vldr.name,
-          value,
-          key: vldrKey,
-        });
-      }
-      // Nested testObject function
-    } else if (isTestObjectCoreFn(vldrFn)) {
-      isValid = vldrFn(
+    if (isTestObjectCoreFn(vldrFn)) {
+      const localIsValid = vldrFn(
         value,
         (nestedErrors: ParseError[]) => {
           appendNestedErrors(errors, nestedErrors, vldrKey);
         },
-        (testedValue) => (value = testedValue),
+        (nVal) => {
+          if (vldrKey in param) {
+            clean[vldrKey] = nVal;
+          }
+        },
       );
+      if (!localIsValid) {
+        isValid = false;
+      }
       // Standard validator function
     } else {
       if (!vldrFn(value)) {
@@ -431,8 +420,6 @@ function validateAndSanitizeWithErrors(
           key: vldrKey,
         });
       }
-    }
-    if (isValid) {
       if (vldrKey in param) {
         clean[vldrKey] = deepClone(value);
       }
@@ -447,15 +434,17 @@ function validateAndSanitizeWithErrors(
     let value = param[vldr.key];
     // Run test
     try {
-      let isValid;
+      let innerIsValid;
       if (isTransformFn(vldrFn)) {
-        isValid = vldrFn(value, (newValue) => {
-          value = newValue;
-        });
+        let localValue = value;
+        innerIsValid = vldrFn(value, (tVal) => (localValue = tVal));
+        if (innerIsValid) {
+          value = localValue;
+        }
       } else {
-        isValid = vldrFn(value);
+        innerIsValid = vldrFn(value);
       }
-      if (!isValid) throw null;
+      if (!innerIsValid) throw null;
       if (vldrKey in param) {
         clean[vldrKey] = deepClone(value);
       }
@@ -494,7 +483,6 @@ function validateAndSanitizeWithErrors(
       }
     }
   }
-
   // Return clone
   return isValid ? clean : false;
 }

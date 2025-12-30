@@ -8,6 +8,8 @@ import {
   isOptionalValidDate,
   isUnsignedInteger,
   isOptionalString,
+  isNonEmptyString,
+  isInArray,
 } from '../../src';
 
 import {
@@ -572,7 +574,7 @@ test('Fix "transform" appending undefined properties to object', () => {
  * 12/16/2025 add the flatten function to remove recursion for the schema
  * holding the validator functions.
  */
-test.only('Test for update which removed recursion', () => {
+test('Test for update which removed recursion', () => {
   interface IUser {
     id: number;
     name: string;
@@ -707,4 +709,46 @@ test.skip('Test setting a type for the parseFunction', () => {
   // Test getting the object type
   type TestFn<T extends object> = ReturnType<typeof testObject<T>>;
   const customTest: TestFn<IUser> = testUser;
+});
+
+test('Run the benchmarks function', () => {
+  const roles = ['user', 'moderator', 'admin'] as const;
+  const index = 11;
+  const cities = ['Seattle', 'New York', 'Austin', 'Denver', 'Chicago'];
+
+  const user = {
+    id: index + 1,
+    name: `User ${index + 1}`,
+    email: `user${index + 1}@example.com`,
+    age: 18 + (index % 40),
+    active: index % 3 !== 0,
+    role: roles[index % roles.length],
+    score: Number(((index % 50) + Math.random()).toFixed(2)),
+    address: {
+      street: `${index + 10} Main St.`,
+      city: cities[index % cities.length],
+      postalCode: `${10000 + index}`,
+      lat: 40 + (index % 10) * 0.1,
+      lng: -74 + (index % 10) * 0.1,
+    },
+  };
+
+  const parseWithJet = strictParseObject({
+    id: isUnsignedInteger,
+    name: isNonEmptyString,
+    email: isNonEmptyString,
+    age: isUnsignedInteger,
+    active: isBoolean,
+    role: isInArray(roles),
+    score: isNumber,
+    address: testObject({
+      street: isNonEmptyString,
+      city: isNonEmptyString,
+      postalCode: isNonEmptyString,
+      lat: isNumber,
+      lng: isNumber,
+    }),
+  });
+
+  expect(parseWithJet(user)).toBeTruthy();
 });
