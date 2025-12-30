@@ -18,7 +18,7 @@ type TFunc = (...args: any[]) => any;
 export type TestObjectFn<T> = (
   arg: T,
   onError?: OnErrorCallback,
-  modifiedValueCb?: (modifiedValue: T) => void,
+  valueTestedCb?: (value: T) => void,
 ) => arg is T;
 
 /******************************************************************************
@@ -49,10 +49,10 @@ function testObjectCore<T>(
   const userFacingFn = (
     arg: unknown,
     onError?: OnErrorCallback,
-    modifiedValueCb?: (modifiedValue: unknown) => void,
+    valueTestedCb?: (valueTested: unknown) => void,
   ): arg is T => {
     const result = parseFn(arg, onError);
-    modifiedValueCb?.(result);
+    valueTestedCb?.(result);
     return result !== false;
   };
   // Add symbols

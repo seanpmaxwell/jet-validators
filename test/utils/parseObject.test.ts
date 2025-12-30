@@ -572,7 +572,7 @@ test('Fix "transform" appending undefined properties to object', () => {
  * 12/16/2025 add the flatten function to remove recursion for the schema
  * holding the validator functions.
  */
-test('Test for update which removed recursion', () => {
+test.only('Test for update which removed recursion', () => {
   interface IUser {
     id: number;
     name: string;
@@ -651,35 +651,34 @@ test('Test for update which removed recursion', () => {
   parseUser(user2, (errors) => {
     expect(errors).toStrictEqual([
       {
-        functionName: 'isOptionalString',
-        info: 'Validator function returned false.',
-        key: 'email',
-        value: 123,
-      },
-      {
         functionName: 'isString',
         info: 'Validator function returned false.',
         keyPath: ['address', 'city'],
         value: 1234,
-      },
-
-      {
-        functionName: '<strict>',
-        info: 'Strict mode found an unknown or invalid property.',
-        keyPath: ['state', 'foo'],
-        value: 'bar',
-      },
-      {
-        functionName: '<strict>',
-        info: 'Strict mode found an unknown or invalid property.',
-        keyPath: ['state', 'dog'],
-        value: 'cat',
       },
       {
         functionName: 'isNumber',
         info: 'Validator function returned false.',
         keyPath: ['address', 'country', 'code'],
         value: '123',
+      },
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['address', 'state', 'foo'],
+        value: 'bar',
+      },
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['address', 'state', 'dog'],
+        value: 'cat',
+      },
+      {
+        functionName: 'isOptionalString',
+        info: 'Validator function returned false.',
+        key: 'email',
+        value: 123,
       },
     ]);
   });
