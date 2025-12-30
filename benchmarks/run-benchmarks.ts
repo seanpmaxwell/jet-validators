@@ -1,15 +1,11 @@
+/* eslint-disable no-console */
 import fs from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
 import Joi from 'joi';
-import {
-  parseObject,
-  strictParseObject,
-  looseParseObject,
-  type Schema,
-  strictTestObject,
-} from 'jet-validators/utils';
+
+import { strictParseObject, strictTestObject } from 'jet-validators/utils';
 import {
   isBoolean,
   isInArray,
@@ -17,6 +13,7 @@ import {
   isNumber,
   isUnsignedInteger,
 } from 'jet-validators';
+
 import * as yup from 'yup';
 import { z } from 'zod';
 import {

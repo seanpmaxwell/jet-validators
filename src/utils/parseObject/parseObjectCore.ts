@@ -66,9 +66,7 @@ interface ValidatorItem {
 interface ValidatorObject {
   safeValidators: ValidatorItem[];
   unSafeValidators: ValidatorItem[];
-  keyHolder: Record<string, boolean>;
-  valueObject: PlainObject;
-  transformedValuesObject: PlainObject | null;
+  keySet: Record<string, boolean>;
 }
 
 // **** Error Handling **** //
@@ -149,19 +147,17 @@ function setupValidatorTree(
   safety: Safety,
 ): ValidatorObject {
   // Initialize new node
+  const keys = Object.keys(schema);
   const vo: ValidatorObject = {
     safeValidators: [],
     unSafeValidators: [],
-    valueObject: {},
-    keyHolder: {},
-    transformedValuesObject: null,
+    keySet: {},
   };
-  const keys = Object.keys(schema);
   // Iterate the schema
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i],
       schemaValue = (schema as AnyObject)[key];
-    vo.keyHolder[key] = true;
+    vo.keySet[key] = true;
     if (typeof schemaValue === 'function') {
       const name = schemaValue.name || '<anonymous>';
       if (isSafe(schemaValue)) {
@@ -360,8 +356,9 @@ function validateAndSanitize(
     }
   }
   // Sanitize
-  for (const key in param) {
-    if (!vo.keyHolder[key]) {
+  if (safety !== SAFETY.Normal) {
+    for (const key in param) {
+      if (vo.keySet[key]) continue;
       if (safety === SAFETY.Strict) {
         return false;
       } else if (safety === SAFETY.Loose) {
@@ -481,8 +478,9 @@ function validateAndSanitizeWithErrors(
     }
   }
   // ** Sanitize ** //
-  for (const key in param) {
-    if (!vo.keyHolder[key]) {
+  if (safety !== SAFETY.Normal) {
+    for (const key in param) {
+      if (vo.keySet[key]) continue;
       if (safety === SAFETY.Strict) {
         isValid = false;
         errors.push({
@@ -496,6 +494,7 @@ function validateAndSanitizeWithErrors(
       }
     }
   }
+
   // Return clone
   return isValid ? clean : false;
 }
