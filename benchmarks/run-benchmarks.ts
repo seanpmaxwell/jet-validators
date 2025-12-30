@@ -19,6 +19,20 @@ import {
 } from 'jet-validators';
 import * as yup from 'yup';
 import { z } from 'zod';
+import {
+  boolean as vBoolean,
+  email as vEmail,
+  integer as vInteger,
+  minLength as vMinLength,
+  minValue as vMinValue,
+  nonEmpty as vNonEmpty,
+  number as vNumber,
+  parse as parseWithValibot,
+  picklist as vPicklist,
+  pipe as vPipe,
+  strictObject as vStrictObject,
+  string as vString,
+} from 'valibot';
 
 type Address = {
   street: string;
@@ -98,6 +112,22 @@ const parseWithJet = strictParseObject<UserProfile>({
     postalCode: isNonEmptyString,
     lat: isNumber,
     lng: isNumber,
+  }),
+});
+const valibotSchema = vStrictObject({
+  id: vPipe(vNumber(), vInteger(), vMinValue(0)),
+  name: vPipe(vString(), vNonEmpty()),
+  email: vPipe(vString(), vEmail()),
+  age: vPipe(vNumber(), vInteger(), vMinValue(0)),
+  active: vBoolean(),
+  role: vPicklist(roles),
+  score: vNumber(),
+  address: vStrictObject({
+    street: vPipe(vString(), vNonEmpty()),
+    city: vPipe(vString(), vNonEmpty()),
+    postalCode: vPipe(vString(), vMinLength(5)),
+    lat: vNumber(),
+    lng: vNumber(),
   }),
 });
 const zodSchema = z
@@ -180,6 +210,7 @@ const validators: Record<string, Validator> = {
     return parsed;
   },
   Yup: (value) => yupSchema.validateSync(value, { strict: true }),
+  Valibot: (value) => parseWithValibot(valibotSchema, value),
 };
 
 async function main() {
