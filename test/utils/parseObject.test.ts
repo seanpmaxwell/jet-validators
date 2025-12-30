@@ -711,7 +711,7 @@ test.skip('Test setting a type for the parseFunction', () => {
   const customTest: TestFn<IUser> = testUser;
 });
 
-test('Run the benchmarks function', () => {
+test.only('Run the benchmarks function', () => {
   const roles = ['user', 'moderator', 'admin'] as const;
   const index = 11;
   const cities = ['Seattle', 'New York', 'Austin', 'Denver', 'Chicago'];
