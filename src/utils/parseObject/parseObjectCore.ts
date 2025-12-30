@@ -352,7 +352,7 @@ function validateAndSanitize(
   }
   // Sanitize
   if (safety !== SAFETY.Normal) {
-    for (const key in param) {
+    for (const key of Object.keys(param)) {
       if (vo.keySet[key]) continue;
       if (safety === SAFETY.Strict) {
         return false;
@@ -468,7 +468,7 @@ function validateAndSanitizeWithErrors(
   }
   // ** Sanitize ** //
   if (safety !== SAFETY.Normal) {
-    for (const key in param) {
+    for (const key of Object.keys(param)) {
       if (vo.keySet[key]) continue;
       if (safety === SAFETY.Strict) {
         isValid = false;
