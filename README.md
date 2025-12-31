@@ -25,10 +25,10 @@ jet-validator's `parseObject` function is one of the fastest schema validation t
 
 `jet-validators` is a large collection of small, composable validator functions commonly used when validating values in TypeScript.
 
-* Zero dependencies
-* Minimal boilerplate
-* Excellent type narrowing
 * Drop-in validators you can import and use immediately
+* Extremely fast and lightweight object schema validation
+* Covers the vast majority of real-world validation needs
+* **Zero dependencies**
 
 ### Quick Glance
 
@@ -39,15 +39,6 @@ if (isOptionalString(value)) {
   // value is string | undefined
 }
 ```
-
-### Why jet-validators?
-
-* Covers the vast majority of real-world validation needs
-* No initialization or schema definitions required for basic checks
-* Includes helpers for transforming values before validation
-* Lightweight object schema validation utilities
-* **Zero dependencies**
-
 <br/>
 
 ## Benchmarks <a name="benchmarks"></a>
