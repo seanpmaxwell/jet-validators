@@ -279,6 +279,7 @@ function buildBenchmarksSection(results: BenchmarkResult[]): string {
     '| --- | ---: | ---: | ---: |',
     rows,
     '',
+    '- You can see a more complete list of benchmarks <a href="https://moltar.github.io/typescript-runtime-type-benchmarks/">here</a>.',
     '<br/>',
     '',
   ].join('\n');
