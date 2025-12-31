@@ -85,11 +85,6 @@ type ValidatorItem = {
     }
 );
 
-interface ValidatorObject {
-  validators: ValidatorItem[];
-  keySet: Record<string, boolean>;
-}
-
 // **** Error Handling **** //
 
 export type ParseError = {
@@ -125,7 +120,7 @@ function parseObjectCore(
   safety: Safety,
   onError?: OnErrorCallback,
 ) {
-  const validatorObject = setupValidatorTree(schema, safety);
+  const validatorObject = setupValidatorArray(schema, safety);
   return (param: unknown, localOnError?: OnErrorCallback) => {
     const errorCb = onError ?? localOnError;
     // Run the parse function
@@ -163,48 +158,49 @@ function parseObjectCore(
 /**
  * Setup fast validator tree
  */
-function setupValidatorTree(
+function setupValidatorArray(
   schema: Schema<unknown>,
   safety: Safety,
-): ValidatorObject {
+): ValidatorItem[] {
   // Initialize new node
-  const keys = Object.keys(schema);
-  const vo: ValidatorObject = {
-    validators: [],
-    keySet: {},
-  };
+  const keys = Object.keys(schema),
+    validatorArray: ValidatorItem[] = [];
   // Iterate the schema
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i],
       schemaValue = (schema as AnyObject)[key];
-    vo.keySet[key] = true;
     if (typeof schemaValue === 'function') {
       const name = schemaValue.name || '<anonymous>';
       if (isSafe(schemaValue)) {
-        vo.validators.push({ key, fn: schemaValue, name, isSafe: true });
+        validatorArray.push({ key, fn: schemaValue, name, isSafe: true });
       } else if (isTestObjectCoreFn(schemaValue)) {
-        vo.validators.push({
+        validatorArray.push({
           key,
           fn: schemaValue,
           name: '',
           isTestObjectFn: true,
         });
       } else if (isTransformFn(schemaValue)) {
-        vo.validators.push({ key, fn: schemaValue, name, isTransformFn: true });
+        validatorArray.push({
+          key,
+          fn: schemaValue,
+          name,
+          isTransformFn: true,
+        });
       } else {
-        vo.validators.push({ key, fn: schemaValue, name });
+        validatorArray.push({ key, fn: schemaValue, name });
       }
       // Recurse down the tree
     } else if (typeof schemaValue === 'object') {
       const fn = testObjectCore(false, false, false, schemaValue, safety);
-      vo.validators.push({ key, fn, name: '', isTestObjectFn: true });
+      validatorArray.push({ key, fn, name: '', isTestObjectFn: true });
       // Throw error
     } else {
       throw new Error(ERRORS.SchemaProp(key));
     }
   }
   // Return
-  return vo;
+  return validatorArray;
 }
 
 /**
@@ -214,7 +210,7 @@ function parseObjectCoreHelper(
   isOptional: boolean,
   isNullable: boolean,
   isArray: boolean,
-  vo: ValidatorObject,
+  validatorArray: ValidatorItem[],
   safety: Safety,
   param: unknown,
 ) {
@@ -233,7 +229,7 @@ function parseObjectCoreHelper(
     // Run the parseFn without an individual error state
     const paramClone = new Array(param.length);
     for (let i = 0; i < param.length; i++) {
-      const result = validateAndSanitize(param[i], vo, safety);
+      const result = validateAndSanitize(param[i], validatorArray, safety);
       if (result !== false) {
         paramClone[i] = result;
       } else {
@@ -244,7 +240,7 @@ function parseObjectCoreHelper(
   }
   // Default
   if (isPlainObject(param)) {
-    return validateAndSanitize(param, vo, safety);
+    return validateAndSanitize(param, validatorArray, safety);
   } else {
     return false;
   }
@@ -257,7 +253,7 @@ function parseObjectCoreHelperWithErrors(
   isOptional: boolean,
   isNullable: boolean,
   isArray: boolean,
-  vo: ValidatorObject,
+  validatorArray: ValidatorItem[],
   safety: Safety,
   errors: ParseError[],
   param: unknown,
@@ -308,7 +304,7 @@ function parseObjectCoreHelperWithErrors(
       const nestedErrors: ParseError[] = [],
         result = validateAndSanitizeWithErrors(
           param[i],
-          vo,
+          validatorArray,
           safety,
           nestedErrors,
         );
@@ -325,7 +321,7 @@ function parseObjectCoreHelperWithErrors(
   }
   // Default
   if (isPlainObject(param)) {
-    return validateAndSanitizeWithErrors(param, vo, safety, errors);
+    return validateAndSanitizeWithErrors(param, validatorArray, safety, errors);
   } else {
     errors.push({
       info: ERRORS.NotObject,
@@ -342,15 +338,16 @@ function parseObjectCoreHelperWithErrors(
  */
 function validateAndSanitize(
   param: PlainObject,
-  vo: ValidatorObject,
+  validatorArray: ValidatorItem[],
   safety: Safety,
 ): PlainObject | false {
   // ** Run validators ** //
-  const clean: PlainObject = {},
-    validators = vo.validators,
+  const paramKeys = safety !== SAFETY.Normal ? Object.keys(param) : undefined,
+    seen: Record<string, unknown> = {},
+    clean: PlainObject = {},
     hasOwn = Object.prototype.hasOwnProperty;
-  for (let i = 0; i < validators.length; i++) {
-    const vldr = validators[i],
+  for (let i = 0; i < validatorArray.length; i++) {
+    const vldr = validatorArray[i],
       vldrKey = vldr.key,
       hasKey = hasOwn.call(param, vldrKey);
     let value = hasKey ? param[vldrKey] : undefined,
@@ -384,20 +381,22 @@ function validateAndSanitize(
     // Add the value to the clean object
     if (hasKey) {
       clean[vldrKey] = doDeepClone ? deepClone(value) : value;
+      if (paramKeys) {
+        seen[vldrKey] = true;
+      }
     }
   }
   // ** Sanitize ** //
-  if (safety !== SAFETY.Normal) {
-    for (const key of Object.keys(param)) {
-      if (!vo.keySet[key]) {
-        if (safety === SAFETY.Strict) {
-          return false;
-        } else if (safety === SAFETY.Loose) {
-          const value = param[key];
-          clean[key] =
-            !!value && typeof value === 'object' ? deepClone(value) : value;
-        }
+  if (paramKeys && safety !== SAFETY.Normal) {
+    for (let i = 0; i < paramKeys.length; i++) {
+      const key = paramKeys[i];
+      if (seen[key]) continue;
+      if (safety === SAFETY.Strict) {
+        return false;
       }
+      const value = param[key];
+      clean[key] =
+        !!value && typeof value === 'object' ? deepClone(value) : value;
     }
   }
   // Return clone
@@ -409,17 +408,18 @@ function validateAndSanitize(
  */
 function validateAndSanitizeWithErrors(
   param: PlainObject,
-  vo: ValidatorObject,
+  validatorArray: ValidatorItem[],
   safety: Safety,
   errors: ParseError[],
 ): PlainObject | false {
   // ** Run validators ** //
-  const validators = vo.validators,
+  const paramKeys = safety !== SAFETY.Normal ? Object.keys(param) : undefined,
+    seen: Record<string, unknown> = {},
     clean: PlainObject = {},
     hasOwn = Object.prototype.hasOwnProperty;
   let isValid = true;
-  for (let i = 0; i < validators.length; i++) {
-    const vldr = validators[i],
+  for (let i = 0; i < validatorArray.length; i++) {
+    const vldr = validatorArray[i],
       vldrKey = vldr.key,
       hasKey = hasOwn.call(param, vldrKey);
     let value = hasKey ? param[vldrKey] : undefined,
@@ -478,27 +478,32 @@ function validateAndSanitizeWithErrors(
       }
     }
     // Add the value to the clean object
-    if (isValid && hasKey) {
-      clean[vldrKey] = doDeepClone ? deepClone(value) : value;
+    if (hasKey) {
+      if (isValid) {
+        clean[vldrKey] = doDeepClone ? deepClone(value) : value;
+      }
+      if (paramKeys) {
+        seen[vldrKey] = true;
+      }
     }
   }
   // ** Sanitize ** //
-  if (safety !== SAFETY.Normal) {
-    for (const key of Object.keys(param)) {
-      if (!vo.keySet[key]) {
-        if (safety === SAFETY.Strict) {
-          isValid = false;
-          errors.push({
-            info: ERRORS.StrictSafety,
-            functionName: '<strict>',
-            value: param[key],
-            key,
-          });
-        } else if (safety === SAFETY.Loose) {
-          const value = param[key];
-          clean[key] =
-            !!value && typeof value === 'object' ? deepClone(value) : value;
-        }
+  if (paramKeys && safety !== SAFETY.Normal) {
+    for (let i = 0; i < paramKeys.length; i++) {
+      const key = paramKeys[i];
+      if (seen[key]) continue;
+      if (safety === SAFETY.Strict) {
+        isValid = false;
+        errors.push({
+          info: ERRORS.StrictSafety,
+          functionName: '<strict>',
+          value: param[key],
+          key,
+        });
+      } else {
+        const value = param[key];
+        clean[key] =
+          !!value && typeof value === 'object' ? deepClone(value) : value;
       }
     }
   }
@@ -543,7 +548,9 @@ function appendNestedErrors(
   }
 }
 
-// **** DeepClone stuff from ChatGPT **** //
+/******************************************************************************
+                        DeepClone stuff from ChatGPT
+******************************************************************************/
 
 function deepClone<T>(value: T): T {
   if (value === null || typeof value !== 'object') {
