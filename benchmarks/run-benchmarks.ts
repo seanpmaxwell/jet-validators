@@ -192,7 +192,7 @@ const yupSchema = yup
   .strict(true);
 
 const validators: Record<string, Validator> = {
-  jetValiators: (value) => {
+  ['jet-validators']: (value) => {
     const parsed = parseWithJet(value);
     if (!parsed) {
       throw new Error('parseObject returned false for valid data.');
