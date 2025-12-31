@@ -415,13 +415,15 @@ You can pass a callback as the second argument to the `parseObject` function or 
 #### Example
 
 ```ts
-const parseUsersArrray([{ name: 'sean'}, {name: 123 }]) = ()
+const parseUsersArrray = parseObjectArray({ name: isString });
+const parseUsersArrray([{name: 'sean'}, {name: 123 }]);
 {
-  info: 'Validator function returned false.',
+  info: "Validator function returned false.",
   functionName: "isString",
   value: 123,
   keyPath: ["1", "name"]
 }
+```
 
 ---
 
