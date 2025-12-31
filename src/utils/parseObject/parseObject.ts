@@ -1,6 +1,7 @@
 import parseObjectCore, {
   SAFETY,
   type OnErrorCallback,
+  type Schema,
   type ValidatorFn,
 } from './parseObjectCore.js';
 
@@ -36,10 +37,6 @@ export type InferredReturnValue<
   N extends boolean,
   A extends boolean,
 > = ResolveMods<InferTypeFromSchema<S>, O, N, A>;
-
-export type Schema<T> = {
-  [K in keyof T]: T[K] extends object ? Schema<T[K]> : ValidatorFn<T[K]>;
-};
 
 /******************************************************************************
                               parseObject

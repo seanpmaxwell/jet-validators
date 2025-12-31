@@ -39,7 +39,6 @@ export {
   strictParseOptionalObjectArray,
   strictParseNullableObjectArray,
   strictParseNullishObjectArray,
-  type Schema,
 } from './parseObject/parseObject.js';
 
 export {
@@ -69,4 +68,4 @@ export {
   strictTestNullishObjectArray,
 } from './parseObject/testObject.js';
 
-export { type ParseError } from './parseObject/parseObjectCore.js';
+export { type Schema, type ParseError } from './parseObject/parseObjectCore.js';

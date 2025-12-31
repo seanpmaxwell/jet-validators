@@ -8,6 +8,8 @@ import {
   isOptionalValidDate,
   isUnsignedInteger,
   isOptionalString,
+  isNonEmptyString,
+  isInArray,
 } from '../../src';
 
 import {
@@ -305,16 +307,16 @@ test('test "testObject()" function', () => {
   });
   expect(errArr).toStrictEqual([
     {
-      functionName: 'isNumber',
-      info: 'Validator function returned false.',
-      keyPath: ['address', 'country', 'code'],
-      value: '1234',
-    },
-    {
       functionName: 'transform-isNumber',
       info: 'Validator function returned false.',
       keyPath: ['address', 'zip'],
       value: 'horse',
+    },
+    {
+      functionName: 'isNumber',
+      info: 'Validator function returned false.',
+      keyPath: ['address', 'country', 'code'],
+      value: '1234',
     },
   ]);
 
@@ -360,6 +362,33 @@ test('test "testObject()" function', () => {
     testCombo2GoodDataResult,
   );
   expect(testCombo2(testCombo2FailData)).toStrictEqual(false);
+
+  // ** Test combo 3 ** //
+  type User = {
+    id: number;
+    name: string;
+    address: {
+      street: string;
+      zip: number;
+    };
+  };
+  const User1: User = {
+    id: 1,
+    name: 'jon',
+    address: {
+      street: 'foo',
+      zip: 1234,
+    },
+  };
+  const testCombo3 = parseObject<User>({
+    id: isNumber,
+    name: isString,
+    address: testObject<User['address']>({
+      street: isString,
+      zip: isNumber,
+    }),
+  });
+  expect(testCombo3(User1)).toStrictEqual(User1);
 });
 
 /**
@@ -624,35 +653,34 @@ test('Test for update which removed recursion', () => {
   parseUser(user2, (errors) => {
     expect(errors).toStrictEqual([
       {
-        functionName: 'isOptionalString',
-        info: 'Validator function returned false.',
-        key: 'email',
-        value: 123,
-      },
-      {
         functionName: 'isString',
         info: 'Validator function returned false.',
         keyPath: ['address', 'city'],
         value: 1234,
-      },
-
-      {
-        functionName: '<strict>',
-        info: 'Strict mode found an unknown or invalid property.',
-        keyPath: ['state', 'foo'],
-        value: 'bar',
-      },
-      {
-        functionName: '<strict>',
-        info: 'Strict mode found an unknown or invalid property.',
-        keyPath: ['state', 'dog'],
-        value: 'cat',
       },
       {
         functionName: 'isNumber',
         info: 'Validator function returned false.',
         keyPath: ['address', 'country', 'code'],
         value: '123',
+      },
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['address', 'state', 'foo'],
+        value: 'bar',
+      },
+      {
+        functionName: '<strict>',
+        info: 'Strict mode found an unknown or invalid property.',
+        keyPath: ['address', 'state', 'dog'],
+        value: 'cat',
+      },
+      {
+        functionName: 'isOptionalString',
+        info: 'Validator function returned false.',
+        key: 'email',
+        value: 123,
       },
     ]);
   });
@@ -681,4 +709,46 @@ test.skip('Test setting a type for the parseFunction', () => {
   // Test getting the object type
   type TestFn<T extends object> = ReturnType<typeof testObject<T>>;
   const customTest: TestFn<IUser> = testUser;
+});
+
+test('Run the benchmarks function', () => {
+  const roles = ['user', 'moderator', 'admin'] as const;
+  const index = 11;
+  const cities = ['Seattle', 'New York', 'Austin', 'Denver', 'Chicago'];
+
+  const user = {
+    id: index + 1,
+    name: `User ${index + 1}`,
+    email: `user${index + 1}@example.com`,
+    age: 18 + (index % 40),
+    active: index % 3 !== 0,
+    role: roles[index % roles.length],
+    score: Number(((index % 50) + Math.random()).toFixed(2)),
+    address: {
+      street: `${index + 10} Main St.`,
+      city: cities[index % cities.length],
+      postalCode: `${10000 + index}`,
+      lat: 40 + (index % 10) * 0.1,
+      lng: -74 + (index % 10) * 0.1,
+    },
+  };
+
+  const parseWithJet = strictParseObject({
+    id: isUnsignedInteger,
+    name: isNonEmptyString,
+    email: isNonEmptyString,
+    age: isUnsignedInteger,
+    active: isBoolean,
+    role: isInArray(roles),
+    score: isNumber,
+    address: testObject({
+      street: isNonEmptyString,
+      city: isNonEmptyString,
+      postalCode: isNonEmptyString,
+      lat: isNumber,
+      lng: isNumber,
+    }),
+  });
+
+  expect(parseWithJet(user)).toBeTruthy();
 });

@@ -21,7 +21,7 @@ const BOOLEAN_MAP: Record<string, boolean> = {
 
 export type ValidatorFnWithTransformCb<T> = (
   arg: unknown,
-  cb?: (arg: T) => void,
+  cb?: (transformedValue: T, isValid?: boolean) => void,
 ) => arg is T;
 
 /******************************************************************************
@@ -70,19 +70,26 @@ export function makeNullish<T>(cb: (arg: unknown) => arg is T) {
   };
 }
 
-// **** Transform a value before validating it **** //
-
+/**
+ * This returns a function which transforms a value before validating it.
+ * The returned function calls a callback which provides the returned value
+ * and
+ */
 export function transform<T, U = T>(
   transformFn: (arg: unknown) => T,
   validate: (arg: unknown) => arg is U,
 ): ValidatorFnWithTransformCb<T> {
   // Initialize the function
-  const fn = (arg: unknown, cb?: (arg: T) => void): arg is T => {
+  const fn = (
+    arg: unknown,
+    cb?: (transformedValue: T, isValid?: boolean) => void,
+  ): arg is T => {
     if (arg !== undefined) {
       arg = transformFn(arg);
     }
-    cb?.(arg as T);
-    return validate(arg);
+    const isValid = validate(arg);
+    cb?.(arg as T, isValid);
+    return isValid;
   };
   // Set properties
   (fn as unknown as Record<symbol, unknown>)[kTransformFunction] = true;
