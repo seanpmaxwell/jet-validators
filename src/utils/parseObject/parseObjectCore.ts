@@ -156,7 +156,7 @@ function setupValidatorArray(
   // Initialize new node
   const keys = Object.keys(schema),
     validatorArray: ValidatorItem[] = [],
-    keySet: KeySet = {};
+    keySet: KeySet = Object.create(null);
   // Iterate the schema
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i],
@@ -297,7 +297,7 @@ function validateAndSanitize(
   errors: ParseError[] | null,
 ): PlainObject | false {
   // ** Run validators ** //
-  const clean: PlainObject = {};
+  const clean: PlainObject = Object.create(null);
   let isValid = true;
   for (let i = 0; i < validatorArray.length; i++) {
     const vldr = validatorArray[i],
