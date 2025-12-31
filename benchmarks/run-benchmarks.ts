@@ -5,7 +5,12 @@ import { fileURLToPath } from 'node:url';
 
 import Joi from 'joi';
 
-import { strictParseObject, testObject } from 'jet-validators/utils';
+import {
+  parseObject,
+  // strictParseObject,
+  testObject,
+} from 'jet-validators/utils';
+
 import {
   isBoolean,
   isInArray,
@@ -15,7 +20,7 @@ import {
 } from 'jet-validators';
 
 import * as yup from 'yup';
-import { z } from 'zod';
+import { z } from 'zod/v4';
 import {
   boolean as vBoolean,
   email as vEmail,
@@ -96,7 +101,7 @@ const numberFormatter = new Intl.NumberFormat('en-US', {
   maximumFractionDigits: 2,
 });
 
-const parseWithJet = strictParseObject<UserProfile>({
+const parseWithJet = parseObject<UserProfile>({
   id: isUnsignedInteger,
   name: isNonEmptyString,
   email: isNonEmptyString,
@@ -128,24 +133,22 @@ const valibotSchema = vStrictObject({
     lng: vNumber(),
   }),
 });
-const zodSchema = z
-  .object({
-    id: z.number().int().nonnegative(),
-    name: z.string().min(1),
-    email: z.string().email(),
-    age: z.number().int().nonnegative(),
-    active: z.boolean(),
-    role: z.enum(roles),
-    score: z.number(),
-    address: z.object({
-      street: z.string().min(1),
-      city: z.string().min(1),
-      postalCode: z.string().min(5),
-      lat: z.number(),
-      lng: z.number(),
-    }),
-  })
-  .strict();
+const zodSchema = z.object({
+  id: z.number().int().nonnegative(),
+  name: z.string().min(1),
+  email: z.string().email(),
+  age: z.number().int().nonnegative(),
+  active: z.boolean(),
+  role: z.enum(roles),
+  score: z.number(),
+  address: z.object({
+    street: z.string().min(1),
+    city: z.string().min(1),
+    postalCode: z.string().min(5),
+    lat: z.number(),
+    lng: z.number(),
+  }),
+});
 const joiSchema = Joi.object({
   id: Joi.number().integer().min(0).required(),
   name: Joi.string().min(1).required(),
