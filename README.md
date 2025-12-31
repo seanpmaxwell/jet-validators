@@ -20,6 +20,7 @@ jet-validator's `parseObject` function is one of the fastest schema validation t
 * [Utilities](#utilities)
 * [Object Schema Validation](#object-schema-validation)
 * [Safety Modes](#safety-modes)
+<br/>
 
 ## Introduction <a name="introduction"></a>
 
