@@ -508,18 +508,3 @@ const strictUser = strictParseObject({...});
 ```
 
 Nested schemas inherit the parent mode unless overridden.
-
----
-
-## Summary
-
-`jet-validators` is ideal when you want:
-
-* Fast runtime validation
-* Strong type narrowing
-* No heavy schema machinery
-* Simple, composable utilities
-
-Perfect for APIs, config parsing, and runtime safety without dependency bloat.
-
----
