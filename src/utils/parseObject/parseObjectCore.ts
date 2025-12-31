@@ -243,7 +243,11 @@ function parseObjectCoreHelper(
     return paramClone;
   }
   // Default
-  return validateAndSanitize(param, vo, safety);
+  if (isPlainObject(param)) {
+    return validateAndSanitize(param, vo, safety);
+  } else {
+    return false;
+  }
 }
 
 /**
@@ -320,29 +324,37 @@ function parseObjectCoreHelperWithErrors(
     return isValid ? paramClone : false;
   }
   // Default
-  return validateAndSanitizeWithErrors(param, vo, safety, errors);
+  if (isPlainObject(param)) {
+    return validateAndSanitizeWithErrors(param, vo, safety, errors);
+  } else {
+    errors.push({
+      info: ERRORS.NotObject,
+      functionName: '<isPlainObject>',
+      value: param,
+      key: '',
+    });
+    return false;
+  }
 }
 
 /**
  * Run the validators and return a cleaned clone object.
  */
 function validateAndSanitize(
-  param: unknown,
+  param: PlainObject,
   vo: ValidatorObject,
   safety: Safety,
 ): PlainObject | false {
-  // ** Check param is object ** //
-  if (!isPlainObject(param)) {
-    return false;
-  }
-  // ** Run safe validators ** //
+  // ** Run validators ** //
   const clean: PlainObject = {},
-    validators = vo.validators;
+    validators = vo.validators,
+    hasOwn = Object.prototype.hasOwnProperty;
   for (let i = 0; i < validators.length; i++) {
     const vldr = validators[i],
-      vldrKey = vldr.key;
-    let value = param[vldrKey],
-      doDeepClone = true;
+      vldrKey = vldr.key,
+      hasKey = hasOwn.call(param, vldrKey);
+    let value = hasKey ? param[vldrKey] : undefined,
+      doDeepClone = !!value && typeof value === 'object';
     // Run different validator functions
     if (vldr.isSafe) {
       if (!vldr.fn(value)) return false;
@@ -354,7 +366,13 @@ function validateAndSanitize(
       let isValid;
       try {
         if (vldr.isTransformFn) {
-          isValid = vldr.fn(value, (tVal) => (value = tVal));
+          isValid = vldr.fn(value, (tVal) => {
+            value = tVal;
+            // Don't need to clone again if fresh object
+            if (value !== tVal) {
+              doDeepClone = false;
+            }
+          });
         } else {
           isValid = vldr.fn(value);
         }
@@ -364,18 +382,21 @@ function validateAndSanitize(
       }
     }
     // Add the value to the clean object
-    if (vldrKey in param) {
+    if (hasKey) {
       clean[vldrKey] = doDeepClone ? deepClone(value) : value;
     }
   }
   // ** Sanitize ** //
   if (safety !== SAFETY.Normal) {
     for (const key of Object.keys(param)) {
-      if (vo.keySet[key]) continue;
-      if (safety === SAFETY.Strict) {
-        return false;
-      } else if (safety === SAFETY.Loose) {
-        clean[key] = deepClone(param[key]);
+      if (!vo.keySet[key]) {
+        if (safety === SAFETY.Strict) {
+          return false;
+        } else if (safety === SAFETY.Loose) {
+          const value = param[key];
+          clean[key] =
+            !!value && typeof value === 'object' ? deepClone(value) : value;
+        }
       }
     }
   }
@@ -387,30 +408,22 @@ function validateAndSanitize(
  * Run the validators and return a cleaned clone object.
  */
 function validateAndSanitizeWithErrors(
-  param: unknown,
+  param: PlainObject,
   vo: ValidatorObject,
   safety: Safety,
   errors: ParseError[],
 ): PlainObject | false {
-  // ** Check param is object ** //
-  if (!isPlainObject(param)) {
-    errors.push({
-      info: ERRORS.NotObject,
-      functionName: '<isPlainObject>',
-      value: param,
-      key: '',
-    });
-    return false;
-  }
-  // ** Run safe validators ** //
+  // ** Run validators ** //
   const validators = vo.validators,
-    clean: PlainObject = {};
+    clean: PlainObject = {},
+    hasOwn = Object.prototype.hasOwnProperty;
   let isValid = true;
   for (let i = 0; i < validators.length; i++) {
     const vldr = validators[i],
-      vldrKey = vldr.key;
-    let value = param[vldrKey],
-      doDeepClone = true;
+      vldrKey = vldr.key,
+      hasKey = hasOwn.call(param, vldrKey);
+    let value = hasKey ? param[vldrKey] : undefined,
+      doDeepClone = !!value && typeof value === 'object';
     // Safe validator
     if (vldr.isSafe) {
       if (!vldr.fn(value)) {
@@ -443,6 +456,10 @@ function validateAndSanitizeWithErrors(
             if (isValid) {
               value = tVal;
             }
+            // Don't need to clone again if fresh object
+            if (value !== tVal) {
+              doDeepClone = false;
+            }
           });
         } else {
           localIsValid = vldr.fn(value);
@@ -461,24 +478,27 @@ function validateAndSanitizeWithErrors(
       }
     }
     // Add the value to the clean object
-    if (isValid && vldrKey in param) {
+    if (isValid && hasKey) {
       clean[vldrKey] = doDeepClone ? deepClone(value) : value;
     }
   }
   // ** Sanitize ** //
   if (safety !== SAFETY.Normal) {
     for (const key of Object.keys(param)) {
-      if (vo.keySet[key]) continue;
-      if (safety === SAFETY.Strict) {
-        isValid = false;
-        errors.push({
-          info: ERRORS.StrictSafety,
-          functionName: '<strict>',
-          value: param[key],
-          key,
-        });
-      } else if (safety === SAFETY.Loose) {
-        clean[key] = deepClone(param[key]);
+      if (!vo.keySet[key]) {
+        if (safety === SAFETY.Strict) {
+          isValid = false;
+          errors.push({
+            info: ERRORS.StrictSafety,
+            functionName: '<strict>',
+            value: param[key],
+            key,
+          });
+        } else if (safety === SAFETY.Loose) {
+          const value = param[key];
+          clean[key] =
+            !!value && typeof value === 'object' ? deepClone(value) : value;
+        }
       }
     }
   }
@@ -523,65 +543,66 @@ function appendNestedErrors(
   }
 }
 
-/**
- * Return a value or deep clone it if it's an object.
- */
+// **** DeepClone stuff from ChatGPT **** //
+
 function deepClone<T>(value: T): T {
-  // Primitives
   if (value === null || typeof value !== 'object') {
     return value;
   }
-  // Date
-  if (value instanceof Date) {
-    return new Date(value.getTime()) as T;
+  if (Array.isArray(value)) {
+    return cloneArray(value) as T;
   }
-  // RegExp
-  if (value instanceof RegExp) {
+  const proto = Object.getPrototypeOf(value);
+  if (proto === Object.prototype || proto === null) {
+    return clonePlainObject(value as PlainObject) as T;
+  }
+  return cloneExotic(value);
+}
+
+function cloneArray(source: unknown[]): unknown[] {
+  const out = new Array(source.length);
+  for (let i = 0; i < source.length; i++) {
+    out[i] = deepClone(source[i]);
+  }
+  return out;
+}
+
+function clonePlainObject(source: PlainObject): PlainObject {
+  const out: PlainObject = {};
+  const keys = Object.keys(source);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    out[key] = deepClone(source[key]);
+  }
+  return out;
+}
+
+function cloneExotic<T>(value: T): T {
+  if (value instanceof Date) return new Date(value.getTime()) as T;
+  if (value instanceof RegExp)
     return new RegExp(value.source, value.flags) as T;
-  }
-  // Map
   if (value instanceof Map) {
     const out = new Map();
-    for (const [k, v] of value) {
-      out.set(deepClone(k), deepClone(v));
-    }
+    for (const [k, v] of value) out.set(deepClone(k), deepClone(v));
     return out as T;
   }
-  // Set
   if (value instanceof Set) {
     const out = new Set();
-    for (const v of value) {
-      out.add(deepClone(v));
-    }
+    for (const v of value) out.add(deepClone(v));
     return out as T;
   }
-  // Array
-  if (Array.isArray(value)) {
-    const out = new Array(value.length);
-    for (let i = 0; i < value.length; i++) {
-      out[i] = deepClone(value[i]);
-    }
-    return out as T;
-  }
-  // Typed arrays / ArrayBuffer views
   if (ArrayBuffer.isView(value)) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return new (value.constructor as any)(
       value.buffer.slice(value.byteOffset, value.byteOffset + value.byteLength),
     );
   }
-  // ArrayBuffer
   if (value instanceof ArrayBuffer) {
     return value.slice(0) as T;
   }
-  // Plain object OR class instance
-  const proto = Object.getPrototypeOf(value),
-    out = Object.create(proto),
-    keys = Object.keys(value as object);
-  // Go down
-  for (let i = 0; i < keys.length; i++) {
-    const k = keys[i];
-    (out as PlainObject)[k] = deepClone((value as PlainObject)[k]);
+  const out = Object.create(Object.getPrototypeOf(value));
+  for (const key of Object.keys(value as object)) {
+    out[key] = deepClone((value as PlainObject)[key]);
   }
   return out;
 }
