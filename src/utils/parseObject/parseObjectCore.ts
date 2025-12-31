@@ -41,6 +41,7 @@ export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
 type PlainObject = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObject = Record<string, any>;
+type KeySet = Record<string, boolean>;
 
 // **** Validation Schema **** //
 
@@ -120,37 +121,27 @@ function parseObjectCore(
   safety: Safety,
   onError?: OnErrorCallback,
 ) {
-  const validatorObject = setupValidatorArray(schema, safety);
+  const { array, keySet } = setupValidatorArray(schema, safety);
   return (param: unknown, localOnError?: OnErrorCallback) => {
-    const errorCb = onError ?? localOnError;
-    // Run the parse function
-    if (!errorCb) {
-      return parseObjectCoreHelper(
-        isOptional,
-        isNullable,
-        isArray,
-        validatorObject,
-        safety,
-        param,
-      );
-      // Run the parse function with an error array
-    } else {
-      const errors: ParseError[] = [];
-      const result = parseObjectCoreHelperWithErrors(
-        isOptional,
-        isNullable,
-        isArray,
-        validatorObject,
-        safety,
-        errors,
-        param,
-      );
-      if (result === false) {
-        errorCb(errors);
-        return false;
-      } else {
-        return result;
+    const errorCb = onError ?? localOnError,
+      errors: ParseError[] | null = errorCb ? [] : null;
+    const result = parseObjectCoreHelper(
+      isOptional,
+      isNullable,
+      isArray,
+      array,
+      keySet,
+      safety,
+      errors,
+      param,
+    );
+    if (result === false) {
+      if (!!errors && errors.length > 0) {
+        errorCb?.(errors!);
       }
+      return false;
+    } else {
+      return result;
     }
   };
 }
@@ -161,14 +152,16 @@ function parseObjectCore(
 function setupValidatorArray(
   schema: Schema<unknown>,
   safety: Safety,
-): ValidatorItem[] {
+): { array: ValidatorItem[]; keySet: KeySet } {
   // Initialize new node
   const keys = Object.keys(schema),
-    validatorArray: ValidatorItem[] = [];
+    validatorArray: ValidatorItem[] = [],
+    keySet: KeySet = {};
   // Iterate the schema
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i],
       schemaValue = (schema as AnyObject)[key];
+    keySet[key] = true;
     if (typeof schemaValue === 'function') {
       const name = schemaValue.name || '<anonymous>';
       if (isSafe(schemaValue)) {
@@ -200,62 +193,20 @@ function setupValidatorArray(
     }
   }
   // Return
-  return validatorArray;
+  return { array: validatorArray, keySet };
 }
 
 /**
- * Do basic checks before core parsing
+ * Do basic checks before core parsing with errors.
  */
 function parseObjectCoreHelper(
   isOptional: boolean,
   isNullable: boolean,
   isArray: boolean,
   validatorArray: ValidatorItem[],
+  keySet: KeySet,
   safety: Safety,
-  param: unknown,
-) {
-  // Check nullables
-  if (param === undefined) {
-    return isOptional ? undefined : false;
-  }
-  if (param === null) {
-    return isNullable ? null : false;
-  }
-  // Check array
-  if (isArray) {
-    if (!Array.isArray(param)) {
-      return false;
-    }
-    // Run the parseFn without an individual error state
-    const paramClone = new Array(param.length);
-    for (let i = 0; i < param.length; i++) {
-      const result = validateAndSanitize(param[i], validatorArray, safety);
-      if (result !== false) {
-        paramClone[i] = result;
-      } else {
-        return false;
-      }
-    }
-    return paramClone;
-  }
-  // Default
-  if (isPlainObject(param)) {
-    return validateAndSanitize(param, validatorArray, safety);
-  } else {
-    return false;
-  }
-}
-
-/**
- * Do basic checks before core parsing with errors.
- */
-function parseObjectCoreHelperWithErrors(
-  isOptional: boolean,
-  isNullable: boolean,
-  isArray: boolean,
-  validatorArray: ValidatorItem[],
-  safety: Safety,
-  errors: ParseError[],
+  errors: ParseError[] | null,
   param: unknown,
 ) {
   // Check undefined
@@ -263,7 +214,7 @@ function parseObjectCoreHelperWithErrors(
     if (isOptional) {
       return undefined;
     } else {
-      errors.push({
+      errors?.push({
         info: ERRORS.NotOptional,
         functionName: '<optional>',
         value: undefined,
@@ -277,7 +228,7 @@ function parseObjectCoreHelperWithErrors(
     if (isNullable) {
       return null;
     } else {
-      errors.push({
+      errors?.push({
         info: ERRORS.NotNullable,
         functionName: '<nullable>',
         value: null,
@@ -289,7 +240,7 @@ function parseObjectCoreHelperWithErrors(
   // Make sure param is an array
   if (isArray) {
     if (!Array.isArray(param)) {
-      errors.push({
+      errors?.push({
         info: ERRORS.NotArray,
         functionName: '<isArray>',
         value: param,
@@ -301,15 +252,17 @@ function parseObjectCoreHelperWithErrors(
     const paramClone = new Array(param.length);
     let isValid = true;
     for (let i = 0; i < param.length; i++) {
-      const nestedErrors: ParseError[] = [],
-        result = validateAndSanitizeWithErrors(
-          param[i],
-          validatorArray,
-          safety,
-          nestedErrors,
-        );
-      if (nestedErrors.length > 0) {
-        appendNestedErrors(errors, nestedErrors, i);
+      const nestedErrors: ParseError[] | null = errors ? [] : null;
+      const result = validateAndSanitize(
+        param[i],
+        validatorArray,
+        keySet,
+        safety,
+        nestedErrors,
+      );
+      if (result === false && !errors) return false;
+      if (!!nestedErrors && nestedErrors?.length > 0) {
+        appendNestedErrors(errors!, nestedErrors, i);
       }
       if (result !== false && isValid) {
         paramClone[i] = result;
@@ -321,9 +274,9 @@ function parseObjectCoreHelperWithErrors(
   }
   // Default
   if (isPlainObject(param)) {
-    return validateAndSanitizeWithErrors(param, validatorArray, safety, errors);
+    return validateAndSanitize(param, validatorArray, keySet, safety, errors);
   } else {
-    errors.push({
+    errors?.push({
       info: ERRORS.NotObject,
       functionName: '<isPlainObject>',
       value: param,
@@ -339,94 +292,22 @@ function parseObjectCoreHelperWithErrors(
 function validateAndSanitize(
   param: PlainObject,
   validatorArray: ValidatorItem[],
+  keySet: KeySet,
   safety: Safety,
+  errors: ParseError[] | null,
 ): PlainObject | false {
   // ** Run validators ** //
-  const paramKeys = safety !== SAFETY.Normal ? Object.keys(param) : undefined,
-    seen: Record<string, unknown> = {},
-    clean: PlainObject = {},
-    hasOwn = Object.prototype.hasOwnProperty;
-  for (let i = 0; i < validatorArray.length; i++) {
-    const vldr = validatorArray[i],
-      vldrKey = vldr.key,
-      hasKey = hasOwn.call(param, vldrKey);
-    let value = hasKey ? param[vldrKey] : undefined,
-      doDeepClone = !!value && typeof value === 'object';
-    // Run different validator functions
-    if (vldr.isSafe) {
-      if (!vldr.fn(value)) return false;
-    } else if (vldr.isTestObjectFn) {
-      const isValid = vldr.fn(value, undefined, (nVal) => (value = nVal));
-      if (!isValid) return false;
-      doDeepClone = false;
-    } else {
-      let isValid;
-      try {
-        if (vldr.isTransformFn) {
-          isValid = vldr.fn(value, (tVal) => {
-            value = tVal;
-            // Don't need to clone again if fresh object
-            if (value !== tVal) {
-              doDeepClone = false;
-            }
-          });
-        } else {
-          isValid = vldr.fn(value);
-        }
-        if (!isValid) throw null;
-      } catch {
-        return false;
-      }
-    }
-    // Add the value to the clean object
-    if (hasKey) {
-      clean[vldrKey] = doDeepClone ? deepClone(value) : value;
-      if (paramKeys) {
-        seen[vldrKey] = true;
-      }
-    }
-  }
-  // ** Sanitize ** //
-  if (paramKeys && safety !== SAFETY.Normal) {
-    for (let i = 0; i < paramKeys.length; i++) {
-      const key = paramKeys[i];
-      if (seen[key]) continue;
-      if (safety === SAFETY.Strict) {
-        return false;
-      }
-      const value = param[key];
-      clean[key] =
-        !!value && typeof value === 'object' ? deepClone(value) : value;
-    }
-  }
-  // Return clone
-  return clean;
-}
-
-/**
- * Run the validators and return a cleaned clone object.
- */
-function validateAndSanitizeWithErrors(
-  param: PlainObject,
-  validatorArray: ValidatorItem[],
-  safety: Safety,
-  errors: ParseError[],
-): PlainObject | false {
-  // ** Run validators ** //
-  const paramKeys = safety !== SAFETY.Normal ? Object.keys(param) : undefined,
-    seen: Record<string, unknown> = {},
-    clean: PlainObject = {},
-    hasOwn = Object.prototype.hasOwnProperty;
+  const clean: PlainObject = {};
   let isValid = true;
   for (let i = 0; i < validatorArray.length; i++) {
     const vldr = validatorArray[i],
-      vldrKey = vldr.key,
-      hasKey = hasOwn.call(param, vldrKey);
-    let value = hasKey ? param[vldrKey] : undefined,
+      vldrKey = vldr.key;
+    let value = param[vldrKey],
       doDeepClone = !!value && typeof value === 'object';
     // Safe validator
     if (vldr.isSafe) {
       if (!vldr.fn(value)) {
+        if (!errors) return false;
         isValid = false;
         errors.push({
           info: ERRORS.ValidatorFn,
@@ -435,19 +316,23 @@ function validateAndSanitizeWithErrors(
           key: vldrKey,
         });
       }
-      // Standard validator function
+      // Nested TestObject function
     } else if (vldr.isTestObjectFn) {
       doDeepClone = false;
+      const bubbleUpErrors = !!errors
+        ? (nestedErrors: ParseError[]) =>
+            appendNestedErrors(errors, nestedErrors, vldrKey)
+        : undefined;
       const localIsValid = vldr.fn(
         value,
-        (nestedErrors: ParseError[]) => {
-          appendNestedErrors(errors, nestedErrors, vldrKey);
-        },
+        bubbleUpErrors,
         (nVal) => (value = nVal),
       );
       if (!localIsValid) {
+        if (!errors) return false;
         isValid = false;
       }
+      // Unsafe validators
     } else {
       try {
         let localIsValid;
@@ -467,6 +352,7 @@ function validateAndSanitizeWithErrors(
         if (!localIsValid) throw null;
         // Catch any thrown errors
       } catch (err) {
+        if (!errors) return false;
         isValid = false;
         errors.push({
           info: ERRORS.ValidatorFn,
@@ -478,21 +364,18 @@ function validateAndSanitizeWithErrors(
       }
     }
     // Add the value to the clean object
-    if (hasKey) {
-      if (isValid) {
-        clean[vldrKey] = doDeepClone ? deepClone(value) : value;
-      }
-      if (paramKeys) {
-        seen[vldrKey] = true;
-      }
+    if (isValid && (value !== undefined || vldrKey in param)) {
+      clean[vldrKey] = doDeepClone ? deepClone(value) : value;
     }
   }
   // ** Sanitize ** //
-  if (paramKeys && safety !== SAFETY.Normal) {
+  if (safety !== SAFETY.Normal) {
+    const paramKeys = Object.keys(param);
     for (let i = 0; i < paramKeys.length; i++) {
       const key = paramKeys[i];
-      if (seen[key]) continue;
+      if (keySet[key]) continue;
       if (safety === SAFETY.Strict) {
+        if (!errors) return false;
         isValid = false;
         errors.push({
           info: ERRORS.StrictSafety,
