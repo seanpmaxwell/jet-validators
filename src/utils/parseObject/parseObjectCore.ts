@@ -81,6 +81,12 @@ export type ParseError = {
 export type OnErrorCallback = (errors: ParseError[]) => void;
 
 /******************************************************************************
+                                  Setup
+******************************************************************************/
+
+const parserCache = new WeakMap<object, Map<Safety, CompiledParser>>();
+
+/******************************************************************************
                                   Functions
 ******************************************************************************/
 
@@ -95,7 +101,7 @@ function parseObjectCore(
   safety: Safety,
   onError?: OnErrorCallback,
 ) {
-  const parser = setupValidatorParser(schema, safety);
+  const parser = getCompiledParser(schema as AnyObject, safety);
   return (param: unknown, localOnError?: OnErrorCallback) => {
     const errorCb = onError ?? localOnError,
       errors: ParseError[] | null = errorCb ? [] : null;
@@ -116,6 +122,23 @@ function parseObjectCore(
       return result;
     }
   };
+}
+
+/**
+ * Cache the compiled schema parser in case it gets reused.
+ */
+function getCompiledParser(schema: AnyObject, safety: Safety): CompiledParser {
+  let safetyMap = parserCache.get(schema);
+  if (!safetyMap) {
+    safetyMap = new Map();
+    parserCache.set(schema, safetyMap);
+  }
+  let parser = safetyMap.get(safety);
+  if (!parser) {
+    parser = setupValidatorParser(schema, safety);
+    safetyMap.set(safety, parser);
+  }
+  return parser;
 }
 
 /**
