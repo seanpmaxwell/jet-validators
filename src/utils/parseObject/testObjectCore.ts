@@ -4,7 +4,6 @@ import parseObjectCore, {
 } from './parseObjectCore.js';
 
 import type { Schema } from './parseObjectCore.js';
-import { markSafe } from './mark-safe.js';
 
 /******************************************************************************
                              Constants/Types
@@ -57,7 +56,6 @@ function testObjectCore<T>(
   };
   // Add symbols
   (userFacingFn as unknown as SafeFunction)[symTestObjectFn] = true;
-  markSafe(userFacingFn);
   // Return the test predicate function
   return userFacingFn;
 }

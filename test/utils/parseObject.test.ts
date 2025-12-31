@@ -307,16 +307,16 @@ test('test "testObject()" function', () => {
   });
   expect(errArr).toStrictEqual([
     {
-      functionName: 'isNumber',
-      info: 'Validator function returned false.',
-      keyPath: ['address', 'country', 'code'],
-      value: '1234',
-    },
-    {
       functionName: 'transform-isNumber',
       info: 'Validator function returned false.',
       keyPath: ['address', 'zip'],
       value: 'horse',
+    },
+    {
+      functionName: 'isNumber',
+      info: 'Validator function returned false.',
+      keyPath: ['address', 'country', 'code'],
+      value: '1234',
     },
   ]);
 
@@ -711,7 +711,7 @@ test.skip('Test setting a type for the parseFunction', () => {
   const customTest: TestFn<IUser> = testUser;
 });
 
-test.only('Run the benchmarks function', () => {
+test('Run the benchmarks function', () => {
   const roles = ['user', 'moderator', 'admin'] as const;
   const index = 11;
   const cities = ['Seattle', 'New York', 'Austin', 'Denver', 'Chicago'];

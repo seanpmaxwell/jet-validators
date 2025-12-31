@@ -39,10 +39,8 @@ export const ERRORS = {
 
 export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
 type PlainObject = Record<string, unknown>;
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type AnyFunction = (...args: any[]) => any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObject = Record<string, any>;
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 // **** Validation Schema **** //
 
@@ -57,15 +55,38 @@ export type ValidatorFn<T> =
   | ValidatorFnWithTransformCb<T>
   | TestObjectFn<T>;
 
-interface ValidatorItem {
+type ValidatorItem = {
   key: string;
-  fn: ValidatorFn<unknown>;
   name: string;
-}
+} & (
+  | {
+      fn: ValidatorFn<unknown>;
+      isSafe: true;
+      isTransformFn?: false;
+      isTestObjectFn?: false;
+    }
+  | {
+      fn: ValidatorFn<unknown>;
+      isSafe?: false;
+      isTestObjectFn?: false;
+      isTransformFn?: false;
+    }
+  | {
+      fn: ValidatorFnWithTransformCb<unknown>;
+      isTransformFn: true;
+      isSafe?: false;
+      isTestObjectFn?: false;
+    }
+  | {
+      fn: TestObjectFn<unknown>;
+      isTestObjectFn: true;
+      isSafe?: false;
+      isTransformFn?: false;
+    }
+);
 
 interface ValidatorObject {
-  safeValidators: ValidatorItem[];
-  unSafeValidators: ValidatorItem[];
+  validators: ValidatorItem[];
   keySet: Record<string, boolean>;
 }
 
@@ -149,8 +170,7 @@ function setupValidatorTree(
   // Initialize new node
   const keys = Object.keys(schema);
   const vo: ValidatorObject = {
-    safeValidators: [],
-    unSafeValidators: [],
+    validators: [],
     keySet: {},
   };
   // Iterate the schema
@@ -161,14 +181,23 @@ function setupValidatorTree(
     if (typeof schemaValue === 'function') {
       const name = schemaValue.name || '<anonymous>';
       if (isSafe(schemaValue)) {
-        vo.safeValidators.push({ key, fn: schemaValue, name });
+        vo.validators.push({ key, fn: schemaValue, name, isSafe: true });
+      } else if (isTestObjectCoreFn(schemaValue)) {
+        vo.validators.push({
+          key,
+          fn: schemaValue,
+          name: '',
+          isTestObjectFn: true,
+        });
+      } else if (isTransformFn(schemaValue)) {
+        vo.validators.push({ key, fn: schemaValue, name, isTransformFn: true });
       } else {
-        vo.unSafeValidators.push({ key, fn: schemaValue, name });
+        vo.validators.push({ key, fn: schemaValue, name });
       }
       // Recurse down the tree
     } else if (typeof schemaValue === 'object') {
       const fn = testObjectCore(false, false, false, schemaValue, safety);
-      vo.safeValidators.push({ key, fn, name: '' });
+      vo.validators.push({ key, fn, name: '', isTestObjectFn: true });
       // Throw error
     } else {
       throw new Error(ERRORS.SchemaProp(key));
@@ -302,55 +331,44 @@ function validateAndSanitize(
   vo: ValidatorObject,
   safety: Safety,
 ): PlainObject | false {
-  // Check param is object
+  // ** Check param is object ** //
   if (!isPlainObject(param)) {
     return false;
   }
-  // Run safe validators
-  const safeValidators = vo.safeValidators,
-    clean: PlainObject = {};
-  for (let i = 0; i < safeValidators.length; i++) {
-    const vldr = safeValidators[i],
-      vldrFn: AnyFunction = vldr.fn,
+  // ** Run safe validators ** //
+  const clean: PlainObject = {},
+    validators = vo.validators;
+  for (let i = 0; i < validators.length; i++) {
+    const vldr = validators[i],
       vldrKey = vldr.key;
-    const value = param[vldrKey];
-    if (isTestObjectCoreFn(vldrFn)) {
-      let localValue = value;
-      const isValid = vldrFn(value, undefined, (nVal) => (localValue = nVal));
+    let value = param[vldrKey],
+      doDeepClone = true;
+    // Run different validator functions
+    if (vldr.isSafe) {
+      if (!vldr.fn(value)) return false;
+    } else if (vldr.isTestObjectFn) {
+      const isValid = vldr.fn(value, undefined, (nVal) => (value = nVal));
       if (!isValid) return false;
-      if (vldrKey in param) {
-        clean[vldrKey] = localValue;
-      }
+      doDeepClone = false;
     } else {
-      if (!vldrFn(value)) return false;
-      if (vldrKey in param) {
-        clean[vldrKey] = deepClone(value);
-      }
-    }
-  }
-  // Run unsafe validators
-  const unSafeValidators = vo.unSafeValidators;
-  for (let i = 0; i < unSafeValidators.length; i++) {
-    const vldr = unSafeValidators[i];
-    try {
-      const vldrFn: AnyFunction = vldr.fn,
-        vldrKey = vldr.key;
-      let value = param[vldrKey];
       let isValid;
-      if (isTransformFn(vldrFn)) {
-        isValid = vldrFn(value, (tVal) => (value = tVal));
-      } else {
-        isValid = vldrFn(value);
+      try {
+        if (vldr.isTransformFn) {
+          isValid = vldr.fn(value, (tVal) => (value = tVal));
+        } else {
+          isValid = vldr.fn(value);
+        }
+        if (!isValid) throw null;
+      } catch {
+        return false;
       }
-      if (!isValid) throw null;
-      if (vldrKey in param) {
-        clean[vldrKey] = deepClone(value);
-      }
-    } catch {
-      return false;
+    }
+    // Add the value to the clean object
+    if (vldrKey in param) {
+      clean[vldrKey] = doDeepClone ? deepClone(value) : value;
     }
   }
-  // Sanitize
+  // ** Sanitize ** //
   if (safety !== SAFETY.Normal) {
     for (const key of Object.keys(param)) {
       if (vo.keySet[key]) continue;
@@ -385,33 +403,17 @@ function validateAndSanitizeWithErrors(
     return false;
   }
   // ** Run safe validators ** //
-  const safeValidators = vo.safeValidators,
+  const validators = vo.validators,
     clean: PlainObject = {};
   let isValid = true;
-  for (let i = 0; i < safeValidators.length; i++) {
-    const vldr = safeValidators[i],
-      vldrFn: AnyFunction = vldr.fn,
+  for (let i = 0; i < validators.length; i++) {
+    const vldr = validators[i],
       vldrKey = vldr.key;
-    const value = param[vldrKey];
-    // Transform validator function
-    if (isTestObjectCoreFn(vldrFn)) {
-      const localIsValid = vldrFn(
-        value,
-        (nestedErrors: ParseError[]) => {
-          appendNestedErrors(errors, nestedErrors, vldrKey);
-        },
-        (nVal) => {
-          if (vldrKey in param) {
-            clean[vldrKey] = nVal;
-          }
-        },
-      );
-      if (!localIsValid) {
-        isValid = false;
-      }
-      // Standard validator function
-    } else {
-      if (!vldrFn(value)) {
+    let value = param[vldrKey],
+      doDeepClone = true;
+    // Safe validator
+    if (vldr.isSafe) {
+      if (!vldr.fn(value)) {
         isValid = false;
         errors.push({
           info: ERRORS.ValidatorFn,
@@ -420,50 +422,47 @@ function validateAndSanitizeWithErrors(
           key: vldrKey,
         });
       }
-      if (vldrKey in param) {
-        clean[vldrKey] = deepClone(value);
+      // Standard validator function
+    } else if (vldr.isTestObjectFn) {
+      doDeepClone = false;
+      const localIsValid = vldr.fn(
+        value,
+        (nestedErrors: ParseError[]) => {
+          appendNestedErrors(errors, nestedErrors, vldrKey);
+        },
+        (nVal) => (value = nVal),
+      );
+      if (!localIsValid) {
+        isValid = false;
+      }
+    } else {
+      try {
+        let localIsValid;
+        if (vldr.isTransformFn) {
+          localIsValid = vldr.fn(value, (tVal, isValid) => {
+            if (isValid) {
+              value = tVal;
+            }
+          });
+        } else {
+          localIsValid = vldr.fn(value);
+        }
+        if (!localIsValid) throw null;
+        // Catch any thrown errors
+      } catch (err) {
+        isValid = false;
+        errors.push({
+          info: ERRORS.ValidatorFn,
+          functionName: vldr.name,
+          value,
+          ...formatCaughtError(err),
+          key: vldrKey,
+        });
       }
     }
-  }
-  // ** Run unsafe validators ** //
-  const unSafeValidators = vo.unSafeValidators;
-  for (let i = 0; i < unSafeValidators.length; i++) {
-    const vldr = unSafeValidators[i],
-      vldrFn: AnyFunction = vldr.fn,
-      vldrKey = vldr.key;
-    let value = param[vldr.key];
-    // Run test
-    try {
-      let innerIsValid;
-      if (isTransformFn(vldrFn)) {
-        let localValue = value;
-        innerIsValid = vldrFn(value, (tVal) => (localValue = tVal));
-        if (innerIsValid) {
-          value = localValue;
-        }
-      } else {
-        innerIsValid = vldrFn(value);
-      }
-      if (!innerIsValid) throw null;
-      if (vldrKey in param) {
-        clean[vldrKey] = deepClone(value);
-      }
-      // Catch any thrown errors
-    } catch (err) {
-      isValid = false;
-      let errMsg = null;
-      if (err instanceof Error) {
-        errMsg = err.message;
-      } else if (err !== null) {
-        errMsg = String(err);
-      }
-      errors.push({
-        info: ERRORS.ValidatorFn,
-        functionName: vldr.name,
-        value,
-        ...(errMsg !== null ? { caught: errMsg } : {}),
-        key: vldrKey,
-      });
+    // Add the value to the clean object
+    if (isValid && vldrKey in param) {
+      clean[vldrKey] = doDeepClone ? deepClone(value) : value;
     }
   }
   // ** Sanitize ** //
@@ -491,6 +490,19 @@ function validateAndSanitizeWithErrors(
                                 Helpers
             Helpers kept in same file for minor performance
 ******************************************************************************/
+
+/**
+ * Format the caught error so it can be added to the error object.
+ */
+function formatCaughtError(error: unknown) {
+  let errMsg = null;
+  if (error instanceof Error) {
+    errMsg = error.message;
+  } else if (error !== null) {
+    errMsg = String(error);
+  }
+  return errMsg !== null ? { caught: errMsg } : {};
+}
 
 /**
  * Add nested errors to the array
