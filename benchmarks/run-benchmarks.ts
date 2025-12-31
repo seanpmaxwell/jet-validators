@@ -281,8 +281,6 @@ function buildBenchmarksSection(results: BenchmarkResult[]): string {
     '| Library | Iterations | Total Time (ms) | Ops/Second |',
     '| --- | ---: | ---: | ---: |',
     rows,
-    '',
-    '- You can see a more complete list of benchmarks <a href="https://moltar.github.io/typescript-runtime-type-benchmarks/">here</a>.',
     '<br/>',
     '',
   ].join('\n');
