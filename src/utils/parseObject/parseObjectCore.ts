@@ -297,7 +297,7 @@ function validateAndSanitize(
   errors: ParseError[] | null,
 ): PlainObject | false {
   // ** Run validators ** //
-  const clean: PlainObject = Object.create(null);
+  const clean: PlainObject = {};
   let isValid = true;
   for (let i = 0; i < validatorArray.length; i++) {
     const vldr = validatorArray[i],
