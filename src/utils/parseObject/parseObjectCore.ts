@@ -55,7 +55,7 @@ export type Schema<T> = {
     : ValidatorFn<T[K]>;
 };
 
-export type ValidatorFn<T> =
+type ValidatorFn<T> =
   | ((arg: unknown) => arg is T)
   | ValidatorFnWithTransformCb<T>
   | TestObjectFn<T>;

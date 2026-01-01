@@ -2,12 +2,13 @@ import parseObjectCore, {
   SAFETY,
   type OnErrorCallback,
   type Schema,
-  type ValidatorFn,
 } from './parseObjectCore.js';
 
 /******************************************************************************
                                  Types
 ******************************************************************************/
+
+type ValidatorFn<T> = (arg: unknown) => arg is T;
 
 // Handle variations
 type ResolveArray<T, A extends boolean> = A extends true ? T[] : T;

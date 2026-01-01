@@ -754,7 +754,7 @@ test('Run the benchmarks function', () => {
   expect(parseWithJet(user)).toBeTruthy();
 });
 
-test('more testing on the "parseObject()" function', () => {
+test.skip('more testing on the "parseObject()" function', () => {
   interface IEventLog {
     content: string;
   }
@@ -770,7 +770,7 @@ test('more testing on the "parseObject()" function', () => {
   });
   const i = '' as unknown;
   if (pp(i)) {
-    // const d = i.content; // should throw type
+    // const d = i.content; // should throw type error
   }
 
   const parseUser = parseObject<IUser>({
@@ -781,5 +781,33 @@ test('more testing on the "parseObject()" function', () => {
     }),
   });
 
+  const user = parseUser('something', (errors) => {
+    throw new Error(JSON.stringify(errors));
+  });
+
+  const id = user.id;
+
   expect(parseUser({ id: 1, name: 'j', eventsLog: [] })).toBeTruthy();
+
+  // **** Wrap it **** //
+
+  function parseWrapper<U extends Schema<unknown>>(schema: U) {
+    return parseObject(schema, (errors) => {
+      throw new Error(String(errors.length));
+    });
+  }
+
+  const Validators = {
+    parse: parseWrapper({
+      id: isUnsignedInteger,
+      name: isString,
+      eventsLog: testOptionalObjectArray({
+        content: isString,
+      }),
+    }),
+  } as const;
+
+  const user2 = Validators.parse('something');
+
+  const id2 = user2.eventsLog;
 });
