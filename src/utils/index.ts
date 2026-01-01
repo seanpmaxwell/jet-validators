@@ -73,3 +73,5 @@ export {
   type ParseError,
   type OnErrorCallback,
 } from './parseObject/parseObjectCore.js';
+
+export { setIsParseErrorArray } from './parseObject/mark-parseError-array.js';

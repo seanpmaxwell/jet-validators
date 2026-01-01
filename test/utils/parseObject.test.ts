@@ -10,6 +10,7 @@ import {
   isOptionalString,
   isNonEmptyString,
   isInArray,
+  isPlainObject,
 } from '../../src';
 
 import {
@@ -28,6 +29,8 @@ import {
   type ParseError,
   strictTestOptionalObject,
   testOptionalObjectArray,
+  type OnErrorCallback,
+  setIsParseErrorArray,
 } from '../../src/utils';
 
 /******************************************************************************
@@ -199,7 +202,7 @@ test('test "parseObject()" function', () => {
   });
 
   // ** Wrap parseObject ** //
-  const customParse = <U extends Schema<unknown>>(schema: U) =>
+  const customParse = <U extends Schema>(schema: U) =>
     parseObject(schema, (err) => {
       throw new Error(JSON.stringify(err));
     });
@@ -583,7 +586,7 @@ test('Test for update which removed recursion', () => {
       street: string;
       city: string;
       // country?: { // <-- Cannot use undefined for nested schemas unless
-      // using parse/testObject function
+      // using testObject function
       country: {
         code: number;
         name: string;
@@ -687,7 +690,7 @@ test('Test for update which removed recursion', () => {
   });
 });
 
-test.skip('Test setting a type for the parseFunction', () => {
+test.skip('Test setting a type for the parseObject', () => {
   interface IUser {
     id: number;
     name: string;
@@ -754,7 +757,7 @@ test('Run the benchmarks function', () => {
   expect(parseWithJet(user)).toBeTruthy();
 });
 
-test.skip('more testing on the "parseObject()" function', () => {
+test.only('more testing on the "parseObject()" function', () => {
   interface IEventLog {
     content: string;
   }
@@ -765,9 +768,12 @@ test.skip('more testing on the "parseObject()" function', () => {
     eventsLog?: IEventLog[];
   }
 
+  // ** Nested Type-Safety ** //
+
   const pp = testOptionalObjectArray<IEventLog>({
     content: isString,
   });
+
   const i = '' as unknown;
   if (pp(i)) {
     // const d = i.content; // should throw type error
@@ -782,32 +788,155 @@ test.skip('more testing on the "parseObject()" function', () => {
   });
 
   const user = parseUser('something', (errors) => {
-    throw new Error(JSON.stringify(errors));
+    // console.log(JSON.stringify(errors));
   });
 
   const id = user.id;
 
   expect(parseUser({ id: 1, name: 'j', eventsLog: [] })).toBeTruthy();
 
-  // **** Wrap it **** //
+  // **** Adding Custom Validators to schemas **** //
 
-  function parseWrapper<U extends Schema>(schema: U) {
-    return parseObject(schema, (errors) => {
-      throw new Error(String(errors.length));
+  // This is a custom validator function with an error callback
+  const isAddress = (arg: unknown, errCb: OnErrorCallback) => {
+    const address = parseObject({
+      street: isString,
+      zip: isNumber,
+    })(arg, (errors) => errCb(errors));
+    return !!address;
+  };
+
+  // This is your custom validator function without an error callback
+  const isCountry = (arg: unknown) => {
+    const parseCountry = parseObject({
+      name: isString,
+      code: isNumber,
     });
-  }
+    return !!parseCountry(arg);
+  };
+
+  const parseUserFull = parseObject({
+    id: isNumber,
+    name: isString,
+    address: isAddress,
+    country: isCountry,
+  });
+
+  parseUserFull(
+    {
+      id: 1,
+      name: 'sean',
+      address: {
+        street: '123 fake st',
+        zip: '98109',
+      },
+      country: {
+        name: 'USA',
+        code: '123',
+      },
+    },
+    (errors) => {
+      expect(errors).toStrictEqual([
+        {
+          info: 'Validator function returned false.',
+          functionName: 'isNumber',
+          value: '98109',
+          keyPath: ['address', 'zip'],
+        },
+        // Error callback not supplied so all we see is "isCountry"
+        {
+          info: 'Validator function returned false.',
+          functionName: 'isCountry',
+          value: { name: 'USA', code: '123' },
+          key: 'country',
+        },
+      ]);
+    },
+  );
+
+  // **** Wrapping with Custom Validators around schemas **** //
+
+  const parseWrapper = <U extends Schema>(schema: U) => {
+    return parseObject(schema, (errors) => {
+      throw new Error(JSON.stringify(errors));
+    });
+  };
 
   const Validators = {
-    parse: parseWrapper({
-      id: isUnsignedInteger,
-      name: isString,
-      eventsLog: testOptionalObjectArray({
-        content: isString,
-      }),
+    parseAddress: parseWrapper({
+      address: isAddress,
+    }),
+    parseEventLog: parseWrapper({
+      eventLog: isEventLog,
     }),
   } as const;
 
-  const user2 = Validators.parse('something');
+  const address = { address: { street: '123 fake st', zip: '98109' } };
+  expect(() => Validators.parseAddress(address)).toThrowError(
+    JSON.stringify([
+      {
+        info: 'Validator function returned false.',
+        functionName: 'isNumber',
+        value: '98109',
+        keyPath: ['address', 'zip'],
+      },
+    ]),
+  );
 
-  const id2 = user2.eventsLog;
+  // ** Manually creating error arrays ** //
+
+  function isEventLog(
+    arg: unknown,
+    errCb: OnErrorCallback,
+  ): arg is IEventLog[] {
+    const errorArray = setIsParseErrorArray([]);
+    if (!Array.isArray(arg)) {
+      errCb?.([
+        {
+          info: 'not an array',
+          functionName: 'isEventLog',
+          value: arg,
+          key: '',
+        },
+      ]);
+      return false;
+    }
+    let isValid = true;
+    for (let i = 0; i < arg.length; i++) {
+      const item = arg[i];
+      if (!isPlainObject(item)) {
+        errorArray.push({
+          info: 'log was not an object.',
+          functionName: 'isEventLog',
+          value: item,
+          key: i.toString(),
+        });
+        isValid = false;
+      } else if (!isNonEmptyString(item.content)) {
+        errorArray.push({
+          info: 'log content cannot be empty.',
+          functionName: 'isEventLog -> checkContent',
+          value: '',
+          keyPath: [i.toString(), 'content'],
+        });
+        isValid = false;
+      }
+    }
+    if (!isValid) {
+      errCb(errorArray);
+    }
+    return isValid;
+  }
+
+  const eventLog = { eventLog: [{ content: '' }] };
+  expect(() => Validators.parseEventLog(eventLog)).toThrowError(
+    JSON.stringify([
+      {
+        info: 'log content cannot be empty.',
+        functionName: 'isEventLog -> checkContent',
+        value: '',
+        keyPath: ['eventLog', '0', 'content'], // Because we wrapped, it starts at "eventLog"
+      },
+    ]),
+  );
 });

@@ -42,7 +42,7 @@ test('test simple utilities', () => {
   expect(isNullishAlphaNumeric('72naAD')).toStrictEqual(true);
 
   // Check "transform" and "parseJson" functions
-  const isNumArrWithParse = transform(parseJson, isNumberArray);
+  const isNumArrWithParse = transform<number[]>(parseJson, isNumberArray);
   expect(
     isNumArrWithParse('[1,2,3]', (val) => {
       expect(isNumberArray(val)).toStrictEqual(true);

@@ -11,6 +11,11 @@ import testObjectCore, {
   type TestObjectFn,
 } from './testObjectCore.js';
 
+import {
+  isParseErrorArray,
+  setIsParseErrorArray,
+} from './mark-parseError-array.js';
+
 /******************************************************************************
                                 Constants
 ******************************************************************************/
@@ -32,8 +37,6 @@ export const ERRORS = {
     return `Schema property "${key}" must be a function or nested schema.`;
   },
 } as const;
-
-const symParseErrorArray = Symbol('parse-error-array');
 
 /******************************************************************************
                                   Types
@@ -67,7 +70,7 @@ type ValidatorFn<T> =
 export type ParseError = {
   info: string;
   functionName: string; // name of the validator function
-  value?: unknown;
+  value: unknown;
   caught?: string; // if a ValidatorItem caught an error from an unsafe function
 } & (
   | {
@@ -106,10 +109,7 @@ function parseObjectCore(
   const parser = getCompiledParser(schema as AnyObject, safety);
   return (param: unknown, localOnError?: OnErrorCallback) => {
     const errorCb = onError ?? localOnError,
-      errors: ParseError[] | null = errorCb ? [] : null;
-    if (!!errors) {
-      setIsParseErrorArray(errors);
-    }
+      errors: ParseError[] | null = errorCb ? setIsParseErrorArray([]) : null;
     const result = parseObjectCoreHelper(
       isOptional,
       isNullable,
@@ -162,6 +162,7 @@ function setupValidatorParser(
       'ERRORS',
       'formatCaughtError',
       'keySet',
+      'isParseErrorArray',
     ],
     argValues: unknown[] = [
       deepClone,
@@ -169,6 +170,7 @@ function setupValidatorParser(
       ERRORS,
       formatCaughtError,
       keySet,
+      isParseErrorArray,
     ],
     fieldBlocks: string[] = [];
 
@@ -407,14 +409,29 @@ function buildUnsafeBlock(
   fnName: string,
   refName: string,
 ): string {
-  const keyLiteral = JSON.stringify(key);
-  const fnLiteral = JSON.stringify(fnName);
+  const keyLiteral = JSON.stringify(key),
+    fnLiteral = JSON.stringify(fnName);
   return [
     '  {',
     `    const value = param[${keyLiteral}];`,
     `    const hasKey = value !== undefined || hasOwn.call(param, ${keyLiteral});`,
+    `    const acceptsErrorCb = ${refName}.length > 1;`,
+    '    let cbErrorsAppended = false;',
+    '    const cb =',
+    '      acceptsErrorCb && errors',
+    `        ? (cbErrors) => {`,
+    '          if (',
+    '            Array.isArray(cbErrors) &&',
+    '            isParseErrorArray(cbErrors) &&',
+    '            cbErrors.length > 0',
+    '          ) {',
+    '            cbErrorsAppended = true;',
+    `            appendNestedErrors(errors, cbErrors, ${keyLiteral});`,
+    '          }',
+    '        }',
+    '        : undefined;',
     '    try {',
-    `      if (!${refName}(value)) throw null;`,
+    `      if (!${refName}(value, cb)) throw null;`,
     '      if (hasKey) {',
     `        clean[${keyLiteral}] =`,
     "          value !== null && typeof value === 'object' ? deepClone(value) : value;",
@@ -422,22 +439,24 @@ function buildUnsafeBlock(
     '    } catch (err) {',
     '      if (!errors) return false;',
     '      isValid = false;',
-    '      const extra = formatCaughtError(err);',
-    '      if (extra && extra.caught) {',
-    '        errors.push({',
-    '          info: ERRORS.ValidatorFn,',
-    `          functionName: ${fnLiteral},`,
-    '          value,',
-    '          caught: extra.caught,',
-    `          key: ${keyLiteral},`,
-    '        });',
-    '      } else {',
-    '        errors.push({',
-    '          info: ERRORS.ValidatorFn,',
-    `          functionName: ${fnLiteral},`,
-    '          value,',
-    `          key: ${keyLiteral},`,
-    '        });',
+    '      if (!cbErrorsAppended) {',
+    '        const extra = formatCaughtError(err);',
+    '        if (extra && extra.caught) {',
+    '          errors.push({',
+    '            info: ERRORS.ValidatorFn,',
+    `            functionName: ${fnLiteral},`,
+    '            value,',
+    '            caught: extra.caught,',
+    `            key: ${keyLiteral},`,
+    '          });',
+    '        } else {',
+    '          errors.push({',
+    '            info: ERRORS.ValidatorFn,',
+    `            functionName: ${fnLiteral},`,
+    '            value,',
+    `            key: ${keyLiteral},`,
+    '          });',
+    '        }',
     '      }',
     '    }',
     '  }',
@@ -514,20 +533,6 @@ function appendNestedErrors(
     }
     errors.push(error);
   }
-}
-
-/**
- * Set than an array is a parse error array.
- */
-function setIsParseErrorArray(array: ParseError[]) {
-  (array as unknown as Record<symbol, boolean>)[symParseErrorArray] = true;
-}
-
-/**
- * Check than an array is a parse error array.
- */
-function isParseErrorArray(arg: unknown) {
-  return (arg as Record<symbol, boolean>)[symParseErrorArray] === true;
 }
 
 /******************************************************************************
