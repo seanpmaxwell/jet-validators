@@ -867,6 +867,9 @@ test('more testing on the "parseObject()" function', () => {
       userFields: {
         id: isNumber,
         name: isString,
+        otherData: parseObject({
+          address: isAddress,
+        }),
       },
     }),
     address: parseWrapper({
@@ -877,7 +880,7 @@ test('more testing on the "parseObject()" function', () => {
     }),
   } as const;
 
-  // Make sure to show
+  // Make sure root level error is formatted correctly
   expect(() => Validators.user({ userFields: null })).toThrowError(
     JSON.stringify([
       {
@@ -888,6 +891,30 @@ test('more testing on the "parseObject()" function', () => {
       },
     ]),
   );
+
+  const user2 = {
+    userFields: {
+      id: 5,
+      name: 'joe',
+      otherData: {
+        address: null,
+      },
+    },
+  } as const;
+
+  // Make sure to show
+  expect(() => Validators.user(user2)).toThrowError(
+    JSON.stringify([
+      {
+        info: 'Root argument is null but not nullable.',
+        functionName: '<nullable>',
+        value: null,
+        keyPath: ['userFields', 'otherData', 'address'],
+      },
+    ]),
+  );
+
+  return;
 
   // Make sure error shows the path to "zip"
   const address = { address: { street: '123 fake st', zip: '98109' } };
