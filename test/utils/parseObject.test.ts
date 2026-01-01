@@ -27,6 +27,7 @@ import {
   type Schema,
   type ParseError,
   strictTestOptionalObject,
+  testOptionalObjectArray,
 } from '../../src/utils';
 
 /******************************************************************************
@@ -751,4 +752,34 @@ test('Run the benchmarks function', () => {
   });
 
   expect(parseWithJet(user)).toBeTruthy();
+});
+
+test('more testing on the "parseObject()" function', () => {
+  interface IEventLog {
+    content: string;
+  }
+
+  interface IUser {
+    id: number;
+    name: string;
+    eventsLog?: IEventLog[];
+  }
+
+  const pp = testOptionalObjectArray<IEventLog>({
+    content: isString,
+  });
+  const i = '' as unknown;
+  if (pp(i)) {
+    // const d = i.content; // should throw type
+  }
+
+  const parseUser = parseObject<IUser>({
+    id: isUnsignedInteger,
+    name: isString,
+    eventsLog: testOptionalObjectArray<IEventLog>({
+      content: isString,
+    }),
+  });
+
+  expect(parseUser({ id: 1, name: 'j', eventsLog: [] })).toBeTruthy();
 });

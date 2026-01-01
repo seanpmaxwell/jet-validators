@@ -10,9 +10,9 @@ import parseObjectCore, {
 ******************************************************************************/
 
 // Handle variations
-type ResolveMods<T, O extends boolean, N extends boolean, A extends boolean> =
+type ResolveArray<T, A extends boolean> = A extends true ? T[] : T;
+type ResolveNullables<T, O extends boolean, N extends boolean> =
   | T
-  | (A extends true ? T[] : T)
   | (O extends true ? undefined : T)
   | (N extends true ? null : never);
 
@@ -29,14 +29,14 @@ export type TypedReturnValue<
   O extends boolean,
   N extends boolean,
   A extends boolean,
-> = ResolveMods<T, O, N, A>;
+> = ResolveNullables<ResolveArray<T, A>, O, N>;
 
 export type InferredReturnValue<
   S,
   O extends boolean,
   N extends boolean,
   A extends boolean,
-> = ResolveMods<InferTypeFromSchema<S>, O, N, A>;
+> = ResolveNullables<ResolveArray<InferTypeFromSchema<S>, A>, O, N>;
 
 /******************************************************************************
                               parseObject

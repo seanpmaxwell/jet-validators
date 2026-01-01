@@ -68,4 +68,8 @@ export {
   strictTestNullishObjectArray,
 } from './parseObject/testObject.js';
 
-export { type Schema, type ParseError } from './parseObject/parseObjectCore.js';
+export {
+  type Schema,
+  type ParseError,
+  type OnErrorCallback,
+} from './parseObject/parseObjectCore.js';
