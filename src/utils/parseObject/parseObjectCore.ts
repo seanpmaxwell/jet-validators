@@ -33,6 +33,8 @@ export const ERRORS = {
   },
 } as const;
 
+const symParseErrorArray = Symbol('parse-error-array');
+
 /******************************************************************************
                                   Types
 ******************************************************************************/
@@ -105,6 +107,9 @@ function parseObjectCore(
   return (param: unknown, localOnError?: OnErrorCallback) => {
     const errorCb = onError ?? localOnError,
       errors: ParseError[] | null = errorCb ? [] : null;
+    if (!!errors) {
+      setIsParseErrorArray(errors);
+    }
     const result = parseObjectCoreHelper(
       isOptional,
       isNullable,
@@ -509,6 +514,20 @@ function appendNestedErrors(
     }
     errors.push(error);
   }
+}
+
+/**
+ * Set than an array is a parse error array.
+ */
+function setIsParseErrorArray(array: ParseError[]) {
+  (array as unknown as Record<symbol, boolean>)[symParseErrorArray] = true;
+}
+
+/**
+ * Check than an array is a parse error array.
+ */
+function isParseErrorArray(arg: unknown) {
+  return (arg as Record<symbol, boolean>)[symParseErrorArray] === true;
 }
 
 /******************************************************************************
