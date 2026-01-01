@@ -757,7 +757,7 @@ test('Run the benchmarks function', () => {
   expect(parseWithJet(user)).toBeTruthy();
 });
 
-test.only('more testing on the "parseObject()" function', () => {
+test('more testing on the "parseObject()" function', () => {
   interface IEventLog {
     content: string;
   }
@@ -863,16 +863,35 @@ test.only('more testing on the "parseObject()" function', () => {
   };
 
   const Validators = {
-    parseAddress: parseWrapper({
+    user: parseWrapper({
+      userFields: {
+        id: isNumber,
+        name: isString,
+      },
+    }),
+    address: parseWrapper({
       address: isAddress,
     }),
-    parseEventLog: parseWrapper({
+    eventLog: parseWrapper({
       eventLog: isEventLog,
     }),
   } as const;
 
+  // Make sure to show
+  expect(() => Validators.user({ userFields: null })).toThrowError(
+    JSON.stringify([
+      {
+        info: 'Root argument is null but not nullable.',
+        functionName: '<nullable>',
+        value: null,
+        key: 'userFields',
+      },
+    ]),
+  );
+
+  // Make sure error shows the path to "zip"
   const address = { address: { street: '123 fake st', zip: '98109' } };
-  expect(() => Validators.parseAddress(address)).toThrowError(
+  expect(() => Validators.address(address)).toThrowError(
     JSON.stringify([
       {
         info: 'Validator function returned false.',
@@ -929,7 +948,7 @@ test.only('more testing on the "parseObject()" function', () => {
   }
 
   const eventLog = { eventLog: [{ content: '' }] };
-  expect(() => Validators.parseEventLog(eventLog)).toThrowError(
+  expect(() => Validators.eventLog(eventLog)).toThrowError(
     JSON.stringify([
       {
         info: 'log content cannot be empty.',

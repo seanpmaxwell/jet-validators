@@ -20,6 +20,8 @@ import {
                                 Constants
 ******************************************************************************/
 
+const ROOT_TYPE_INVALID = '<root-type-invalid>';
+
 export const SAFETY = {
   Loose: 1,
   Normal: 2,
@@ -120,7 +122,7 @@ function parseObjectCore(
     );
     if (result === false) {
       if (!!errors && errors.length > 0) {
-        errorCb?.(errors!);
+        errorCb?.(errors);
       }
       return false;
     } else {
@@ -246,7 +248,7 @@ function parseObjectCoreHelper(
         info: ERRORS.NotOptional,
         functionName: '<optional>',
         value: undefined,
-        key: '',
+        key: ROOT_TYPE_INVALID,
       });
       return false;
     }
@@ -260,7 +262,7 @@ function parseObjectCoreHelper(
         info: ERRORS.NotNullable,
         functionName: '<nullable>',
         value: null,
-        key: '',
+        key: ROOT_TYPE_INVALID,
       });
       return false;
     }
@@ -272,7 +274,7 @@ function parseObjectCoreHelper(
         info: ERRORS.NotArray,
         functionName: '<isArray>',
         value: param,
-        key: '',
+        key: ROOT_TYPE_INVALID,
       });
       return false;
     }
@@ -302,7 +304,7 @@ function parseObjectCoreHelper(
       info: ERRORS.NotObject,
       functionName: '<isPlainObject>',
       value: param,
-      key: '',
+      key: ROOT_TYPE_INVALID,
     });
     return false;
   }
@@ -525,7 +527,9 @@ function appendNestedErrors(
   prepend: string | number,
 ): void {
   for (const error of nestedErrors) {
-    if (error.key) {
+    if (error.key === ROOT_TYPE_INVALID) {
+      error.key = String(prepend);
+    } else if (!!error.key) {
       (error as PlainObject).keyPath = [String(prepend), error.key];
       delete (error as PlainObject).key;
     } else {
