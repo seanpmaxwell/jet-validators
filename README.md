@@ -469,6 +469,12 @@ import { type Schema, ParseError } from 'jet-validators/utils';
 const myCustomParse = <T, S extends Schema<T>>(schema: S) => {
   return parseObject(schema, (errors: ParseError[]) => `...do stuff`);
 }
+
+// OR if you don't want enforce safety upfront
+
+const myCustomParse = <S extends Schema>(schema: S) => {
+  return parseObject(schema, (errors: ParseError[]) => `...do stuff`);
+}
 ```
 
 ---

@@ -49,7 +49,7 @@ type CompiledParser = (
 
 // **** Validation Schema **** //
 
-export type Schema<T> = {
+export type Schema<T = unknown> = {
   [K in keyof T]: T[K] extends PlainObject
     ? Schema<T[K]> | ValidatorFn<T[K]>
     : ValidatorFn<T[K]>;

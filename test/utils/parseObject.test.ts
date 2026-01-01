@@ -791,7 +791,7 @@ test.skip('more testing on the "parseObject()" function', () => {
 
   // **** Wrap it **** //
 
-  function parseWrapper<U extends Schema<unknown>>(schema: U) {
+  function parseWrapper<U extends Schema>(schema: U) {
     return parseObject(schema, (errors) => {
       throw new Error(String(errors.length));
     });
