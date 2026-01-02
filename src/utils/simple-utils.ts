@@ -75,9 +75,9 @@ export function makeNullish<T>(cb: (arg: unknown) => arg is T) {
  * The returned function calls a callback which provides the returned value
  * and
  */
-export function transform<T, U = T>(
-  transformFn: (arg: unknown) => T,
-  validate: (arg: unknown) => arg is U,
+export function transform<T, U extends T = T>(
+  transformFn: (arg: unknown) => U,
+  validate: (arg: unknown) => arg is T,
 ): ValidatorFnWithTransformCb<T> {
   // Initialize the function
   const fn = (
