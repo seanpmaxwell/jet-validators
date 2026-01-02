@@ -501,7 +501,7 @@ Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If
 
 ### Manually creating error arrays
 
-If you want to setup your own error array you need to use the `setIsParseErrorArray` function to mark it as such because in the real world there could be validator functions with callbacks for reasons other than error handling:
+If you want to setup your own error array you need to use the `setIsParseErrorArray` function to mark it as such because in the real world there could be validator functions with callbacks for reasons other than error handling.
 
 > Please see the section [Manually creating error arrays](./test/utils/parseObject.test.ts#L886) for a full example.
 
