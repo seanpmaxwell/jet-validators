@@ -7,6 +7,8 @@
     "moduleResolution": "bundler",
     "outDir": "dist/esm",
     "declaration": false,
+    "removeComments": true,
+    "pretty": false,
     "noEmit": false
   },
   "include": [

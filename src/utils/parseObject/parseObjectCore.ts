@@ -15,6 +15,7 @@ import {
   isParseErrorArray,
   setIsParseErrorArray,
 } from './mark-parseError-array.js';
+import { stringify } from 'querystring';
 
 /******************************************************************************
                                 Constants
@@ -44,10 +45,13 @@ export const ERRORS = {
                                   Types
 ******************************************************************************/
 
-export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
-type PlainObject = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObject = Record<string, any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type AnyFunction = (...args: any[]) => any;
+
+export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
+type PlainObject = Record<string, unknown>;
 type KeySet = Record<string, boolean>;
 type CompiledParser = (
   param: PlainObject,
@@ -184,6 +188,7 @@ function setupValidatorParser(
     return fnName;
   };
 
+  // Setup block from the schema
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i],
       schemaValue = (schema as AnyObject)[key];
@@ -226,6 +231,49 @@ function setupValidatorParser(
 
   const factory = new Function(...argNames, body);
   return factory(...argValues) as CompiledParser;
+}
+
+/**
+ * This is so we don't have to work with raw strings during development
+ */
+function setupValidatorDevelopmentFn(schema: Schema<unknown>, safety: Safety) {
+  const validatorArray: { fn: AnyFunction; key: string }[] = [],
+    keys = Object.keys(schema),
+    keySet: KeySet = Object.create(null);
+
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i],
+      schemaValue = (schema as AnyObject)[key];
+    keySet[key] = true;
+    if (typeof schemaValue === 'function') {
+      const name = schemaValue.name || '<anonymous>';
+      if (isSafe(schemaValue)) {
+        const vldr = setupSafeValidator(key, schemaValue.name, schemaValue);
+        validatorArray.push(vldr);
+      } else if (isTestObjectCoreFn(schemaValue)) {
+        fieldBlocks.push(buildNestedTestBlock(key, addFnRef(schemaValue)));
+      } else if (isTransformFn(schemaValue)) {
+        fieldBlocks.push(buildTransformBlock(key, name, addFnRef(schemaValue)));
+      } else {
+        fieldBlocks.push(buildUnsafeBlock(key, name, addFnRef(schemaValue)));
+      }
+    } else if (typeof schemaValue === 'object') {
+      const nestedFn = testObjectCore(false, false, false, schemaValue, safety);
+      fieldBlocks.push(buildNestedTestBlock(key, addFnRef(nestedFn)));
+    } else {
+      throw new Error(ERRORS.SchemaProp(key));
+    }
+  }
+  return (param: PlainObject) => {
+    const clean: PlainObject = {};
+    let isValid = true;
+    for (let i = 0; i < validatorArray.length; i++) {
+      const vldr = validatorArray[i],
+        result = vldr.fn(param[vldr.ke])
+      
+    }
+    return isValid ? clean : false;
+  };
 }
 
 /**
@@ -314,14 +362,50 @@ function parseObjectCoreHelper(
                             Parser Blocks
 ******************************************************************************/
 
-function buildSafeBlock(key: string, fnName: string, refName: string): string {
-  const keyLiteral = JSON.stringify(key);
-  const fnLiteral = JSON.stringify(fnName);
+function setupSafeValidator(
+  key: string,
+  fnName: string,
+  vldrFn: ValidatorFn<unknown>,
+) {
+  const keyLiteral = JSON.stringify(key),
+    fnLiteral = JSON.stringify(fnName),
+    hasOwn = Object.prototype.hasOwnProperty;
+  const fn = (
+    param: PlainObject,
+    errors: ParseError[] | null,
+    isValid: boolean,
+    clean: PlainObject,
+  ) => {
+    // ** Start code block: $vldrFn, $keyLiteral, $fnLiteral ** //
+    const value = param[keyLiteral],
+      hasKey = value !== undefined || hasOwn.call(param, keyLiteral);
+    if (!vldrFn(value)) {
+      if (!errors) return false;
+      isValid = false;
+      errors.push({
+        info: ERRORS.ValidatorFn,
+        functionName: fnLiteral,
+        value,
+        key: keyLiteral,
+      });
+    } else if (hasKey) {
+      clean[keyLiteral] =
+        value !== null && typeof value === 'object' ? deepClone(value) : value;
+    }
+    // ** End code block ** //
+    return isValid;
+  };
+  return { key, fn };
+}
+
+function buildSafeBlock(key: string, fnName: string, vldrFn: string): string {
+  const keyLiteral = JSON.stringify(key),
+    fnLiteral = JSON.stringify(fnName);
   return [
     '  {',
     `    const value = param[${keyLiteral}];`,
     `    const hasKey = value !== undefined || hasOwn.call(param, ${keyLiteral});`,
-    `    if (!${refName}(value)) {`,
+    `    if (!${vldrFn}(value)) {`,
     '      if (!errors) return false;',
     '      isValid = false;',
     '      errors.push({',

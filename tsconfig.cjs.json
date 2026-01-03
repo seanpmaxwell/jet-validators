@@ -7,6 +7,8 @@
     "moduleResolution": "NodeNext",
     "outDir": "dist/cjs",
     "declaration": false,
+    "removeComments": true,
+    "pretty": false,
     "noEmit": false
   },
   "include": [
