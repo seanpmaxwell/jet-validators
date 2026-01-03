@@ -29,6 +29,7 @@
     "dist"
   ],
   "scripts": {
+    "benchmarks": "cd ./benchmarks && npm run build && cd ..",
     "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "lint": "eslint .",
