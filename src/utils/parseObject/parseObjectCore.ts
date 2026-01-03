@@ -52,6 +52,7 @@ export type AnyFunction = (...args: any[]) => any;
 export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
 type PlainObject = Record<string, unknown>;
 type KeySet = Record<string, boolean>;
+
 type CompiledParser = (
   param: PlainObject,
   errors: ParseError[] | null,
@@ -70,9 +71,8 @@ type UnsafeValidator<T> = (arg: unknown, errCb?: OnErrorCallback) => arg is T;
 type ValidatorArrayFn = (
   param: PlainObject,
   errors: ParseError[] | null,
-  isValid: boolean,
   clean: PlainObject,
-) => boolean;
+) => boolean | -1;
 
 type ValidatorFn<T> =
   | SafeValidator<T>
@@ -166,7 +166,7 @@ function getCompiledParser(schema: AnyObject, safety: Safety): CompiledParser {
  */
 function setupValidatorParser(schema: Schema<unknown>, safety: Safety) {
   // Interate schema
-  const validatorArray: { fn: ValidatorArrayFn; key: string }[] = [],
+  const validatorArray: ValidatorArrayFn[] = [],
     keys = Object.keys(schema),
     keySet: KeySet = Object.create(null);
   for (let i = 0; i < keys.length; i++) {
@@ -176,34 +176,40 @@ function setupValidatorParser(schema: Schema<unknown>, safety: Safety) {
     if (typeof schemaValue === 'function') {
       const name = schemaValue.name || '<anonymous>';
       if (isSafe(schemaValue)) {
-        const vldr = setupSafeValidator(key, name, schemaValue);
+        const vldr = setupSafeVldr(key, name, schemaValue);
         validatorArray.push(vldr);
       } else if (isTestObjectCoreFn(schemaValue)) {
-        const vldr = setupNestedTestObjectFn(key, schemaValue);
+        const vldr = setupNestedTestObjectVldr(key, schemaValue);
         validatorArray.push(vldr);
       } else if (isTransformFn(schemaValue)) {
-        const vldr = setupTransformValidatorFn(key, name, schemaValue);
+        const vldr = setupTransformVldr(key, name, schemaValue);
         validatorArray.push(vldr);
       } else {
-        const vldr = setupUnsafeValidator(key, name, schemaValue);
+        const vldr = setupUnsafeVldr(key, name, schemaValue);
         validatorArray.push(vldr);
       }
     } else if (typeof schemaValue === 'object') {
       const nestedFn = testObjectCore(false, false, false, schemaValue, safety),
-        vldr = setupNestedTestObjectFn(key, nestedFn);
+        vldr = setupNestedTestObjectVldr(key, nestedFn);
       validatorArray.push(vldr);
     } else {
       throw new Error(ERRORS.SchemaProp(key));
     }
   }
   // Return validator function
-  return (param: PlainObject, errors: ParseError[] | null) => {
+  return (
+    param: PlainObject,
+    errors: ParseError[] | null,
+  ): PlainObject | false => {
+    // Clean and sanitize
     const clean: PlainObject = {};
     let isValid = true;
     for (let i = 0; i < validatorArray.length; i++) {
-      const vldr = validatorArray[i],
-        result = vldr.fn(param, errors, isValid, clean);
-      if (!result) {
+      const vldrFn = validatorArray[i],
+        result = vldrFn(param, errors, clean);
+      if (result === -1) {
+        return false;
+      } else if (result === false) {
         isValid = false;
       }
     }
@@ -223,7 +229,7 @@ function setupValidatorParser(schema: Schema<unknown>, safety: Safety) {
         });
       }
       // Loose
-    } else if (safety === SAFETY.Loose) {
+    } else if (isValid && safety === SAFETY.Loose) {
       const paramKeys = Object.keys(param);
       for (let i = 0; i < paramKeys.length; i++) {
         const key = paramKeys[i];
@@ -293,8 +299,8 @@ function parseObjectCoreHelper(
     const paramClone = new Array(param.length);
     let isValid = true;
     for (let i = 0; i < param.length; i++) {
-      const nestedErrors: ParseError[] | null = errors ? [] : null;
-      const result = parser(param[i], nestedErrors);
+      const nestedErrors: ParseError[] | null = errors ? [] : null,
+        result = parser(param[i], nestedErrors);
       if (result === false && !errors) return false;
       if (!!nestedErrors && nestedErrors?.length > 0) {
         appendNestedErrors(errors!, nestedErrors, i);
@@ -328,93 +334,86 @@ function parseObjectCoreHelper(
 /**
  * Return a safe validator function.
  */
-function setupSafeValidator(
+function setupSafeVldr(
   key: string,
   fnName: string,
   vldrFn: SafeValidator<unknown>,
 ) {
-  const keyLiteral = JSON.stringify(key),
-    fnLiteral = JSON.stringify(fnName),
-    hasOwn = Object.prototype.hasOwnProperty;
+  const hasOwn = Object.prototype.hasOwnProperty;
   // Setup validator function
-  const fn = (
+  return (
     param: PlainObject,
     errors: ParseError[] | null,
-    isValid: boolean,
     clean: PlainObject,
   ) => {
-    const value = param[keyLiteral],
-      hasKey = value !== undefined || hasOwn.call(param, keyLiteral);
+    const value = param[key],
+      hasKey = value !== undefined || hasOwn.call(param, key);
+    let isValid = true;
     if (!vldrFn(value)) {
-      if (!errors) return false;
+      if (!errors) return -1;
       isValid = false;
       errors.push({
         info: ERRORS.ValidatorFn,
-        functionName: fnLiteral,
+        functionName: fnName,
         value,
-        key: keyLiteral,
+        key,
       });
     } else if (hasKey) {
-      clean[keyLiteral] =
+      clean[key] =
         value !== null && typeof value === 'object' ? deepClone(value) : value;
     }
     return isValid;
   };
-  return { key, fn };
 }
 
 /**
  * Return a nested test object function.
  */
-function setupNestedTestObjectFn(key: string, vldrFn: TestObjectFn<unknown>) {
-  const keyLiteral = JSON.stringify(key),
-    hasOwn = Object.prototype.hasOwnProperty;
+function setupNestedTestObjectVldr(key: string, vldrFn: TestObjectFn<unknown>) {
+  const hasOwn = Object.prototype.hasOwnProperty;
   // Setup validator function
-  const fn = (
+  return (
     param: PlainObject,
     errors: ParseError[] | null,
-    isValid: boolean,
     clean: PlainObject,
   ) => {
-    let value = param[keyLiteral];
-    const hasKey = value !== undefined || hasOwn.call(param, keyLiteral);
-    const bubble = errors
-      ? (nestedErrors: ParseError[]) =>
-          appendNestedErrors(errors, nestedErrors, keyLiteral)
-      : undefined;
+    let value = param[key],
+      isValid = true;
+    const hasKey = value !== undefined || hasOwn.call(param, key),
+      bubble = errors
+        ? (nestedErrors: ParseError[]) =>
+            appendNestedErrors(errors, nestedErrors, key)
+        : undefined;
     const localIsValid = vldrFn(value, bubble, (nVal) => (value = nVal));
     if (!localIsValid) {
-      if (!errors) return false;
+      if (!errors) return -1;
       isValid = false;
     } else if (hasKey) {
-      clean[keyLiteral] =
+      clean[key] =
         value !== null && typeof value === 'object' ? deepClone(value) : value;
     }
     return isValid;
   };
-  return { key, fn };
 }
 
 /**
  * Return a validtor function with transform.
  */
-function setupTransformValidatorFn(
+function setupTransformVldr(
   key: string,
   fnName: string,
   vldrFn: ValidatorFnWithTransformCb<unknown>,
 ) {
-  const keyLiteral = JSON.stringify(key),
-    fnLiteral = JSON.stringify(fnName),
-    hasOwn = Object.prototype.hasOwnProperty;
+  const hasOwn = Object.prototype.hasOwnProperty;
   // Setup validator function
-  const fn = (
+  return (
     param: PlainObject,
     errors: ParseError[] | null,
-    isValid: boolean,
     clean: PlainObject,
   ) => {
-    let value = param[keyLiteral];
-    const hasKey = value !== undefined || hasOwn.call(param, keyLiteral);
+    let value = param[key],
+      isValid = true;
+    const hasKey = value !== undefined || hasOwn.call(param, key);
     try {
       const localIsValid = vldrFn(value, (tVal, innerIsValid) => {
         if (innerIsValid) {
@@ -423,59 +422,56 @@ function setupTransformValidatorFn(
       });
       if (!localIsValid) throw null;
       if (hasKey) {
-        clean[keyLiteral] =
+        clean[key] =
           value !== null && typeof value === 'object'
             ? deepClone(value)
             : value;
       }
     } catch (err) {
-      if (!errors) return false;
+      if (!errors) return -1;
       isValid = false;
       const extra = formatCaughtError(err);
       if (extra && extra.caught) {
         errors.push({
           info: ERRORS.ValidatorFn,
-          functionName: fnLiteral,
+          functionName: fnName,
           value,
           caught: extra.caught,
-          key: keyLiteral,
+          key: key,
         });
       } else {
         errors.push({
           info: ERRORS.ValidatorFn,
-          functionName: fnLiteral,
+          functionName: fnName,
           value,
-          key: keyLiteral,
+          key: key,
         });
       }
     }
     return isValid;
   };
-  return { key, fn };
 }
 
 /**
  * Return a safe validator function.
  */
-function setupUnsafeValidator(
+function setupUnsafeVldr(
   key: string,
   fnName: string,
   vldrFn: UnsafeValidator<unknown>,
 ) {
-  const keyLiteral = JSON.stringify(key),
-    fnLiteral = JSON.stringify(fnName),
-    hasOwn = Object.prototype.hasOwnProperty;
+  const hasOwn = Object.prototype.hasOwnProperty;
   // Setup validator function
-  const fn = (
+  return (
     param: PlainObject,
     errors: ParseError[] | null,
-    isValid: boolean,
     clean: PlainObject,
   ) => {
-    const value = param[keyLiteral],
-      hasKey = value !== undefined || hasOwn.call(param, keyLiteral),
+    const value = param[key],
+      hasKey = value !== undefined || hasOwn.call(param, key),
       acceptsErrorCb = vldrFn.length > 1;
-    let cbErrorsAppended = false;
+    let cbErrorsAppended = false,
+      isValid = true;
     const cb =
       acceptsErrorCb && errors
         ? (cbErrors: ParseError[]) => {
@@ -485,44 +481,43 @@ function setupUnsafeValidator(
               cbErrors.length > 0
             ) {
               cbErrorsAppended = true;
-              appendNestedErrors(errors, cbErrors, keyLiteral);
+              appendNestedErrors(errors, cbErrors, key);
             }
           }
         : undefined;
     try {
       if (!vldrFn(value, cb)) throw null;
       if (hasKey) {
-        clean[keyLiteral] =
+        clean[key] =
           value !== null && typeof value === 'object'
             ? deepClone(value)
             : value;
       }
     } catch (err) {
-      if (!errors) return false;
+      if (!errors) return -1;
       isValid = false;
       if (!cbErrorsAppended) {
         const extra = formatCaughtError(err);
         if (extra && extra.caught) {
           errors.push({
             info: ERRORS.ValidatorFn,
-            functionName: fnLiteral,
+            functionName: fnName,
             value,
             caught: extra.caught,
-            key: keyLiteral,
+            key: key,
           });
         } else {
           errors.push({
             info: ERRORS.ValidatorFn,
-            functionName: fnLiteral,
+            functionName: fnName,
             value,
-            key: keyLiteral,
+            key: key,
           });
         }
       }
     }
     return isValid;
   };
-  return { key, fn };
 }
 
 /******************************************************************************
