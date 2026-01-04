@@ -10,7 +10,7 @@
 
 Looking for every exported function? Check out the [full export reference](README-exports.md).
 
-jet-validator's `parseObject` function is one of the fastest schema validation tools out there not requiring a compilation step. Check out these benchmarks <a href="#benchmarks">here</a>.
+jet-validator's `parseObject` function is "JIT optimized" and one of the fastest schema validation tools out there not requiring a compilation step. Check out these benchmarks <a href="#benchmarks">here</a>.
 
 ## Table of Contents
 
@@ -503,9 +503,9 @@ Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If
 
 ### Manually creating error arrays
 
-If you want to setup your own error array you need to use the `setIsParseErrorArray` function to mark it as such because in the real world there could be validator functions with callbacks for reasons other than error handling:
+If you want to setup your own error array you need to use the `setIsParseErrorArray` function to mark it as such because in the real world there could be validator functions with callbacks for reasons other than error handling.
 
-> Please see the section [Manually creating error arrays](./test/utils/parseObject.test.ts#L886) for a full example.
+> Please see the section [Manually creating error arrays](./test/utils/parseObject.test.ts#L932) for a full example.
 
 ---
 
