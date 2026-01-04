@@ -1,11 +1,10 @@
+import type { InferredReturnValue, TypedReturnValue } from './parseObject.js';
 import {
   type OnErrorCallback,
   SAFETY,
   type Schema,
 } from './parseObjectCore.js';
 import testObjectCore from './testObjectCore.js';
-
-import type { InferredReturnValue, TypedReturnValue } from './parseObject.js';
 
 /******************************************************************************
                               testObject

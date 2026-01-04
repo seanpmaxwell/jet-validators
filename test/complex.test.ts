@@ -2,17 +2,17 @@ import { expect, test } from 'vitest';
 
 import {
   isInArray,
-  isOptionalInArray,
-  isNullishInArray,
   isInRange,
-  isNullishInRange,
-  isOptionalInRange,
-  isNullishInRangeArray,
   isKeyOf,
   isNullableKeyOf,
+  isNullishInArray,
+  isNullishInRange,
+  isNullishInRangeArray,
+  isNullishValueOf,
+  isOptionalInArray,
+  isOptionalInRange,
   isValueOf,
   type ValueOf,
-  isNullishValueOf,
 } from '../src';
 
 /******************************************************************************

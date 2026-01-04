@@ -1,9 +1,8 @@
 import parseObjectCore, {
   type OnErrorCallback,
   type Safety,
+  type Schema,
 } from './parseObjectCore.js';
-
-import type { Schema } from './parseObjectCore.js';
 
 /******************************************************************************
                              Constants/Types

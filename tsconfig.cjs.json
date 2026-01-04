@@ -7,12 +7,15 @@
     "moduleResolution": "NodeNext",
     "outDir": "dist/cjs",
     "declaration": false,
-    "noEmit": false
+    "noEmit": false,
+    "removeComments": true,
+    "pretty": false
   },
   "include": [
     "./src/**/*.ts"
   ],
   "exclude": [
     "./test/**/*.ts",
+    "./src/utils/parseObject/parseObjectCore.raw.ts"
   ]
 }

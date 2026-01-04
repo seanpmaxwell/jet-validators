@@ -1,6 +1,6 @@
 import parseObjectCore, {
-  SAFETY,
   type OnErrorCallback,
+  SAFETY,
   type Schema,
 } from './parseObjectCore.js';
 

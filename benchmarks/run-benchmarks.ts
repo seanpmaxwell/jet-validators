@@ -1,16 +1,4 @@
 /* eslint-disable no-console */
-import fs from 'node:fs/promises';
-import { performance } from 'node:perf_hooks';
-import { fileURLToPath } from 'node:url';
-
-import Joi from 'joi';
-
-import {
-  parseObject,
-  // strictParseObject,
-  testObject,
-} from 'jet-validators/utils';
-
 import {
   isBoolean,
   isInArray,
@@ -18,10 +6,13 @@ import {
   isNumber,
   isUnsignedInteger,
 } from 'jet-validators';
-
-import * as yup from 'yup';
-import { z } from 'zod/v4';
+import { parseObject, testObject } from 'jet-validators/utils';
+import Joi from 'joi';
+import fs from 'node:fs/promises';
+import { performance } from 'node:perf_hooks';
+import { fileURLToPath } from 'node:url';
 import {
+  parse as parseWithValibot,
   boolean as vBoolean,
   email as vEmail,
   integer as vInteger,
@@ -29,13 +20,14 @@ import {
   minValue as vMinValue,
   nonEmpty as vNonEmpty,
   number as vNumber,
-  parse as parseWithValibot,
+  object as vObject,
   picklist as vPicklist,
   pipe as vPipe,
   strictObject as vStrictObject,
   string as vString,
-  object as vObject,
 } from 'valibot';
+import * as yup from 'yup';
+import { z } from 'zod/v4';
 
 type Address = {
   street: string;

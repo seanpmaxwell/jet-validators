@@ -1,6 +1,6 @@
 {
   "name": "jet-validators",
-  "version": "2.0.11",
+  "version": "2.0.12",
   "description": "Fast, zero-dependency TypeScript validators and utilities for runtime checks, parsing, and lightweight object schema validation.",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -21,14 +21,19 @@
   },
   "typesVersions": {
     "*": {
-      "utils": ["dist/types/utils/index.d.ts"],
-      "*": ["dist/types/index.d.ts"]
+      "utils": [
+        "dist/types/utils/index.d.ts"
+      ],
+      "*": [
+        "dist/types/index.d.ts"
+      ]
     }
   },
   "files": [
     "dist"
   ],
   "scripts": {
+    "benchmarks": "cd ./benchmarks && npm run build && cd ..",
     "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "lint": "eslint .",
@@ -67,14 +72,14 @@
   "devDependencies": {
     "@eslint/js": "^9.26.0",
     "@stylistic/eslint-plugin": "^5.6.1",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.1",
     "@types/node": "^22.8.1",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-n": "^17.17.0",
     "eslint-plugin-prettier": "^5.5.4",
-    "jiti": "^2.3.3",
+    "jiti": "^2.6.1",
     "prettier": "^3.7.4",
-    "tslib": "^2.8.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.50.0",
     "vitest": "^4.0.15"
