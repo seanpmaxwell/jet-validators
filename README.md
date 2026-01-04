@@ -375,7 +375,7 @@ Throws if input is not a string.
 
 ## Object Schema Validation <a name="object-schema-validation"></a>
 
-Lightweight schema validation for objects using validator functions.
+Extremely fast and lightweight schema validation for objects using validator functions.
 
 > These utilities are intentionally simpler than libraries like Zod or AJV.
 
