@@ -1,12 +1,11 @@
 import { expect, test } from 'vitest';
 
-import { isNumberArray, isString, isNullableString } from '../../src';
-
+import { isNullableString, isNumberArray, isString } from '../../src';
 import {
-  nonNullable,
-  makeOptional,
   makeNullable,
   makeNullish,
+  makeOptional,
+  nonNullable,
   parseBoolean,
   parseJson,
   transform,

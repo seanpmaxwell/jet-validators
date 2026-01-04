@@ -13,5 +13,6 @@
   ],
   "exclude": [
     "./test/**/*.ts",
+    "./src/utils/parseObject/parseObjectCore.raw.ts"
   ]
 }

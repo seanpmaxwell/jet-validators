@@ -1,4 +1,4 @@
-import { isFunction, isString, type AnyFunction } from '../basic.js';
+import { type AnyFunction, isFunction, isString } from '../basic.js';
 
 /******************************************************************************
                              Constants
