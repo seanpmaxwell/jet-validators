@@ -323,10 +323,12 @@ const isStrictString = nonNullable(isNullishString);
 Wrap custom validators to extend their accepted types.
 
 ```ts
-const isEmail = (arg: unknown): arg is TEmail =>
+type Email = `${string}@${string}`;
+
+const isEmail = (arg: unknown): arg is Email =>
   isString(arg) && EMAIL_REGEX.test(arg);
 
-const isNullishEmail = makeNullish(isEmail);
+const isNullishEmail = makeNullish(isEmail); // --> "Email | null | undefined"
 ```
 
 ---
