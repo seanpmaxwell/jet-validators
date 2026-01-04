@@ -388,8 +388,7 @@ function setupNestedTestObjectVldr(key: string, vldrFn: TestObjectFn<unknown>) {
     if (!localIsValid) {
       return false;
     } else if (hasKey) {
-      clean[key] =
-        value !== null && typeof value === 'object' ? deepClone(value) : value;
+      clean[key] = value;
     }
     return true;
   };

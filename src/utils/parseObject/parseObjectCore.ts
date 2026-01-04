@@ -351,8 +351,7 @@ function buildNestedTestBlock(key: string, refName: string): string {
     '      if (!errors) return false;',
     '      isValid = false;',
     '    } else if (hasKey) {',
-    `      clean[${keyLiteral}] =`,
-    "        value !== null && typeof value === 'object' ? deepClone(value) : value;",
+    `      clean[${keyLiteral}] = value;`,
     '    }',
     '  }',
   ].join('\n');
