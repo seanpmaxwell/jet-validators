@@ -421,8 +421,8 @@ You can pass a callback as the second argument to the `parseObject` function or 
 #### Example
 
 ```ts
-const parseUsersArrray = parseObjectArray({ name: isString });
-const parseUsersArrray([{name: 'sean'}, {name: 123 }], (errors) => ...);
+const parseUsersArray = parseObjectArray({ name: isString });
+const parseUsersArray([{name: 'sean'}, {name: 123 }], (errors) => ...);
 
 // Errors callback param above will be:
 [{
