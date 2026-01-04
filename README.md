@@ -470,14 +470,16 @@ Nested schemas may use `testObject` inside `parseObject`, with caveats around Ty
     name: isString,
 
     // **testObject implied** address cannot be undefined
-    // and type safety will allow extra keys
+    // and type safety will allow extra keys. Safety is
+    // inherited from root `parseUser` function
     address: {
       street: isString,
       city: isString,
     },
 
-    // **testObject explicit** undefined allowed with the optional option and
-    // strict type-safety is being enforced
+    // **testObject explicit** undefined allowed with the
+    // optional option and strict type-safety is being
+    // enforced
     country: testOptionalObject<IUser['country']>({
       abbreviation: isString,
       name: isString,
