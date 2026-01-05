@@ -1,4 +1,4 @@
-import { markSafe } from 'src/utils/parseObject/mark-safe.js';
+import { markSafe } from '../utils/parseObject/mark-safe.js';
 
 import type { ResolveMods } from './common.js';
 

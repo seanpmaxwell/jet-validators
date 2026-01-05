@@ -173,7 +173,9 @@ test('Test isValidString', () => {
     'Invalid value "undefined" due to optional',
   );
 
-  const genericsValidator = isValidString({
+  // **** Type validation **** //
+
+  const typeValidator = isValidString({
     regex: /^foo$/,
     optional: true,
     // nullable: true,
@@ -181,14 +183,29 @@ test('Test isValidString', () => {
   });
 
   const i = 'bar' as unknown;
-  if (genericsValidator(i)) {
+  if (typeValidator(i)) {
     const j = i;
   }
 
-  const genericsValidator2 = isValidString({
+  const typeValidator2 = isValidString({
     regex: /^foo$/,
     nullish: true,
     // optional: false <-- causes type error
     // nullable: true <-- causes type error
   });
+
+  const k = 'bar' as unknown;
+  if (typeValidator2(k)) {
+    const l = k;
+  }
+
+  const typeValidator3 = isValidString<'foo'>({
+    regex: /^foo$/,
+    nullish: true,
+  });
+
+  const m = 'bar' as unknown;
+  if (typeValidator3(m)) {
+    const n = m;
+  }
 });

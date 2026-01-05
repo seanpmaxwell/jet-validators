@@ -243,19 +243,23 @@ This accepts an options argument and returns a string validator. Unlike most val
 | `nullable` | `undefined or true` | Allow `null` inputs. |
 | `nullish` | `undefined or true` | Allow both `null` and `undefined`. |
 
-**Restrictions**
+#### Restrictions
+
 | constraint | details |
 | --- | --- |
 | Exclusive lengths | Provide either the `length` field or the `minLength`/`maxLength` pair (never both). |
 | Exclusive nullables | Use `nullish` alone, or the `optional`/`nullable` pair—those settings are mutually exclusive. |
 | Error customization | You can supply `errorMessage` only when `throws` is `true`. |
 
-**Generics**
+#### Generics
 You can supply a string generic if you want to narrow down the string type:
 
-
 ```ts
-
+  const typeValidator3 = isValidString<'foo'>({
+    regex: /^foo$/,
+    nullish: true,
+  });
+  // typeValidator3 => arg is 'foo' | null | undefined
 ```
 
 > Please see the test [isValidString](./test/complex.test.ts#L108) for a full example.

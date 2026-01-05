@@ -77,7 +77,7 @@ type ResolveReturnValue<O> = O extends { nullish: true }
 /**
  * Determine if the string is valid based on the options.
  */
-function isValidString<T extends string, O extends Options>(
+function isValidString<T extends string, O extends Options = Options>(
   options: O,
 ): (arg: unknown) => arg is T | ResolveReturnValue<O> {
   const {
