@@ -211,11 +211,20 @@ Every function export exposed by the library is listed below. The first section 
 
 ### Complex Validators
 
+#### String Validation
+- `isValidString`
+
 #### Array Membership
 - `isInArray`
 - `isOptionalInArray`
 - `isNullableInArray`
 - `isNullishInArray`
+
+#### Array Validation
+- `isValidArray`
+- `isOptionalValidArray`
+- `isNullableValidArray`
+- `isNullishValidArray`
 
 #### Range Validation
 - `isInRange`

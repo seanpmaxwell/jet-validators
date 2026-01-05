@@ -11,6 +11,9 @@ import {
   isNullishValueOf,
   isOptionalInArray,
   isOptionalInRange,
+  isOptionalValidArray,
+  isValidArray,
+  isValidString,
   isValueOf,
   type ValueOf,
 } from '../src';
@@ -23,7 +26,7 @@ import {
  * Test complex-validators.
  */
 test('test complex validators', () => {
-  // This will make the type '1' | '2' | '3' instead of just string[]
+  // This will make the type '1' | '2' | '3' instead of just string
   const arr = ['1', '2', '3'] as const,
     isInArrTest = isInArray(arr);
   expect(isInArrTest('1')).toStrictEqual(true);
@@ -81,4 +84,128 @@ test('test complex validators', () => {
   const isNullishValueOfSomeObject = isNullishValueOf(someOtherObject);
   expect(isNullishValueOfSomeObject(null)).toStrictEqual(true);
   expect(isNullishValueOfSomeObject(undefined)).toStrictEqual(true);
+});
+
+test('Test isValidArray', () => {
+  const validatorArray = ['a', 'b', 'c'] as const;
+
+  const isValid = isValidArray(validatorArray);
+  isValid(['a']); // true
+  isValid([]); // true
+  isValid(['a', 'a', 'b', 'c']); // true
+  isValid(['a', 'b', 'c', 'd']); // false
+  isValid('a'); // false, not an array
+
+  // With optional and "min/maxLength" options
+  const isValid2 = isOptionalValidArray(validatorArray, 1, 3);
+  isValid2(['a']); // true
+  isValid2([]); // false
+  isValid2(['a', 'b', 'b', 'c']); // false
+  isValid2(['b', 'b', 'b']); // true
+  isValid2(undefined); // true
+});
+
+test('Test isValidString', () => {
+  const lowerAlphaOnly = isValidString({
+    minLength: 2,
+    maxLength: 4,
+    regex: /^[a-z]+$/,
+  });
+  expect(lowerAlphaOnly('ab')).toStrictEqual(true);
+  expect(lowerAlphaOnly('abc')).toStrictEqual(true);
+  expect(lowerAlphaOnly('abcd')).toStrictEqual(true);
+  expect(lowerAlphaOnly('abcde')).toStrictEqual(false);
+  expect(lowerAlphaOnly('a')).toStrictEqual(false);
+  expect(lowerAlphaOnly('ABC')).toStrictEqual(false);
+  expect(lowerAlphaOnly(123)).toStrictEqual(false);
+
+  const emptyAllowedDespiteRegex = isValidString({
+    minLength: 0,
+    regex: /^[0-9]+$/,
+  });
+  expect(emptyAllowedDespiteRegex('')).toStrictEqual(true);
+  expect(emptyAllowedDespiteRegex('1234')).toStrictEqual(true);
+  expect(emptyAllowedDespiteRegex('abcd')).toStrictEqual(false);
+
+  const exactLengthThree = isValidString({
+    length: 3,
+  });
+  expect(exactLengthThree('abc')).toStrictEqual(true);
+  expect(exactLengthThree('ab')).toStrictEqual(false);
+  expect(exactLengthThree('abcd')).toStrictEqual(false);
+
+  const optionalOnly = isValidString({
+    optional: true,
+    minLength: 1,
+  });
+  expect(optionalOnly(undefined)).toStrictEqual(true);
+  expect(optionalOnly(null)).toStrictEqual(false);
+  expect(optionalOnly('a')).toStrictEqual(true);
+  expect(optionalOnly('')).toStrictEqual(false);
+
+  const nullableOnly = isValidString({
+    nullable: true,
+    minLength: 1,
+  });
+  expect(nullableOnly(null)).toStrictEqual(true);
+  expect(nullableOnly(undefined)).toStrictEqual(false);
+  expect(nullableOnly('value')).toStrictEqual(true);
+
+  const nullishValidator = isValidString({
+    nullish: true,
+    minLength: 1,
+  });
+  expect(nullishValidator(null)).toStrictEqual(true);
+  expect(nullishValidator(undefined)).toStrictEqual(true);
+  expect(nullishValidator('')).toStrictEqual(false);
+
+  const throwsValidator = isValidString({
+    regex: /^foo$/,
+    throws: true,
+    errorMessage: (value, reason) =>
+      `Invalid value "${value}" due to ${reason}`,
+  });
+  expect(throwsValidator('foo')).toStrictEqual(true);
+  expect(() => throwsValidator('bar')).toThrowError(
+    'Invalid value "bar" due to regex',
+  );
+  expect(() => throwsValidator(undefined)).toThrowError(
+    'Invalid value "undefined" due to optional',
+  );
+
+  // **** Type validation **** //
+
+  const typeValidator = isValidString({
+    regex: /^foo$/,
+    optional: true,
+    // nullable: true,
+    // nullish: true,
+  });
+
+  const i = 'bar' as unknown;
+  if (typeValidator(i)) {
+    const j = i;
+  }
+
+  const typeValidator2 = isValidString({
+    regex: /^foo$/,
+    nullish: true,
+    // optional: false <-- causes type error
+    // nullable: true <-- causes type error
+  });
+
+  const k = 'bar' as unknown;
+  if (typeValidator2(k)) {
+    const l = k;
+  }
+
+  const typeValidator3 = isValidString<'foo'>({
+    regex: /^foo$/,
+    nullish: true,
+  });
+
+  const m = 'bar' as unknown;
+  if (typeValidator3(m)) {
+    const n = m;
+  }
 });

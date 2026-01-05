@@ -225,6 +225,45 @@ Is it an object of type `Record<string, unknown>` and nothing else (i.e. `Date`,
 
 These require an initialization step and return a validator function.
 
+--- 
+
+### `isValidString`
+
+This accepts an options argument and returns a string validator. Unlike most validators this does not have multiple function declarations for the different nullable variants—those are configured on the `options` argument.
+
+| option | type | description |
+| --- | --- | --- |
+| `minLength` | `number` | Minimum string length. Setting `0` allows `''` (empty string) even if `regex` fails. |
+| `maxLength` | `number` | Maximum string length. |
+| `length` | `number` | Forces exact length (mutually exclusive with `minLength`/`maxLength`). |
+| `regex` | `RegExp` | Must pass the given regular expression. |
+| `throws` | `boolean` | Throw instead of returning `false` on validation failure. |
+| `errorMessage` | `(value?: unknown, reason?: string) => string` | Customize the thrown error message when `throws` is `true`. |
+| `optional` | `undefined or true ` | Allow `undefined` inputs. |
+| `nullable` | `undefined or true` | Allow `null` inputs. |
+| `nullish` | `undefined or true` | Allow both `null` and `undefined`. |
+
+#### Restrictions
+
+| constraint | details |
+| --- | --- |
+| Exclusive lengths | Provide either the `length` field or the `minLength`/`maxLength` pair (never both). |
+| Exclusive nullables | Use `nullish` alone, or the `optional`/`nullable` pair—those settings are mutually exclusive. |
+| Error customization | You can supply `errorMessage` only when `throws` is `true`. |
+
+#### Generics
+You can supply a string generic if you want to narrow down the string type:
+
+```ts
+  const typeValidator3 = isValidString<'foo'>({
+    regex: /^foo$/,
+    nullish: true,
+  });
+  // typeValidator3 => arg is 'foo' | null | undefined
+```
+
+> Please see the test [isValidString](./test/complex.test.ts#L108) for a full example.
+
 ---
 
 ### `isInArray`
@@ -233,6 +272,18 @@ These require an initialization step and return a validator function.
 const isAllowed = isInArray(['a', 'b', 'c']);
 isAllowed('a'); // true
 ```
+
+Supports optional / nullable variants.
+
+---
+
+### `isValidArray`
+
+Makes sure that every value in an array, is contained in the validator array. Accepts optional `minLength`/`maxLength` arguments as well.
+
+**NOTE:** this does not validate anything in regards to duplicates. Just that the argument is an array and every value present is allowed.
+
+> Please see the test [isValidArray](./test/complex.test.ts#L88) for a full example.
 
 Supports optional / nullable variants.
 

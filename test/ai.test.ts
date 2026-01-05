@@ -479,6 +479,115 @@ describe('complex validators', () => {
     });
   });
 
+  describe('isValidArray family', () => {
+    const allowed = ['red', 'blue', 'green'] as const;
+    const createArrayValidator = (
+      name: string,
+      minLength?: number,
+      maxLength?: number,
+    ) => {
+      const fn = expectFunctionExport(validatorExports, name) as <
+        T extends readonly unknown[],
+      >(
+        arr: T,
+        min?: number,
+        max?: number,
+      ) => (value: unknown) => boolean;
+      return fn(allowed, minLength, maxLength);
+    };
+
+    test('isValidArray enforces membership and length bounds', () => {
+      const validator = createArrayValidator('isValidArray', 1, 3);
+      expect(validator(['red'])).toBe(true);
+      expect(validator(['green', 'blue', 'red'])).toBe(true);
+      expect(validator([])).toBe(false);
+      expect(validator(['red', 'yellow'])).toBe(false);
+      expect(validator(['red', 'green', 'blue', 'green'])).toBe(false);
+      expect(validator('not array')).toBe(false);
+      expect(validator(null)).toBe(false);
+      expect(validator(undefined)).toBe(false);
+    });
+
+    test('isOptionalValidArray allows undefined but not null', () => {
+      const validator = createArrayValidator('isOptionalValidArray', 1, 2);
+      expect(validator(['red', 'blue'])).toBe(true);
+      expect(validator(undefined)).toBe(true);
+      expect(validator(null)).toBe(false);
+      expect(validator([])).toBe(false);
+    });
+
+    test('isNullableValidArray allows null but not undefined', () => {
+      const validator = createArrayValidator('isNullableValidArray');
+      expect(validator(['red'])).toBe(true);
+      expect(validator(null)).toBe(true);
+      expect(validator(undefined)).toBe(false);
+    });
+
+    test('isNullishValidArray allows null and undefined', () => {
+      const validator = createArrayValidator('isNullishValidArray');
+      expect(validator(null)).toBe(true);
+      expect(validator(undefined)).toBe(true);
+      expect(validator(['yellow'])).toBe(false);
+    });
+  });
+
+  describe('isValidString factory', () => {
+    const factory = expectFunctionExport(
+      validatorExports,
+      'isValidString',
+    ) as AnyFn;
+
+    test('validates pattern and length rules', () => {
+      const validator = factory({
+        minLength: 2,
+        maxLength: 4,
+        regex: /^[a-z]+$/,
+      }) as ValidatorFn;
+      expect(validator('ab')).toBe(true);
+      expect(validator('abcd')).toBe(true);
+      expect(validator('a')).toBe(false);
+      expect(validator('abcde')).toBe(false);
+      expect(validator('ABC')).toBe(false);
+      expect(validator(5)).toBe(false);
+    });
+
+    test('supports exact length option', () => {
+      const validator = factory({
+        length: 3,
+      }) as ValidatorFn;
+      expect(validator('abc')).toBe(true);
+      expect(validator('ab')).toBe(false);
+      expect(validator('abcd')).toBe(false);
+    });
+
+    test('respects optional / nullable settings', () => {
+      const optionalValidator = factory({
+        optional: true,
+        minLength: 1,
+      }) as ValidatorFn;
+      expect(optionalValidator(undefined)).toBe(true);
+      expect(optionalValidator('a')).toBe(true);
+      expect(optionalValidator(null)).toBe(false);
+
+      const nullableValidator = factory({
+        nullable: true,
+        minLength: 1,
+      }) as ValidatorFn;
+      expect(nullableValidator(null)).toBe(true);
+      expect(nullableValidator(undefined)).toBe(false);
+      expect(nullableValidator('')).toBe(false);
+
+      const nullishValidator = factory({
+        nullish: true,
+        minLength: 1,
+      }) as ValidatorFn;
+      expect(nullishValidator(null)).toBe(true);
+      expect(nullishValidator(undefined)).toBe(true);
+      expect(nullishValidator('')).toBe(false);
+    });
+  });
+
+
   describe('isKeyOf family', () => {
     const obj = { a: 1, b: 2 } as const;
 
