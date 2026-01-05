@@ -196,6 +196,7 @@ export const {
 export { type PlainObject } from './basic.js';
 
 export {
+  isValidString,
   // Is in array
   isInArray,
   isOptionalInArray,
@@ -226,4 +227,4 @@ export {
   isNullableValueOf,
   isNullishValueOf,
   type ValueOf,
-} from './complex-validators.js';
+} from './complex/index.js';

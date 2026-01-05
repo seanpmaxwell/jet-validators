@@ -13,6 +13,7 @@ import {
   isOptionalInRange,
   isOptionalValidArray,
   isValidArray,
+  isValidString,
   isValueOf,
   type ValueOf,
 } from '../src';
@@ -102,4 +103,92 @@ test('Test isValidArray', () => {
   isValid2(['a', 'b', 'b', 'c']); // false
   isValid2(['b', 'b', 'b']); // true
   isValid2(undefined); // true
+});
+
+test('Test isValidString', () => {
+  const lowerAlphaOnly = isValidString({
+    minLength: 2,
+    maxLength: 4,
+    regex: /^[a-z]+$/,
+  });
+  expect(lowerAlphaOnly('ab')).toStrictEqual(true);
+  expect(lowerAlphaOnly('abc')).toStrictEqual(true);
+  expect(lowerAlphaOnly('abcd')).toStrictEqual(true);
+  expect(lowerAlphaOnly('abcde')).toStrictEqual(false);
+  expect(lowerAlphaOnly('a')).toStrictEqual(false);
+  expect(lowerAlphaOnly('ABC')).toStrictEqual(false);
+  expect(lowerAlphaOnly(123)).toStrictEqual(false);
+
+  const emptyAllowedDespiteRegex = isValidString({
+    minLength: 0,
+    regex: /^[0-9]+$/,
+  });
+  expect(emptyAllowedDespiteRegex('')).toStrictEqual(true);
+  expect(emptyAllowedDespiteRegex('1234')).toStrictEqual(true);
+  expect(emptyAllowedDespiteRegex('abcd')).toStrictEqual(false);
+
+  const exactLengthThree = isValidString({
+    length: 3,
+  });
+  expect(exactLengthThree('abc')).toStrictEqual(true);
+  expect(exactLengthThree('ab')).toStrictEqual(false);
+  expect(exactLengthThree('abcd')).toStrictEqual(false);
+
+  const optionalOnly = isValidString({
+    optional: true,
+    minLength: 1,
+  });
+  expect(optionalOnly(undefined)).toStrictEqual(true);
+  expect(optionalOnly(null)).toStrictEqual(false);
+  expect(optionalOnly('a')).toStrictEqual(true);
+  expect(optionalOnly('')).toStrictEqual(false);
+
+  const nullableOnly = isValidString({
+    nullable: true,
+    minLength: 1,
+  });
+  expect(nullableOnly(null)).toStrictEqual(true);
+  expect(nullableOnly(undefined)).toStrictEqual(false);
+  expect(nullableOnly('value')).toStrictEqual(true);
+
+  const nullishValidator = isValidString({
+    nullish: true,
+    minLength: 1,
+  });
+  expect(nullishValidator(null)).toStrictEqual(true);
+  expect(nullishValidator(undefined)).toStrictEqual(true);
+  expect(nullishValidator('')).toStrictEqual(false);
+
+  const throwsValidator = isValidString({
+    regex: /^foo$/,
+    throws: true,
+    errorMessage: (value, reason) =>
+      `Invalid value "${value}" due to ${reason}`,
+  });
+  expect(throwsValidator('foo')).toStrictEqual(true);
+  expect(() => throwsValidator('bar')).toThrowError(
+    'Invalid value "bar" due to regex',
+  );
+  expect(() => throwsValidator(undefined)).toThrowError(
+    'Invalid value "undefined" due to optional',
+  );
+
+  const genericsValidator = isValidString({
+    regex: /^foo$/,
+    optional: true,
+    // nullable: true,
+    // nullish: true,
+  });
+
+  const i = 'bar' as unknown;
+  if (genericsValidator(i)) {
+    const j = i;
+  }
+
+  const genericsValidator2 = isValidString({
+    regex: /^foo$/,
+    nullish: true,
+    // optional: false <-- causes type error
+    // nullable: true <-- causes type error
+  });
 });
