@@ -1,6 +1,6 @@
-import { markSafe } from '../utils/parseObject/mark-safe';
+import { markSafe } from '../utils/parseObject/mark-safe.js';
 
-import type { ResolveMods } from './common';
+import type { ResolveMods } from './common.js';
 
 /******************************************************************************
                              Export Variants
