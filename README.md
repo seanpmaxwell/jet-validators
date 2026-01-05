@@ -225,6 +225,15 @@ Is it an object of type `Record<string, unknown>` and nothing else (i.e. `Date`,
 
 These require an initialization step and return a validator function.
 
+--- `isValidString`
+
+This accepts an options object and returns a string validator. Unlike most validators this does not have multiple function declarations for the different nullable variants. That is done on the `options` object. The options are as follows:
+
+- 
+
+
+**NOTE:** if you set the `minlength:` to `0` and the value is an empty string, the validator will return `true` even if the `regex:` option fails.
+
 ---
 
 ### `isInArray`
@@ -233,6 +242,18 @@ These require an initialization step and return a validator function.
 const isAllowed = isInArray(['a', 'b', 'c']);
 isAllowed('a'); // true
 ```
+
+Supports optional / nullable variants.
+
+---
+
+### `isValidArray`
+
+Makes sure that every value in an array, is contained in the validator array. Accepts optional `minLength`/`maxLength` arguments as well.
+
+**NOTE:** this does not validate anything in regards to duplicates. Just that the argument is an array and every value present is allowed.
+
+> Please see the test [isValidArray](./test/complex.test.ts#L88) for a full example.
 
 Supports optional / nullable variants.
 

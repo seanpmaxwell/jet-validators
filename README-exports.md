@@ -217,6 +217,12 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullableInArray`
 - `isNullishInArray`
 
+#### Array Validation
+- `isValidArray`
+- `isOptionalValidArray`
+- `isNullableValidArray`
+- `isNullishValidArray`
+
 #### Range Validation
 - `isInRange`
 - `isOptionalInRange`

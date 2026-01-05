@@ -55,6 +55,109 @@ function isInArrayHelper<
 }
 
 /******************************************************************************
+                              isValidArray
+******************************************************************************/
+
+export function isValidArray<T extends readonly unknown[]>(
+  arg: T,
+  minLength?: number,
+  maxLength?: number,
+) {
+  return isValidArrayHelper<T, false, false>(
+    arg,
+    false,
+    false,
+    minLength,
+    maxLength,
+  );
+}
+
+export function isOptionalValidArray<T extends readonly unknown[]>(
+  arg: T,
+  minLength?: number,
+  maxLength?: number,
+) {
+  return isValidArrayHelper<T, true, false>(
+    arg,
+    true,
+    false,
+    minLength,
+    maxLength,
+  );
+}
+
+export function isNullableValidArray<T extends readonly unknown[]>(
+  arg: T,
+  minLength?: number,
+  maxLength?: number,
+) {
+  return isValidArrayHelper<T, false, true>(
+    arg,
+    false,
+    true,
+    minLength,
+    maxLength,
+  );
+}
+
+export function isNullishValidArray<T extends readonly unknown[]>(
+  arg: T,
+  minLength?: number,
+  maxLength?: number,
+) {
+  return isValidArrayHelper<T, true, true>(
+    arg,
+    true,
+    true,
+    minLength,
+    maxLength,
+  );
+}
+
+/**
+ * Is every item in the array, contained in the validator array.
+ */
+function isValidArrayHelper<
+  T extends readonly unknown[],
+  O extends boolean,
+  N extends boolean,
+>(
+  arr: T,
+  optional: O,
+  nullable: N,
+  minLength = 0,
+  maxLength?: number,
+): (arg: unknown) => arg is ResolveMods<T[number][], O, N, false> {
+  const lookup = new Set(arr);
+  const validator = (
+    arg: unknown,
+  ): arg is ResolveMods<T[number][], O, N, false> => {
+    if (arg === undefined) {
+      return !!optional;
+    }
+    if (arg === null) {
+      return !!nullable;
+    }
+    if (!Array.isArray(arg)) {
+      return false;
+    }
+    if (arg.length < minLength) {
+      return false;
+    }
+    if (maxLength !== undefined && arg.length > maxLength) {
+      return false;
+    }
+    for (let i = 0; i < arg.length; i++) {
+      if (!lookup.has(arg[i])) {
+        return false;
+      }
+    }
+    return true;
+  };
+  return markSafe(validator);
+}
+
+/******************************************************************************
                               isInRange
 ******************************************************************************/
 
@@ -290,4 +393,135 @@ function isValueOfHelper<
     return isInValues(arg);
   };
   return markSafe(validator);
+}
+
+/******************************************************************************
+                              isValidString
+******************************************************************************/
+
+const isValidString_DEFAULT_ERROR_MESSAGE = (value: unknown, reason?: string) =>
+  `The value "${value}" failed to pass string validation. Reason: <${reason}>`;
+
+type WithUndefined<T, C> = C extends true ? T | undefined : T;
+type WithNull<T, C> = C extends true ? T | null : T;
+type ResolveIsValidString<
+  T extends string,
+  O extends IsValidStringOptions,
+> = O extends { nullish: true }
+  ? T | null | undefined
+  : WithUndefined<
+      WithNull<T, O extends { nullable: true } ? true : false>,
+      O extends { optional: true } ? true : false
+    >;
+
+type IsValidStringOptions = {
+  regex?: RegExp;
+  throws?: boolean;
+  errorMessage?: (value?: unknown, reason?: string) => string;
+} & (
+  | {
+      optional?: boolean;
+      nullable?: boolean;
+    }
+  | {
+      nullish?: boolean;
+    }
+) &
+  (
+    | {
+        minLength?: number;
+        maxLength?: number;
+      }
+    | {
+        length?: number;
+      }
+  );
+
+/**
+ * Determine if the string is valid based on the options.
+ */
+function isValidString<T extends string, O extends IsValidStringOptions>(
+  options: O,
+) {
+  const {
+    regex,
+    throws = false,
+    errorMessage = isValidString_DEFAULT_ERROR_MESSAGE,
+  } = options;
+
+  // Set nullables
+  let nullable = false,
+    optional = false;
+  if ('nullish' in options && !!options.nullish) {
+    optional = true;
+    nullable = true;
+  } else {
+    if ('optional' in options && !!options.optional) {
+      optional = true;
+    }
+    if ('nullable' in options && !!options.nullable) {
+      nullable = true;
+    }
+  }
+
+  // Set handle failed function
+  let handleFailed;
+  if (throws) {
+    handleFailed = (value: unknown, reason?: string): false => {
+      throw new Error(errorMessage(value, reason));
+    };
+  } else {
+    handleFailed = (): false => false;
+  }
+
+  // Set the min/max lengths
+  let minLength = 0,
+    maxLength: undefined | number,
+    explicitEmptyStringAllowed = false;
+  if ('length' in options && options.length !== undefined) {
+    minLength = options.length;
+    maxLength = options.length;
+  } else {
+    if (
+      'minLength' in options &&
+      options.minLength !== undefined &&
+      options.minLength >= 0
+    ) {
+      minLength = options.minLength;
+      explicitEmptyStringAllowed = minLength === 0;
+    }
+    if (
+      'maxLength' in options &&
+      options.maxLength !== undefined &&
+      options.maxLength >= 0
+    ) {
+      maxLength = options.minLength;
+    }
+  }
+
+  // Validator function
+  return (arg: unknown): arg is ResolveIsValidString<T, O> => {
+    if (arg === undefined) {
+      return optional ? true : handleFailed(arg, 'optional');
+    }
+    if (arg === null) {
+      return nullable ? true : handleFailed(arg, 'nullable');
+    }
+    if (typeof arg !== 'string') {
+      return handleFailed(arg, 'not-string');
+    }
+    if (arg === '' && explicitEmptyStringAllowed) {
+      return true;
+    }
+    if (arg.length < minLength) {
+      return handleFailed(arg, 'min-length');
+    }
+    if (maxLength !== undefined && arg.length > maxLength) {
+      return handleFailed(arg, 'max-length');
+    }
+    if (regex !== undefined) {
+      if (!regex.test(arg)) return handleFailed(arg, 'regex');
+    }
+    return true;
+  };
 }

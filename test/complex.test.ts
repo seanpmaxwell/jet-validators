@@ -11,6 +11,8 @@ import {
   isNullishValueOf,
   isOptionalInArray,
   isOptionalInRange,
+  isOptionalValidArray,
+  isValidArray,
   isValueOf,
   type ValueOf,
 } from '../src';
@@ -23,7 +25,7 @@ import {
  * Test complex-validators.
  */
 test('test complex validators', () => {
-  // This will make the type '1' | '2' | '3' instead of just string[]
+  // This will make the type '1' | '2' | '3' instead of just string
   const arr = ['1', '2', '3'] as const,
     isInArrTest = isInArray(arr);
   expect(isInArrTest('1')).toStrictEqual(true);
@@ -81,4 +83,23 @@ test('test complex validators', () => {
   const isNullishValueOfSomeObject = isNullishValueOf(someOtherObject);
   expect(isNullishValueOfSomeObject(null)).toStrictEqual(true);
   expect(isNullishValueOfSomeObject(undefined)).toStrictEqual(true);
+});
+
+test('Test isValidArray', () => {
+  const validatorArray = ['a', 'b', 'c'] as const;
+
+  const isValid = isValidArray(validatorArray);
+  isValid(['a']); // true
+  isValid([]); // true
+  isValid(['a', 'a', 'b', 'c']); // true
+  isValid(['a', 'b', 'c', 'd']); // false
+  isValid('a'); // false, not an array
+
+  // With optional and "min/maxLength" options
+  const isValid2 = isOptionalValidArray(validatorArray, 1, 3);
+  isValid2(['a']); // true
+  isValid2([]); // false
+  isValid2(['a', 'b', 'b', 'c']); // false
+  isValid2(['b', 'b', 'b']); // true
+  isValid2(undefined); // true
 });
