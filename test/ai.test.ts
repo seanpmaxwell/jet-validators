@@ -531,6 +531,93 @@ describe('complex validators', () => {
     });
   });
 
+  describe('isValidString family', () => {
+    test('isValidString enforces length and regex constraints', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isValidString',
+      ) as (options: unknown) => ValidatorFn;
+      const validator = fn({
+        minLength: 2,
+        maxLength: 4,
+        regex: /^[a-z]+$/,
+      });
+      expect(validator('ab')).toBe(true);
+      expect(validator('abcd')).toBe(true);
+      expect(validator('abcde')).toBe(false);
+      expect(validator('a')).toBe(false);
+      expect(validator('ABC')).toBe(false);
+      expect(validator(123)).toBe(false);
+    });
+
+    test('isValidString respects explicit length and empty string allowance', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isValidString',
+      ) as (options: unknown) => ValidatorFn;
+      const exactLength = fn({ length: 3 });
+      expect(exactLength('abc')).toBe(true);
+      expect(exactLength('ab')).toBe(false);
+      expect(exactLength('abcd')).toBe(false);
+
+      const emptyAllowed = fn({ minLength: 0, regex: /^[0-9]+$/ });
+      expect(emptyAllowed('')).toBe(true);
+      expect(emptyAllowed('1234')).toBe(true);
+      expect(emptyAllowed('abcd')).toBe(false);
+    });
+
+    test('optional/nullable/nullish variants handle nullish inputs', () => {
+      const optional = expectFunctionExport(
+        validatorExports,
+        'isOptionalValidString',
+      ) as (options: unknown) => ValidatorFn;
+      const nullable = expectFunctionExport(
+        validatorExports,
+        'isNullableValidString',
+      ) as (options: unknown) => ValidatorFn;
+      const nullish = expectFunctionExport(
+        validatorExports,
+        'isNullishValidString',
+      ) as (options: unknown) => ValidatorFn;
+
+      const optionalValidator = optional({ minLength: 1 });
+      expect(optionalValidator(undefined)).toBe(true);
+      expect(optionalValidator(null)).toBe(false);
+      expect(optionalValidator('a')).toBe(true);
+      expect(optionalValidator('')).toBe(false);
+
+      const nullableValidator = nullable({ minLength: 1 });
+      expect(nullableValidator(null)).toBe(true);
+      expect(nullableValidator(undefined)).toBe(false);
+      expect(nullableValidator('value')).toBe(true);
+
+      const nullishValidator = nullish({ minLength: 1 });
+      expect(nullishValidator(null)).toBe(true);
+      expect(nullishValidator(undefined)).toBe(true);
+      expect(nullishValidator('')).toBe(false);
+    });
+
+    test('isValidString can throw with custom errors', () => {
+      const fn = expectFunctionExport(
+        validatorExports,
+        'isValidString',
+      ) as (options: unknown) => ValidatorFn;
+      const validator = fn({
+        regex: /^foo$/,
+        throws: true,
+        errorMessage: (value: unknown, reason?: string) =>
+          `Invalid value "${value}" due to ${reason}`,
+      });
+      expect(validator('foo')).toBe(true);
+      expect(() => validator('bar')).toThrowError(
+        'Invalid value "bar" due to regex',
+      );
+      expect(() => validator(undefined)).toThrowError(
+        'Invalid value "undefined" due to optional',
+      );
+    });
+  });
+
   describe('isKeyOf family', () => {
     const obj = { a: 1, b: 2 } as const;
 
