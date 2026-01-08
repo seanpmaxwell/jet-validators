@@ -7,6 +7,12 @@ import {
 import testObjectCore from './testObjectCore.js';
 
 /******************************************************************************
+                              Types
+******************************************************************************/
+
+type CollpaseType<T> = T extends unknown ? T : never;
+
+/******************************************************************************
                               testObject
 ******************************************************************************/
 
@@ -40,7 +46,7 @@ export function testOptionalObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, false>;
+) => arg is CollpaseType<InferredReturnValue<S, true, false, false>>;
 
 export function testOptionalObject<T>(
   schema: Schema<T>,
@@ -65,7 +71,7 @@ export function testNullableObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, false>;
+) => arg is CollpaseType<InferredReturnValue<S, false, true, false>>;
 
 export function testNullableObject<T>(
   schema: Schema<T>,
@@ -90,7 +96,7 @@ export function testNullishObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, false>;
+) => arg is CollpaseType<InferredReturnValue<S, true, true, false>>;
 
 export function testNullishObject<T>(
   schema: Schema<T>,
@@ -140,7 +146,7 @@ export function testOptionalObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, true>;
+) => arg is CollpaseType<InferredReturnValue<S, true, false, true>>;
 
 export function testOptionalObjectArray<T>(
   schema: Schema<T>,
@@ -165,7 +171,7 @@ export function testNullableObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, true>;
+) => arg is CollpaseType<InferredReturnValue<S, false, true, true>>;
 
 export function testNullableObjectArray<T>(
   schema: Schema<T>,
@@ -190,7 +196,7 @@ export function testNullishObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, true>;
+) => arg is CollpaseType<InferredReturnValue<S, true, true, true>>;
 
 export function testNullishObjectArray<T>(
   schema: Schema<T>,
@@ -244,7 +250,7 @@ export function strictTestOptionalObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, false>;
+) => arg is CollpaseType<InferredReturnValue<S, true, false, false>>;
 
 export function strictTestOptionalObject<T>(
   schema: Schema<T>,
@@ -269,7 +275,7 @@ export function strictTestNullableObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, false>;
+) => arg is CollpaseType<InferredReturnValue<S, false, true, false>>;
 
 export function strictTestNullableObject<T>(
   schema: Schema<T>,
@@ -294,7 +300,7 @@ export function strictTestNullishObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, false>;
+) => arg is CollpaseType<InferredReturnValue<S, true, true, false>>;
 
 export function strictTestNullishObject<T>(
   schema: Schema<T>,
@@ -344,7 +350,7 @@ export function strictTestOptionalObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, true>;
+) => arg is CollpaseType<InferredReturnValue<S, true, false, true>>;
 
 export function strictTestOptionalObjectArray<T>(
   schema: Schema<T>,
@@ -369,7 +375,7 @@ export function strictTestNullableObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, true>;
+) => arg is CollpaseType<InferredReturnValue<S, false, true, true>>;
 
 export function strictTestNullableObjectArray<T>(
   schema: Schema<T>,
@@ -394,7 +400,7 @@ export function strictTestNullishObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, true>;
+) => arg is CollpaseType<InferredReturnValue<S, true, true, true>>;
 
 export function strictTestNullishObjectArray<T>(
   schema: Schema<T>,
@@ -448,7 +454,7 @@ export function looseTestOptionalObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, false>;
+) => arg is CollpaseType<InferredReturnValue<S, true, false, false>>;
 
 export function looseTestOptionalObject<T>(
   schema: Schema<T>,
@@ -473,7 +479,7 @@ export function looseTestNullableObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, false>;
+) => arg is CollpaseType<InferredReturnValue<S, false, true, false>>;
 
 export function looseTestNullableObject<T>(
   schema: Schema<T>,
@@ -498,7 +504,7 @@ export function looseTestNullishObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, false>;
+) => arg is CollpaseType<InferredReturnValue<S, true, true, false>>;
 
 export function looseTestNullishObject<T>(
   schema: Schema<T>,
@@ -548,7 +554,7 @@ export function looseTestOptionalObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, false, true>;
+) => arg is CollpaseType<InferredReturnValue<S, true, false, true>>;
 
 export function looseTestOptionalObjectArray<T>(
   schema: Schema<T>,
@@ -556,7 +562,7 @@ export function looseTestOptionalObjectArray<T>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is TypedReturnValue<T, true, false, true>;
+) => arg is CollpaseType<TypedReturnValue<T, true, false, true>>;
 
 export function looseTestOptionalObjectArray(
   schema: Schema<unknown>,
@@ -573,7 +579,7 @@ export function looseTestNullableObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, false, true, true>;
+) => arg is CollpaseType<InferredReturnValue<S, false, true, true>>;
 
 export function looseTestNullableObjectArray<T>(
   schema: Schema<T>,
@@ -598,7 +604,7 @@ export function looseTestNullishObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => arg is InferredReturnValue<S, true, true, true>;
+) => arg is CollpaseType<InferredReturnValue<S, true, true, true>>;
 
 export function looseTestNullishObjectArray<T>(
   schema: Schema<T>,
