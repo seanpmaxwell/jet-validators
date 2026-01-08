@@ -1,6 +1,6 @@
 {
   "name": "jet-validators",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Fast, zero-dependency TypeScript validators and utilities for runtime checks, parsing, and lightweight object schema validation.",
   "type": "module",
   "main": "./dist/cjs/index.js",

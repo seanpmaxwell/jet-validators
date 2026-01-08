@@ -6,6 +6,8 @@ import type { ResolveMods } from './common.js';
                               Types/Variants
 ******************************************************************************/
 
+type CollpaseType<T> = T extends unknown ? T : never;
+
 type RangeParam = number | [number] | [];
 type isInRangeFn = (arg: number) => boolean;
 type RangeBound = {
@@ -49,7 +51,7 @@ function isInRangeHelper<
   O extends boolean,
   N extends boolean,
   A extends boolean,
-  Ret = ResolveMods<number | string, O, N, A>,
+  Ret = CollpaseType<ResolveMods<number | string, O, N, A>>,
 >(
   optional: boolean,
   nullable: boolean,

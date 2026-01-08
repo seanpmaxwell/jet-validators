@@ -11,7 +11,7 @@ export function isValidArray<T extends readonly unknown[]>(
   minLength?: number,
   maxLength?: number,
 ) {
-  return isValidArrayHelper<T, false, false>(
+  return isValidArrayCore<T, false, false>(
     arg,
     false,
     false,
@@ -25,7 +25,7 @@ export function isOptionalValidArray<T extends readonly unknown[]>(
   minLength?: number,
   maxLength?: number,
 ) {
-  return isValidArrayHelper<T, true, false>(
+  return isValidArrayCore<T, true, false>(
     arg,
     true,
     false,
@@ -39,7 +39,7 @@ export function isNullableValidArray<T extends readonly unknown[]>(
   minLength?: number,
   maxLength?: number,
 ) {
-  return isValidArrayHelper<T, false, true>(
+  return isValidArrayCore<T, false, true>(
     arg,
     false,
     true,
@@ -53,13 +53,7 @@ export function isNullishValidArray<T extends readonly unknown[]>(
   minLength?: number,
   maxLength?: number,
 ) {
-  return isValidArrayHelper<T, true, true>(
-    arg,
-    true,
-    true,
-    minLength,
-    maxLength,
-  );
+  return isValidArrayCore<T, true, true>(arg, true, true, minLength, maxLength);
 }
 
 /******************************************************************************
@@ -69,7 +63,7 @@ export function isNullishValidArray<T extends readonly unknown[]>(
 /**
  * Is every item in the array, contained in the validator array.
  */
-function isValidArrayHelper<
+function isValidArrayCore<
   T extends readonly unknown[],
   O extends boolean,
   N extends boolean,

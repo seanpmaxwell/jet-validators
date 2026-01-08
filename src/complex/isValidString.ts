@@ -1,5 +1,7 @@
 import { markSafe } from '../utils/parseObject/mark-safe.js';
 
+import type { ResolveMods } from './common.js';
+
 /******************************************************************************
                               Constants
 ******************************************************************************/
@@ -11,24 +13,7 @@ const DEFAULT_ERROR_MESSAGE = (value: unknown, reason?: string) =>
                               Types
 ******************************************************************************/
 
-// **** The Input Option **** //
-
-type NullabilityOptions =
-  | {
-      optional?: true;
-      nullable?: true;
-      nullish?: never;
-    }
-  | {
-      nullish: true;
-      optional?: never;
-      nullable?: never;
-    }
-  | {
-      optional?: false | undefined;
-      nullable?: false | undefined;
-      nullish?: false | undefined;
-    };
+type CollpaseType<T> = T extends unknown ? T : never;
 
 type ThrowOptions =
   | {
@@ -54,21 +39,34 @@ type LengthOptions =
 
 type Options = {
   regex?: RegExp;
-} & NullabilityOptions &
-  ThrowOptions &
+} & ThrowOptions &
   LengthOptions;
 
-// **** Resolve the Return Type **** //
+/******************************************************************************
+                               Export Variants
+******************************************************************************/
 
-type ResolveReturnValue<O> = O extends { nullish: true }
-  ? null | undefined
-  : O extends { optional: true; nullable: true }
-    ? null | undefined
-    : O extends { optional: true }
-      ? undefined
-      : O extends { nullable: true }
-        ? null
-        : never;
+export function isValidString<T extends string = string>(options: Options) {
+  return isValidStringCore<T, false, false>(options, false, false);
+}
+
+export function isOptionalValidString<T extends string = string>(
+  options: Options,
+) {
+  return isValidStringCore<T, true, false>(options, true, false);
+}
+
+export function isNullableValidString<T extends string = string>(
+  options: Options,
+) {
+  return isValidStringCore<T, false, true>(options, false, true);
+}
+
+export function isNullishValidString<T extends string = string>(
+  options: Options,
+) {
+  return isValidStringCore<T, true, true>(options, true, true);
+}
 
 /******************************************************************************
                                 Functions
@@ -77,29 +75,20 @@ type ResolveReturnValue<O> = O extends { nullish: true }
 /**
  * Determine if the string is valid based on the options.
  */
-function isValidString<T extends string, O extends Options = Options>(
-  options: O,
-): (arg: unknown) => arg is T | ResolveReturnValue<O> {
+function isValidStringCore<
+  T extends string,
+  O extends boolean,
+  N extends boolean,
+>(
+  options: Options,
+  optional: boolean,
+  nullable: boolean,
+): (arg: unknown) => arg is CollpaseType<ResolveMods<T, O, N, false>> {
   const {
     regex,
     throws = false,
     errorMessage = DEFAULT_ERROR_MESSAGE,
   } = options;
-
-  // Set nullables
-  let nullable = false,
-    optional = false;
-  if ('nullish' in options && !!options.nullish) {
-    optional = true;
-    nullable = true;
-  } else {
-    if ('optional' in options && !!options.optional) {
-      optional = true;
-    }
-    if ('nullable' in options && !!options.nullable) {
-      nullable = true;
-    }
-  }
 
   // Set handle failed function
   let handleFailed;
@@ -137,7 +126,7 @@ function isValidString<T extends string, O extends Options = Options>(
   }
 
   // Validator function
-  const isValidString = (arg: unknown): arg is T & ResolveReturnValue<O> => {
+  const isValidString = (arg: unknown): arg is ResolveMods<T, O, N, false> => {
     if (arg === undefined) {
       return optional ? true : handleFailed(arg, 'optional');
     }
@@ -164,9 +153,3 @@ function isValidString<T extends string, O extends Options = Options>(
   markSafe(isValidString);
   return isValidString;
 }
-
-/******************************************************************************
-                                Export
-******************************************************************************/
-
-export default isValidString;

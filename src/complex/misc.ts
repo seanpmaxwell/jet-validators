@@ -3,6 +3,12 @@ import { markSafe } from '../utils/parseObject/mark-safe.js';
 import type { ResolveMods } from './common.js';
 
 /******************************************************************************
+                                 Types
+******************************************************************************/
+
+type CollpaseType<T> = T extends unknown ? T : never;
+
+/******************************************************************************
                               InInArray
 ******************************************************************************/
 
@@ -30,11 +36,11 @@ function isInArrayCore<
   arr: T,
   optional: O,
   nullable: N,
-): (arg: unknown) => arg is ResolveMods<T[number], O, N, false> {
+): (arg: unknown) => arg is CollpaseType<ResolveMods<T[number], O, N, false>> {
   const lookup = new Set(arr);
   const validator = (
     arg: unknown,
-  ): arg is ResolveMods<T[number], O, N, false> => {
+  ): arg is CollpaseType<ResolveMods<T[number], O, N, false>> => {
     if (arg === undefined) {
       return !!optional;
     }

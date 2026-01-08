@@ -8,22 +8,41 @@ import parseObjectCore, {
                                  Types
 ******************************************************************************/
 
+type CollpaseType<T> = T extends unknown ? T : never;
 type ValidatorFn<T> = (arg: unknown) => arg is T;
-
-// Handle variations
 type ResolveArray<T, A extends boolean> = A extends true ? T[] : T;
+
 type ResolveNullables<T, O extends boolean, N extends boolean> =
-  | T
-  | (O extends true ? undefined : T)
-  | (N extends true ? null : never);
+  | (O extends true ? undefined : never)
+  | (N extends true ? null : never)
+  | T;
+
+// **** Inferring the type from the schema **** //
+
+type CollapseType<T> = {
+  [K in keyof T]: T[K];
+} & {};
 
 type InferTypeFromSchema<S> = {
   [K in keyof S]: S[K] extends ValidatorFn<infer R>
     ? R
     : S[K] extends object
-      ? InferTypeFromSchema<S[K]>
+      ? CollapseType<InferTypeFromSchema<S[K]>>
       : never;
 };
+
+export type InferredReturnValue<
+  S,
+  O extends boolean,
+  N extends boolean,
+  A extends boolean,
+> = ResolveNullables<
+  ResolveArray<CollapseType<InferTypeFromSchema<S>>, A>,
+  O,
+  N
+>;
+
+// **** When a generic type is explicitly added **** //
 
 export type TypedReturnValue<
   T,
@@ -31,13 +50,6 @@ export type TypedReturnValue<
   N extends boolean,
   A extends boolean,
 > = ResolveNullables<ResolveArray<T, A>, O, N>;
-
-export type InferredReturnValue<
-  S,
-  O extends boolean,
-  N extends boolean,
-  A extends boolean,
-> = ResolveNullables<ResolveArray<InferTypeFromSchema<S>, A>, O, N>;
 
 /******************************************************************************
                               parseObject
@@ -76,7 +88,7 @@ export function parseOptionalObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, false>;
+) => CollpaseType<InferredReturnValue<S, true, false, false>>;
 
 export function parseOptionalObject<T>(
   schema: Schema<T>,
@@ -101,7 +113,7 @@ export function parseNullableObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, false>;
+) => CollpaseType<InferredReturnValue<S, false, true, false>>;
 
 export function parseNullableObject<T>(
   schema: Schema<T>,
@@ -126,7 +138,7 @@ export function parseNullishObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, false>;
+) => CollpaseType<InferredReturnValue<S, true, true, false>>;
 
 export function parseNullishObject<T>(
   schema: Schema<T>,
@@ -176,7 +188,7 @@ export function parseOptionalObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, true>;
+) => CollpaseType<InferredReturnValue<S, true, false, true>>;
 
 export function parseOptionalObjectArray<T>(
   schema: Schema<T>,
@@ -201,7 +213,7 @@ export function parseNullableObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, true>;
+) => CollpaseType<InferredReturnValue<S, false, true, true>>;
 
 export function parseNullableObjectArray<T>(
   schema: Schema<T>,
@@ -226,7 +238,7 @@ export function parseNullishObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, true>;
+) => CollpaseType<InferredReturnValue<S, true, true, true>>;
 
 export function parseNullishObjectArray<T>(
   schema: Schema<T>,
@@ -280,7 +292,7 @@ export function strictParseOptionalObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, false>;
+) => CollpaseType<InferredReturnValue<S, true, false, false>>;
 
 export function strictParseOptionalObject<T>(
   schema: Schema<T>,
@@ -305,7 +317,7 @@ export function strictParseNullableObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, false>;
+) => CollpaseType<InferredReturnValue<S, false, true, false>>;
 
 export function strictParseNullableObject<T>(
   schema: Schema<T>,
@@ -330,7 +342,7 @@ export function strictParseNullishObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, false>;
+) => CollpaseType<InferredReturnValue<S, true, true, false>>;
 
 export function strictParseNullishObject<T>(
   schema: Schema<T>,
@@ -380,7 +392,7 @@ export function strictParseOptionalObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, true>;
+) => CollpaseType<InferredReturnValue<S, true, false, true>>;
 
 export function strictParseOptionalObjectArray<T>(
   schema: Schema<T>,
@@ -405,7 +417,7 @@ export function strictParseNullableObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, true>;
+) => CollpaseType<InferredReturnValue<S, false, true, true>>;
 
 export function strictParseNullableObjectArray<T>(
   schema: Schema<T>,
@@ -430,7 +442,7 @@ export function strictParseNullishObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, true>;
+) => CollpaseType<InferredReturnValue<S, true, true, true>>;
 
 export function strictParseNullishObjectArray<T>(
   schema: Schema<T>,
@@ -484,7 +496,7 @@ export function looseParseOptionalObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, false>;
+) => CollpaseType<InferredReturnValue<S, true, false, false>>;
 
 export function looseParseOptionalObject<T>(
   schema: Schema<T>,
@@ -509,7 +521,7 @@ export function looseParseNullableObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, false>;
+) => CollpaseType<InferredReturnValue<S, false, true, false>>;
 
 export function looseParseNullableObject<T>(
   schema: Schema<T>,
@@ -534,7 +546,7 @@ export function looseParseNullishObject<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, false>;
+) => CollpaseType<InferredReturnValue<S, true, true, false>>;
 
 export function looseParseNullishObject<T>(
   schema: Schema<T>,
@@ -584,7 +596,7 @@ export function looseParseOptionalObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, false, true>;
+) => CollpaseType<InferredReturnValue<S, true, false, true>>;
 
 export function looseParseOptionalObjectArray<T>(
   schema: Schema<T>,
@@ -609,7 +621,7 @@ export function looseParseNullableObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, false, true, true>;
+) => CollpaseType<InferredReturnValue<S, false, true, true>>;
 
 export function looseParseNullableObjectArray<T>(
   schema: Schema<T>,
@@ -634,7 +646,7 @@ export function looseParseNullishObjectArray<S extends object>(
 ): (
   arg: unknown,
   onError?: OnErrorCallback,
-) => InferredReturnValue<S, true, true, true>;
+) => CollpaseType<InferredReturnValue<S, true, true, true>>;
 
 export function looseParseNullishObjectArray<T>(
   schema: Schema<T>,

@@ -213,6 +213,9 @@ Every function export exposed by the library is listed below. The first section 
 
 #### String Validation
 - `isValidString`
+- `isOptionalValidString`
+- `isNullableValidString`
+- `isNullishValidString`
 
 #### Array Membership
 - `isInArray`
