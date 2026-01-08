@@ -196,7 +196,11 @@ export const {
 export { type PlainObject } from './basic.js';
 
 export {
+  // Is valid string
   isValidString,
+  isOptionalValidString,
+  isNullableValidString,
+  isNullishValidString,
   // Is in array
   isInArray,
   isOptionalInArray,

@@ -531,63 +531,6 @@ describe('complex validators', () => {
     });
   });
 
-  describe('isValidString factory', () => {
-    const factory = expectFunctionExport(
-      validatorExports,
-      'isValidString',
-    ) as AnyFn;
-
-    test('validates pattern and length rules', () => {
-      const validator = factory({
-        minLength: 2,
-        maxLength: 4,
-        regex: /^[a-z]+$/,
-      }) as ValidatorFn;
-      expect(validator('ab')).toBe(true);
-      expect(validator('abcd')).toBe(true);
-      expect(validator('a')).toBe(false);
-      expect(validator('abcde')).toBe(false);
-      expect(validator('ABC')).toBe(false);
-      expect(validator(5)).toBe(false);
-    });
-
-    test('supports exact length option', () => {
-      const validator = factory({
-        length: 3,
-      }) as ValidatorFn;
-      expect(validator('abc')).toBe(true);
-      expect(validator('ab')).toBe(false);
-      expect(validator('abcd')).toBe(false);
-    });
-
-    test('respects optional / nullable settings', () => {
-      const optionalValidator = factory({
-        optional: true,
-        minLength: 1,
-      }) as ValidatorFn;
-      expect(optionalValidator(undefined)).toBe(true);
-      expect(optionalValidator('a')).toBe(true);
-      expect(optionalValidator(null)).toBe(false);
-
-      const nullableValidator = factory({
-        nullable: true,
-        minLength: 1,
-      }) as ValidatorFn;
-      expect(nullableValidator(null)).toBe(true);
-      expect(nullableValidator(undefined)).toBe(false);
-      expect(nullableValidator('')).toBe(false);
-
-      const nullishValidator = factory({
-        nullish: true,
-        minLength: 1,
-      }) as ValidatorFn;
-      expect(nullishValidator(null)).toBe(true);
-      expect(nullishValidator(undefined)).toBe(true);
-      expect(nullishValidator('')).toBe(false);
-    });
-  });
-
-
   describe('isKeyOf family', () => {
     const obj = { a: 1, b: 2 } as const;
 

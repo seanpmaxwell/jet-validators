@@ -35,4 +35,9 @@ export {
   isNullishInRangeArray,
 } from './isInRange.js';
 
-export { default as isValidString } from './isValidString.js';
+export {
+  isValidString,
+  isOptionalValidString,
+  isNullableValidString,
+  isNullishValidString,
+} from './isValidString.js';

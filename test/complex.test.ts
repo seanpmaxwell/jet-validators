@@ -5,13 +5,16 @@ import {
   isInRange,
   isKeyOf,
   isNullableKeyOf,
+  isNullableValidString,
   isNullishInArray,
   isNullishInRange,
   isNullishInRangeArray,
+  isNullishValidString,
   isNullishValueOf,
   isOptionalInArray,
   isOptionalInRange,
   isOptionalValidArray,
+  isOptionalValidString,
   isValidArray,
   isValidString,
   isValueOf,
@@ -134,8 +137,7 @@ test('Test isValidString', () => {
   expect(exactLengthThree('ab')).toStrictEqual(false);
   expect(exactLengthThree('abcd')).toStrictEqual(false);
 
-  const optionalOnly = isValidString({
-    optional: true,
+  const optionalOnly = isOptionalValidString({
     minLength: 1,
   });
   expect(optionalOnly(undefined)).toStrictEqual(true);
@@ -143,16 +145,14 @@ test('Test isValidString', () => {
   expect(optionalOnly('a')).toStrictEqual(true);
   expect(optionalOnly('')).toStrictEqual(false);
 
-  const nullableOnly = isValidString({
-    nullable: true,
+  const nullableOnly = isNullableValidString({
     minLength: 1,
   });
   expect(nullableOnly(null)).toStrictEqual(true);
   expect(nullableOnly(undefined)).toStrictEqual(false);
   expect(nullableOnly('value')).toStrictEqual(true);
 
-  const nullishValidator = isValidString({
-    nullish: true,
+  const nullishValidator = isNullishValidString({
     minLength: 1,
   });
   expect(nullishValidator(null)).toStrictEqual(true);
@@ -175,23 +175,17 @@ test('Test isValidString', () => {
 
   // **** Type validation **** //
 
-  const typeValidator = isValidString({
+  const typeValidator = isOptionalValidString({
     regex: /^foo$/,
-    optional: true,
-    // nullable: true,
-    // nullish: true,
   });
 
   const i = 'bar' as unknown;
   if (typeValidator(i)) {
-    const j = i;
+    // const j: number | undefined = i; // should cause type error
   }
 
-  const typeValidator2 = isValidString({
+  const typeValidator2 = isNullishValidString({
     regex: /^foo$/,
-    nullish: true,
-    // optional: false <-- causes type error
-    // nullable: true <-- causes type error
   });
 
   const k = 'bar' as unknown;
@@ -199,9 +193,8 @@ test('Test isValidString', () => {
     const l = k;
   }
 
-  const typeValidator3 = isValidString<'foo'>({
+  const typeValidator3 = isNullishValidString<'foo'>({
     regex: /^foo$/,
-    nullish: true,
   });
 
   const m = 'bar' as unknown;
