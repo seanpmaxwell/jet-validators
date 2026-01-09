@@ -26,7 +26,7 @@ Looking for every exported function? Check out the [full export reference](READM
 
 <br/>***<br/>
 
-## Introduction <a name="introduction"></a> 👋
+## 👋 Introduction <a name="introduction"></a>
 
 `jet-validators` is a large collection of small, composable validator functions commonly used when validating values in TypeScript.
 
@@ -350,7 +350,7 @@ Includes the `ValueOf<T>` utility type.
 <br/><br/>
 
 
-## Utilities <a name="utilities"></a> ⚙️
+## ⚙️ Utilities <a name="utilities"></a>
 
 Utilities are imported from:
 
