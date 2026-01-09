@@ -573,9 +573,7 @@ If you need the type for a parse function you created, simply use the utility ty
 
 > Please see the unit-test [Test setting a type for the parseObject](./test/utils/parseObject.test.ts#L693) for a full example.
 
------
-
-#### Safety Modes
+#### • Safety Modes
 
 Control how extra object properties are handled. Nested schemas inherit the parent mode unless overridden:
 
