@@ -251,7 +251,6 @@ This accepts an options argument and returns a string validator.
 | constraint | details |
 | --- | --- |
 | Exclusive lengths | Provide either the `length` field or the `minLength`/`maxLength` pair (never both). |
-| Exclusive nullables | Use `nullish` alone, or the `optional`/`nullable` pair—those settings are mutually exclusive. |
 | Error customization | You can supply `errorMessage` only when `throws` is `true`. |
 
 ##### - Generics
