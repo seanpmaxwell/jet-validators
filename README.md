@@ -465,6 +465,7 @@ Supports:
 * nested schemas
 * loose / strict modes
 
+---
 
 ### `testObject`
 
@@ -516,6 +517,7 @@ Nested schemas may use `testObject` inside `parseObject`. Supplying generics res
   });
 ```
 
+---
 
 ### `parse/testObject` features and examples
 
