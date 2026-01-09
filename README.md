@@ -23,7 +23,6 @@ Looking for every exported function? Check out the [full export reference](READM
 * [Complex Validators](#complex-validators) 🧠
 * [Utilities](#utilities) ⚙️
 * [Object Schema Validation](#object-schema-validation) 📐
-* [Safety Modes](#safety-modes) 🛡️
 <br/><br/>
 
 
@@ -447,41 +446,24 @@ const parseUser = parseObject<IUser>({
 });
 ```
 
+OR
+
+```ts
+const parseUser = parseObject({
+  id: transform(Number, isNumber),
+  name: isString,
+});
+
+parseUser // <-- Inferred type is: `(arg: unknown) => arg is { id: number; name: string }`
+```
+> No need to call `SomeUtilityType<typeof parseUser>`
+
 Supports:
 
 * optional / nullable
 * arrays
 * nested schemas
 * loose / strict modes
-
-#### Error handling
-
-You can pass a callback as the second argument to the `parseObject` function or the function returned from it which will provide an array of errors if there are any. Each error object has the format:
-
-| Field           | Type        | Description |
-|-----------------|------------|-------------|
-| `info`          | `string`   | General information about the validation failure. |
-| `functionName`  | `string`   | Name of the validator function that failed. |
-| `value`         | `unknown`  | The value that caused the validation failure (optional). |
-| `caught`        | `string`   | Error message caught from an unsafe validator function, if any. |
-| `key`           | `string`   | The key at which the failure occurred but only when it happened at the root level.|
-| `keyPath`       | `string[]` | Full path to the failing value for anything other than a key at the rror level. If the failure occurs while inside an array variant (e.g. `parseObjectArray`), the first element represents the array index of the failing item. |
-
-#### Example
-
-```ts
-const parseUsersArray = parseObjectArray({ name: isString });
-const parseUsersArray([{name: 'sean'}, {name: 123 }], (errors) => ...);
-
-// Errors callback param above will be:
-[{
-  info: "Validator function returned false.",
-  functionName: "isString",
-  value: 123,
-  keyPath: ["1", "name"]
-}]
-```
-<br/>
 
 
 ### `testObject`
@@ -494,9 +476,9 @@ if (testUser(user)) {
 }
 ```
 
-### Combining parse + test
+#### Combining parse + test
 
-Nested schemas may use `testObject` inside `parseObject`, with caveats around TypeScript inference. Supplying generics restores full type safety. Note you cannot use `parseObject` on a nested schema because it returns the object being tested not a type-predicate:
+Nested schemas may use `testObject` inside `parseObject`. Supplying generics restores full type safety. Note you cannot use `parseObject` on a nested schema because it returns the object being tested not a type-predicate:
 ```ts
 
   interface IUser {
@@ -534,9 +516,40 @@ Nested schemas may use `testObject` inside `parseObject`, with caveats around Ty
   });
 ```
 
+
+### `parse/testObject` features and examples
+
+#### Error handling
+
+You can pass a callback as the second argument to the `parseObject` function or the function returned from it which will provide an array of errors if there are any. Each error object has the format:
+
+| Field           | Type        | Description |
+|-----------------|------------|-------------|
+| `info`          | `string`   | General information about the validation failure. |
+| `functionName`  | `string`   | Name of the validator function that failed. |
+| `value`         | `unknown`  | The value that caused the validation failure (optional). |
+| `caught`        | `string`   | Error message caught from an unsafe validator function, if any. |
+| `key`           | `string`   | The key at which the failure occurred but only when it happened at the root level.|
+| `keyPath`       | `string[]` | Full path to the failing value for anything other than a key at the rror level. If the failure occurs while inside an array variant (e.g. `parseObjectArray`), the first element represents the array index of the failing item. |
+
+#### Example
+
+```ts
+const parseUsersArray = parseObjectArray({ name: isString });
+const parseUsersArray([{name: 'sean'}, {name: 123 }], (errors) => ...);
+
+// Errors callback param above will be:
+[{
+  info: "Validator function returned false.",
+  functionName: "isString",
+  value: 123,
+  keyPath: ["1", "name"]
+}]
+```
+
 ---
 
-### Wrapping parse/test
+#### Wrapping parse/test
 
 You may want to wrap a `parseObject` to let's say, make sure all parse functions throw the same custom Error object. When wrapping these utilities, ensure your generics extend `Schema<T>` to preserve type safety.
 
@@ -544,7 +557,7 @@ You may want to wrap a `parseObject` to let's say, make sure all parse functions
 
 ---
 
-### Adding Custom Validators to schemas
+#### Adding Custom Validators to schemas
 
 Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If your custom validator checks an object and has nested errors and you want those errors to bubble up to the highest level, you to need to make sure to provide a callback. Other wise parseObject will only see the custom validator itself as the failing function and any nested errors will be ignored. 
 
@@ -552,7 +565,7 @@ Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If
 
 ---
 
-### Manually creating error arrays
+#### Manually creating error arrays
 
 If you want to setup your own error array you need to use the `setIsParseErrorArray` function to mark it as such because in the real world there could be validator functions with callbacks for reasons other than error handling.
 
@@ -560,15 +573,15 @@ If you want to setup your own error array you need to use the `setIsParseErrorAr
 
 ---
 
-### Getting the type for a "parse/test"Object function
+#### Getting the type for a "parse/test"Object function
 
 If you need the type for a parse function you created, simply use the utility type `ReturnType` and pass the `typeof "whichever parse function your using"` with a generic.
 
 > Please see the unit-test [Test setting a type for the parseObject](./test/utils/parseObject.test.ts#L693) for a full example.
-<br/>
 
+---
 
-## Safety Modes <a name="safety-modes"></a> 🛡️
+#### Safety Modes
 
 Control how extra object properties are handled. Nested schemas inherit the parent mode unless overridden:
 
