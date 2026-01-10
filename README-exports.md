@@ -2,7 +2,7 @@
 
 Every function export exposed by the library is listed below. The first section enumerates everything you can import directly from `jet-validators`, while the second section captures helper functions exposed under the scoped entry `jet-validators/utils`.
 
-## `jet-validators`
+## jet-validators
 
 ### Nullables
 - `isUndef`
@@ -249,7 +249,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullableValueOf`
 - `isNullishValueOf`
 
-## `jet-validators/utils`
+## jet-validators/utils
 
 ### Simple Utilities
 - `nonNullable`
