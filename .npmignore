@@ -13,3 +13,4 @@ node_modules
 eslint.config.ts
 README-git
 README-npm
+*.png
