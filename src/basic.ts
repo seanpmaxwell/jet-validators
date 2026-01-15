@@ -13,7 +13,7 @@ export type AnyFunction = (...args: any[]) => any;
                                 Functions
 ******************************************************************************/
 
-// **** Nullables **** //
+// ------------------------------- Nullables ------------------------------- //
 
 export function isUndef(arg: unknown): arg is undefined {
   return arg === undefined;
@@ -27,7 +27,7 @@ export function isNullish(arg: unknown): arg is null | undefined {
   return arg === null || arg === undefined;
 }
 
-// **** Boolean **** //
+// -------------------------------- Boolean -------------------------------- //
 
 export function isBoolean(arg: unknown): arg is boolean {
   return typeof arg === 'boolean';
@@ -112,7 +112,7 @@ export function isNullishBooleanArray(
   return true;
 }
 
-// **** Is it a boolean after doing "parseBoolean" **** //
+// -------------- Is it a boolean after doing "parseBoolean" --------------- //
 
 export function isValidBoolean(arg: unknown): arg is number | string | boolean {
   try {
@@ -242,7 +242,7 @@ export function isNullishValidBooleanArray(
   return true;
 }
 
-// **** Number **** //
+// -------------------------------- Number --------------------------------- //
 
 export function isNumber(arg: unknown): arg is number {
   return typeof arg === 'number' && !isNaN(arg);
@@ -331,7 +331,7 @@ export function isNullishNumberArray(
   return true;
 }
 
-// **** Postive Number **** //
+// ---------------------------- Postive Number ----------------------------- //
 
 export function isPositiveNumber(arg: unknown): arg is number {
   return typeof arg === 'number' && !isNaN(arg) && arg > 0;
@@ -426,7 +426,7 @@ export function isNullishPositiveNumberArray(
   return true;
 }
 
-// **** Negative Number **** //
+// ---------------------------- Negative Number ---------------------------- //
 
 export function isNegativeNumber(arg: unknown): arg is number {
   return typeof arg === 'number' && !isNaN(arg) && arg < 0;
@@ -521,7 +521,7 @@ export function isNullishNegativeNumberArray(
   return true;
 }
 
-// **** Unsigned Number **** //
+// ---------------------------- Unsigned Number ---------------------------- //
 
 export function isUnsignedNumber(arg: unknown): arg is number {
   return typeof arg === 'number' && !isNaN(arg) && arg >= 0;
@@ -616,7 +616,7 @@ export function isNullishUnsignedNumberArray(
   return true;
 }
 
-// **** Integer **** //
+// -------------------------------- Integer -------------------------------- //
 
 export function isInteger(arg: unknown): arg is number {
   return Number.isInteger(arg);
@@ -701,7 +701,7 @@ export function isNullishIntegerArray(
   return true;
 }
 
-// **** Postive Integer **** //
+// ---------------------------- Postive Integer ---------------------------- //
 
 export function isPositiveInteger(arg: unknown): arg is number {
   return Number.isInteger(arg) && (arg as number) > 0;
@@ -794,7 +794,7 @@ export function isNullishPositiveIntegerArray(
   return true;
 }
 
-// **** Negative Integer **** //
+// --------------------------- Negative Integer ---------------------------- //
 
 export function isNegativeInteger(arg: unknown): arg is number {
   return Number.isInteger(arg) && (arg as number) < 0;
@@ -887,7 +887,7 @@ export function isNullishNegativeIntegerArray(
   return true;
 }
 
-// **** Unsigned Integer **** //
+// --------------------------- Unsigned Integer ---------------------------- //
 
 export function isUnsignedInteger(arg: unknown): arg is number {
   return Number.isInteger(arg) && (arg as number) >= 0;
@@ -980,7 +980,7 @@ export function isNullishUnsignedIntegerArray(
   return true;
 }
 
-// **** BigInt **** //
+// -------------------------------- BigInt --------------------------------- //
 
 export function isBigInt(arg: unknown): arg is bigint {
   return typeof arg === 'bigint';
@@ -1065,7 +1065,7 @@ export function isNullishBigIntArr(
   return true;
 }
 
-// **** Valid number (is it still a number after doing Number(arg)) **** //
+// ------ Valid number (is it still a number after doing Number(arg)) ------ //
 
 export function isValidNumber(arg: unknown): arg is string | number | boolean {
   const casted = Number(arg);
@@ -1175,7 +1175,7 @@ export function isNishValidNumArr(
   return true;
 }
 
-// **** String **** //
+// -------------------------------- String --------------------------------- //
 
 export function isString(arg: unknown): arg is string {
   return typeof arg === 'string';
@@ -1260,7 +1260,7 @@ export function isNullishStringArray(
   return true;
 }
 
-// **** NeStr => "Non-Empty String" **** //
+// ---------------------- NeStr => "Non-Empty String" ---------------------- //
 
 export function isNonEmptyString(arg: unknown): arg is string {
   return typeof arg === 'string' && (arg as string).length > 0;
@@ -1353,7 +1353,7 @@ export function isNullishNonEmptyStringArray(
   return true;
 }
 
-// **** Symbol **** //
+// -------------------------------- Symbol --------------------------------- //
 
 export function isSymbol(arg: unknown): arg is symbol {
   return typeof arg === 'symbol';
@@ -1438,7 +1438,7 @@ export function isNullishSymbolArray(
   return true;
 }
 
-// **** Date **** //
+// --------------------------------- Date ---------------------------------- //
 
 export function isDate(arg: unknown): arg is Date {
   return arg instanceof Date && !isNaN(arg.getTime());
@@ -1523,7 +1523,7 @@ export function isNullishDateArray(
   return true;
 }
 
-// **** Is valid date **** //
+// ----------------------------- Is valid date ----------------------------- //
 
 export function isValidDate(arg: unknown): arg is Date | string | number {
   const isStringType = typeof arg === 'string';
@@ -1681,7 +1681,7 @@ export function isNullishValidDateArray(
   return true;
 }
 
-// **** Object **** //
+// -------------------------------- Object --------------------------------- //
 
 export function isObject(arg: unknown): arg is NonNullable<object> {
   return arg !== null && typeof arg === 'object';
@@ -1776,7 +1776,7 @@ export function isNullishObjectArray(
   return true;
 }
 
-// **** Plain Object **** //
+// ----------------------------- Plain Object ------------------------------ //
 
 export function isPlainObject(arg: unknown): arg is PlainObject {
   if (arg === null || typeof arg !== 'object') {
@@ -1906,7 +1906,7 @@ export function isNullishPlainObjectArray(
   return true;
 }
 
-// **** Function **** //
+// ------------------------------- Function -------------------------------- //
 
 export function isFunction(arg: unknown): arg is AnyFunction {
   return typeof arg === 'function';
@@ -1991,6 +1991,30 @@ export function isNullishFunctionArray(
     if (typeof value !== 'function') {
       return false;
     }
+  }
+  return true;
+}
+
+// ------------------------------- hasKey ---------------------------------- //
+
+type Validator = (value: unknown) => value is unknown;
+
+/**
+ * Runtime + type-safe key existence + validation check
+ */
+export function hasKey<
+  K extends string,
+  V extends Validator | undefined = undefined,
+>(
+  arg: unknown,
+  key: K,
+  validatorFn?: V,
+): arg is Record<K, V extends (v: unknown) => v is infer R ? R : unknown> {
+  if (typeof arg !== 'object' || arg === null || !(key in arg)) {
+    return false;
+  }
+  if (!!validatorFn) {
+    return validatorFn((arg as PlainObject)[key]);
   }
   return true;
 }

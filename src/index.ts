@@ -191,6 +191,8 @@ export const {
   isOptionalFunctionArray,
   isNullableFunctionArray,
   isNullishFunctionArray,
+  // hasKey
+  hasKey,
 } = markSafeIterative(basicValidatorsRaw);
 
 export { type PlainObject } from './basic.js';

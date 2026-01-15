@@ -1,6 +1,6 @@
 {
   "name": "jet-validators",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Fast, zero-dependency TypeScript validators and utilities for runtime checks, parsing, and lightweight object schema validation.",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -19,21 +19,10 @@
       "types": "./dist/types/utils/index.d.ts"
     }
   },
-  "typesVersions": {
-    "*": {
-      "utils": [
-        "dist/types/utils/index.d.ts"
-      ],
-      ".": [
-        "dist/types/index.d.ts"
-      ]
-    }
-  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "benchmarks": "cd ./benchmarks && npm run build && cd ..",
     "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "lint": "eslint .",

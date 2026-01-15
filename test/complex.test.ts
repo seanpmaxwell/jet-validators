@@ -190,7 +190,7 @@ test('Test isValidString', () => {
 
   const k = 'bar' as unknown;
   if (typeValidator2(k)) {
-    const l = k;
+    // const l = k; // type test
   }
 
   const typeValidator3 = isNullishValidString<'foo'>({
@@ -199,6 +199,6 @@ test('Test isValidString', () => {
 
   const m = 'bar' as unknown;
   if (typeValidator3(m)) {
-    const n = m;
+    // const n = m; // type test
   }
 });

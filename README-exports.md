@@ -209,6 +209,9 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullableFunctionArray`
 - `isNullishFunctionArray`
 
+### hasKey
+- `hasKey`
+
 ### Complex Validators
 
 #### String Validation

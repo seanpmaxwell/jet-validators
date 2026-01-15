@@ -8,6 +8,10 @@
 
 > A comprehensive collection of TypeScript validator functions and utilities for common compile and runtime checks.
 
+<p align="center">
+  <img src="ide-snippet-baked.png" alt="IDE snippet" width="600" />
+</p>
+
 jet-validator's `parseObject` function is "JIT optimized" and one of the fastest schema validation tools out there not requiring a compilation step. Check out these benchmarks <a href="https://moltar.github.io/typescript-runtime-type-benchmarks">here</a>.
 <br/><br/>
 
@@ -202,6 +206,34 @@ Is it an object of type `Record<string, unknown>` and nothing else (i.e. `Date`,
 #### `isFunction`
 
 * `isFunction` (+ variants)
+
+---
+
+#### `hasKey`
+
+Check if a string `K` is a key on an object `T`. If `K` is optional key of type `T`, it will change to required. If `K` is not a key of type `T` it will become an `unknown` property of type `T`. You can pass an optional validator-function as the third argument if you want to refine the value of `K`.
+
+> Unlike all the other validators, hasKey has no nullish variants. Use the validator-function if you want to create nullish variants.
+
+```ts
+  interface IUser {
+    id: number;
+    name?: string;
+  }
+  const someObject: IUser = { id: 1, name: undefined };
+
+  if (hasKey(someObject, 'id')) {
+    someObject.id; // number
+  }
+
+  if (hasKey(someObject, 'name', isOptionalString)) {
+    someObject.name; // string | undefined
+  }
+
+  if (hasKey(someObject, 'address')) { // <-- Runtime will fail
+    someObject.address; // unknown
+  }
+```
 
 <br/><b>***</b><br/>
 
