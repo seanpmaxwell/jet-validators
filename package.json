@@ -19,16 +19,6 @@
       "types": "./dist/types/utils/index.d.ts"
     }
   },
-  "typesVersions": {
-    "*": {
-      "utils": [
-        "dist/types/utils/index.d.ts"
-      ],
-      ".": [
-        "dist/types/index.d.ts"
-      ]
-    }
-  },
   "files": [
     "dist"
   ],

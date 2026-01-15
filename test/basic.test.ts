@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest';
 
 import {
+  hasKey,
   isBigInt,
   isBoolean,
   isBooleanArray,
@@ -317,4 +318,31 @@ test('additional number types', () => {
   expect(isNullableUnsignedIntegerArray([0, 1, undefined])).toStrictEqual(
     false,
   );
+});
+
+test('hasKey', () => {
+  interface IUser {
+    id: number;
+    name?: string;
+  }
+  const someObject: IUser = { id: 1, name: undefined };
+
+  // Basic test
+  const t1 = hasKey(someObject, 'address');
+  if (t1) {
+    // const i = someObject.address; // type test, should be unknown
+  }
+  expect(t1).toStrictEqual(false);
+
+  const t2 = hasKey(someObject, 'id', isNumber);
+  if (t2) {
+    // const i = someObject.id; // type test, should be number
+  }
+  expect(t2).toStrictEqual(true);
+
+  const t3 = hasKey(someObject, 'name', isOptionalString);
+  if (t3) {
+    // const i = someObject.name; // type test, should be string | undefined
+  }
+  expect(t3).toStrictEqual(true);
 });

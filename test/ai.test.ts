@@ -679,6 +679,23 @@ describe('complex validators', () => {
       runValueOf('isNullishValueOf', [1, null, undefined], ['1', 3]);
     });
   });
+
+  describe('hasKey', () => {
+    test('hasKey validates key presence with optional validator', () => {
+      const hasKey = expectFunctionExport(validatorExports, 'hasKey') as AnyFn;
+      const someObject = { id: 1, name: undefined } as {
+        id: number;
+        name?: string;
+      };
+
+      expect(hasKey(someObject, 'address')).toBe(false);
+      expect(hasKey(someObject, 'id', validators.isNumber)).toBe(true);
+      expect(hasKey(someObject, 'name', validators.isOptionalString)).toBe(
+        true,
+      );
+      expect(hasKey(null, 'id')).toBe(false);
+    });
+  });
 });
 
 describe('simple utils', () => {
