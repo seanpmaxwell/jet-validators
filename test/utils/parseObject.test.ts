@@ -913,8 +913,6 @@ test('more testing on the "parseObject()" function', () => {
     ]),
   );
 
-  return;
-
   // Make sure error shows the path to "zip"
   const address = { address: { street: '123 fake st', zip: '98109' } };
   expect(() => Validators.address(address)).toThrowError(

@@ -8,4 +8,8 @@
 
 > A comprehensive collection of TypeScript validator functions and utilities for common compile and runtime checks.
 
+jet-validator's `parseObject` function is "JIT optimized" and one of the fastest schema validation tools out there not requiring a compilation step. Check out these benchmarks <a href="https://moltar.github.io/typescript-runtime-type-benchmarks">here</a>.
+<br/><br/>
+
+
 Please refer to the official <a href="https://github.com/seanpmaxwell/jet-validators">github repo</a> for the most up-to-date documentation.
