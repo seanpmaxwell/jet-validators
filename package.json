@@ -1,12 +1,19 @@
 {
   "name": "jet-validators",
-  "version": "2.2.2",
+  "version": "2.2.4",
   "description": "Fast, zero-dependency TypeScript validators and utilities for runtime checks, parsing, and lightweight object schema validation.",
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "browser": "./dist/esm/index.js",
   "types": "./dist/types/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "utils": [
+        "dist/types/utils/index.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -65,7 +72,6 @@
     "@types/node": "^22.8.1",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-n": "^17.17.0",
     "eslint-plugin-prettier": "^5.5.4",
     "jiti": "^2.6.1",
     "prettier": "^3.7.4",

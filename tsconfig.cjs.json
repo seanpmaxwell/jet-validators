@@ -12,7 +12,8 @@
     "pretty": false
   },
   "include": [
-    "./src/**/*.ts"
+    "src/index.ts",
+    "src/utils/index.ts"
   ],
   "exclude": [
     "./test/**/*.ts"

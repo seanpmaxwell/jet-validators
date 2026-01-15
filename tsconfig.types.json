@@ -7,10 +7,12 @@
     "emitDeclarationOnly": true,
     "outDir": "dist/types",
     "noEmit": false,
-    "pretty": true
+    "pretty": true,
+    "stripInternal": true
   },
   "include": [
-    "./src/**/*.ts"
+    "src/index.ts",
+    "src/utils/index.ts"
   ],
   "exclude": [
     "./test/**/*.ts"
