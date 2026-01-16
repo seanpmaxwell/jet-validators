@@ -8,7 +8,8 @@
     "outDir": "dist/types",
     "noEmit": false,
     "pretty": true,
-    "stripInternal": true
+    "stripInternal": true,
+    "skipLibCheck": false
   },
   "include": [
     "src/index.ts",

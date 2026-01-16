@@ -1,6 +1,6 @@
 {
   "name": "jet-validators",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "Fast, zero-dependency TypeScript validators and utilities for runtime checks, parsing, and lightweight object schema validation.",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -30,7 +30,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && tsc -p tsconfig.types.json",
+    "build-types:root": "dts-bundle-generator --project tsconfig.types.json --export-referenced-types=false -o dist/types/index.d.ts src/index.ts", 
+    "build-types:utils": "dts-bundle-generator --project tsconfig.types.json --export-referenced-types=false -o dist/types/utils/index.d.ts src/utils/index.ts", 
+    "build-types": "npm run build-types:root && npm run build-types:utils",
+    "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && npm run build-types",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
     "lint": "eslint .",
     "format": "eslint --fix .",
@@ -70,6 +73,7 @@
     "@stylistic/eslint-plugin": "^5.6.1",
     "@trivago/prettier-plugin-sort-imports": "^6.0.1",
     "@types/node": "^22.8.1",
+    "dts-bundle-generator": "^9.5.1",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
