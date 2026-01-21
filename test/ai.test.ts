@@ -344,6 +344,44 @@ validatorGroups.forEach((group) => {
   });
 });
 
+describe('toPlainObject', () => {
+  test('returns a shallow copy for plain objects', () => {
+    const toPlainObject = expectFunctionExport(
+      validatorExports,
+      'toPlainObject',
+    ) as (obj: object) => Record<string, unknown>;
+    const nested = { ok: true };
+    const input = { id: 1, nested };
+    const result = toPlainObject(input);
+    expect(result).toStrictEqual(input);
+    expect(result).not.toBe(input);
+    expect(result.nested).toBe(nested);
+  });
+
+  test('accepts null-prototype objects', () => {
+    const toPlainObject = expectFunctionExport(
+      validatorExports,
+      'toPlainObject',
+    ) as (obj: object) => Record<string, unknown>;
+    const input = Object.create(null) as Record<string, unknown>;
+    input.id = 7;
+    const result = toPlainObject(input);
+    expect(result).toStrictEqual({ id: 7 });
+  });
+
+  test('throws for non-plain objects', () => {
+    const toPlainObject = expectFunctionExport(
+      validatorExports,
+      'toPlainObject',
+    ) as (obj: object) => Record<string, unknown>;
+    expect(() =>
+      toPlainObject(new Date() as unknown as object),
+    ).toThrowError(
+      'Only objects which are a prototype of Object may be cast to the PlainObject type. Type was Date',
+    );
+  });
+});
+
 describe('complex validators', () => {
   describe('isInArray family', () => {
     const colors = ['red', 'blue'] as const;
