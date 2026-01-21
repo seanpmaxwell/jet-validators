@@ -1,4 +1,5 @@
 import { isPlainObject } from '../../basic.js';
+import { type ResolvePlainObject } from '../ResolvePlainObject.js';
 import {
   isTransformFn,
   type ValidatorFnWithTransformCb,
@@ -43,11 +44,12 @@ export const ERRORS = {
                                   Types
 ******************************************************************************/
 
-export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
-type PlainObject = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObject = Record<string, any>;
-type KeySet = Record<string, boolean>;
+type PlainObject = Record<string, unknown>;
+
+export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
+
 type CompiledParser = (
   param: PlainObject,
   errors: ParseError[] | null,
@@ -56,7 +58,7 @@ type CompiledParser = (
 // **** Validation Schema **** //
 
 export type Schema<T = unknown> = {
-  [K in keyof T]: T[K] extends PlainObject
+  [K in keyof T]: ResolvePlainObject<T[K]> extends true
     ? Schema<T[K]> | ValidatorFn<T[K]>
     : ValidatorFn<T[K]>;
 };
@@ -156,7 +158,7 @@ function setupValidatorParser(
 ): CompiledParser {
   // Initialize new node
   const keys = Object.keys(schema),
-    keySet: KeySet = Object.create(null),
+    keySet: Record<string, boolean> = Object.create(null),
     argNames = [
       'deepClone',
       'appendNestedErrors',

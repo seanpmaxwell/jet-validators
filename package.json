@@ -30,8 +30,8 @@
     "dist"
   ],
   "scripts": {
-    "build-types:root": "dts-bundle-generator --project tsconfig.types.json --export-referenced-types=false -o dist/types/index.d.ts src/index.ts", 
-    "build-types:utils": "dts-bundle-generator --project tsconfig.types.json --export-referenced-types=false -o dist/types/utils/index.d.ts src/utils/index.ts", 
+    "build-types:root": "dts-bundle-generator --project tsconfig.types.json --export-referenced-types=false -o dist/types/index.d.ts src/index.ts",
+    "build-types:utils": "dts-bundle-generator --project tsconfig.types.json --export-referenced-types=false -o dist/types/utils/index.d.ts src/utils/index.ts",
     "build-types": "npm run build-types:root && npm run build-types:utils",
     "build": "rm -rf ./dist && tsc -p tsconfig.esm.json && tsc -p tsconfig.cjs.json && npm run build-types",
     "clean-install": "rm -rf ./node_modules && rm -r package-lock.json && npm i",
@@ -76,7 +76,6 @@
     "dts-bundle-generator": "^9.5.1",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
     "jiti": "^2.6.1",
     "prettier": "^3.7.4",
     "typescript": "~5.9.3",

@@ -15,29 +15,28 @@
 jet-validator's `parseObject` function is "JIT optimized" and one of the fastest schema validation tools out there not requiring a compilation step. Check out these benchmarks <a href="https://moltar.github.io/typescript-runtime-type-benchmarks">here</a>.
 <br/><br/>
 
-
 ## 📚 Table of Contents
 
 Looking for every exported function? Check out the [full export reference](README-exports.md).
 
-* [Introduction](#introduction)
-* [Installation](#installation)
-* [Basic Validators](#basic-validators)
-* [Complex Validators](#complex-validators)
-* [Utilities](#utilities)
-* [Object Schema Validation](#object-schema-validation)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Basic Validators](#basic-validators)
+- [Complex Validators](#complex-validators)
+- [Utilities](#utilities)
+- [Object Schema Validation](#object-schema-validation)
 
-<br/><b>***</b><br/>
+<br/><b>\*\*\*</b><br/>
 
 ## 👋 Introduction <a name="introduction"></a>
 
 `jet-validators` is a large collection of small, composable validator functions commonly used when validating values in TypeScript.
 
-* Drop-in validators you can import and use immediately
-* Covers the vast majority of real-world validation needs
-* Extremely fast and lightweight object schema validation
-* Tiny: bundle + zip size only **4.7kb**
-* **Zero dependencies**
+- Drop-in validators you can import and use immediately
+- Covers the vast majority of real-world validation needs
+- Extremely fast and lightweight object schema validation
+- Tiny: bundle + zip size only **4.7kb**
+- **Zero dependencies**
 
 ### Quick Glance
 
@@ -49,7 +48,7 @@ if (isOptionalString(value)) {
 }
 ```
 
-<br/><b>***</b><br/>
+<br/><b>\*\*\*</b><br/>
 
 ## 📦 Installation <a name="installation"></a>
 
@@ -57,7 +56,7 @@ if (isOptionalString(value)) {
 npm install jet-validators
 ```
 
-<br/><b>***</b><br/>
+<br/><b>\*\*\*</b><br/>
 
 ## 🔰 Basic Validators <a name="basic-validators"></a>
 
@@ -65,27 +64,27 @@ Basic validators can be imported directly and used without configuration.
 
 All validators follow consistent naming patterns:
 
-* `isX`
-* `isOptionalX`
-* `isNullableX`
-* `isNullishX`
-* `isXArray` (and variants)
+- `isX`
+- `isOptionalX`
+- `isNullableX`
+- `isNullishX`
+- `isXArray` (and variants)
 
 #### Nullables
 
-* `isUndef`
-* `isNull`
-* `isNullish` (`null | undefined`)
+- `isUndef`
+- `isNull`
+- `isNullish` (`null | undefined`)
 
 ---
 
 #### `isBoolean`
 
-* `isBoolean`
-* `isOptionalBoolean`
-* `isNullableBoolean`
-* `isNullishBoolean`
-* `isBooleanArray` (+ variants)
+- `isBoolean`
+- `isOptionalBoolean`
+- `isNullableBoolean`
+- `isNullishBoolean`
+- `isBooleanArray` (+ variants)
 
 ---
 
@@ -93,23 +92,23 @@ All validators follow consistent naming patterns:
 
 Valid after running through [parseBoolean](#parse-boolean)
 
-* `isValidBoolean`
-* `isOptionalValidBoolean`
-* `isNullableValidBoolean`
-* `isNullishValidBoolean`
-* `isValidBooleanArray` (+ variants)
+- `isValidBoolean`
+- `isOptionalValidBoolean`
+- `isNullableValidBoolean`
+- `isNullishValidBoolean`
+- `isValidBooleanArray` (+ variants)
 
 ---
 
 #### `isNumber`
 
-* `isNumber` (+ optional / nullable / array variants)
+- `isNumber` (+ optional / nullable / array variants)
 
 Sub-categories:
 
-* **Positive**
-* **Negative**
-* **Unsigned**
+- **Positive**
+- **Negative**
+- **Unsigned**
 
 Each includes the full optional / nullable / array variants.
 
@@ -119,19 +118,19 @@ Each includes the full optional / nullable / array variants.
 
 Same structure as `isNumber`, including:
 
-* Positive
-* Negative
-* Unsigned
+- Positive
+- Negative
+- Unsigned
 
 ---
 
 #### `isBigInt`
 
-* `isBigInt`
-* `isOptionalBigInt`
-* `isNullableBigInt`
-* `isNullishBigInt`
-* `isBigIntArray` (+ variants)
+- `isBigInt`
+- `isOptionalBigInt`
+- `isNullableBigInt`
+- `isNullishBigInt`
+- `isBigIntArray` (+ variants)
 
 ---
 
@@ -139,17 +138,17 @@ Same structure as `isNumber`, including:
 
 Valid after numeric coercion.
 
-* `isValidNumber`
-* `isOptionalValidNumber`
-* `isNullableValidNumber`
-* `isNullishValidNumber`
-* `isValidNumberArray` (+ variants)
+- `isValidNumber`
+- `isOptionalValidNumber`
+- `isNullableValidNumber`
+- `isNullishValidNumber`
+- `isValidNumberArray` (+ variants)
 
 ---
 
 #### `isString`
 
-* `isString` (+ optional / nullable / array variants)
+- `isString` (+ optional / nullable / array variants)
 
 ---
 
@@ -157,13 +156,13 @@ Valid after numeric coercion.
 
 Ensures `.length > 0`.
 
-* `isNonEmptyString` (+ variants)
+- `isNonEmptyString` (+ variants)
 
 ---
 
 #### `isSymbol`
 
-* `isSymbol` (+ variants)
+- `isSymbol` (+ variants)
 
 ---
 
@@ -172,10 +171,10 @@ Ensures `.length > 0`.
 Checks for a `Date` instance with a valid timestamp.
 
 ```ts
-!isNaN(date.getTime())
+!isNaN(date.getTime());
 ```
 
-* `isDate` (+ variants)
+- `isDate` (+ variants)
 
 ---
 
@@ -183,7 +182,7 @@ Checks for a `Date` instance with a valid timestamp.
 
 Accepts `Date`, `string`, or `number` and validates via `new Date(...)`.
 
-* `isValidDate` (+ variants)
+- `isValidDate` (+ variants)
 
 ---
 
@@ -191,21 +190,30 @@ Accepts `Date`, `string`, or `number` and validates via `new Date(...)`.
 
 Is non-nullable object
 
-* `isObject` (+ variants)
+- `isObject` (+ variants)
 
 ---
 
 #### `isPlainObject`
 
-Is it an object of type `Record<string, unknown>` and nothing else (i.e. `Date`, `Array`, `etc`).
+- At compile time this checks that the value is of type `Record<string, unknown>`.
+- At runtime this will exclude all non-object types and all objects which inherit from anything other than the base `Object` class (i.e.`Date`, `Array`, `Map`, etc).
 
-* `isPlainObject` (+ variants)
+- `isPlainObject` (+ variants)
+
+Adding properties to objects is a common need especially when working with IO data so we often find ourselves doing `as Record<string, unknown>` which is not technically runtime safe.
+
+To help make thing easier _jet-validators_ ships with the helper function `toPlainObject` which:
+
+1. Does a runtime check with `isPlainObject`.
+2. Shallow-clones the original object.
+3. Returns the shallow-cloned object cast as `PlainObject` aka `Record<string, unknown>`.
 
 ---
 
 #### `isFunction`
 
-* `isFunction` (+ variants)
+- `isFunction` (+ variants)
 
 ---
 
@@ -216,26 +224,27 @@ Check if a string `K` is a key on an object `T`. If `K` is optional key of type 
 > Unlike all the other validators, hasKey has no nullish variants. Use the validator-function if you want to create nullish variants.
 
 ```ts
-  interface IUser {
-    id: number;
-    name?: string;
-  }
-  const someObject: IUser = { id: 1, name: undefined };
+interface IUser {
+  id: number;
+  name?: string;
+}
+const someObject: IUser = { id: 1, name: undefined };
 
-  if (hasKey(someObject, 'id')) {
-    someObject.id; // number
-  }
+if (hasKey(someObject, 'id')) {
+  someObject.id; // number
+}
 
-  if (hasKey(someObject, 'name', isOptionalString)) {
-    someObject.name; // string | undefined
-  }
+if (hasKey(someObject, 'name', isOptionalString)) {
+  someObject.name; // string | undefined
+}
 
-  if (hasKey(someObject, 'address')) { // <-- Runtime will fail
-    someObject.address; // unknown
-  }
+if (hasKey(someObject, 'address')) {
+  // <-- Runtime will fail
+  someObject.address; // unknown
+}
 ```
 
-<br/><b>***</b><br/>
+<br/><b>\*\*\*</b><br/>
 
 ## 🧠 Complex Validators <a name="complex-validators"></a>
 
@@ -243,36 +252,38 @@ These require an initialization step and return a validator function.
 
 #### `isValidString`
 
-* `isValidString` (+ variants)
+- `isValidString` (+ variants)
 
 ##### - Options
+
 This accepts an options argument and returns a string validator.
 
-| option | type | description |
-| --- | --- | --- |
-| `minLength` | `number` | Minimum string length. Setting `0` allows `''` (empty string) even if `regex` fails. |
-| `maxLength` | `number` | Maximum string length. |
-| `length` | `number` | Forces exact length (mutually exclusive with `minLength`/`maxLength`). |
-| `regex` | `RegExp` | Must pass the given regular expression. |
-| `throws` | `boolean` | Throw instead of returning `false` on validation failure. |
-| `errorMessage` | `(value?: unknown, reason?: string) => string` | Customize the thrown error message when `throws` is `true`. |
+| option         | type                                           | description                                                                          |
+| -------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `minLength`    | `number`                                       | Minimum string length. Setting `0` allows `''` (empty string) even if `regex` fails. |
+| `maxLength`    | `number`                                       | Maximum string length.                                                               |
+| `length`       | `number`                                       | Forces exact length (mutually exclusive with `minLength`/`maxLength`).               |
+| `regex`        | `RegExp`                                       | Must pass the given regular expression.                                              |
+| `throws`       | `boolean`                                      | Throw instead of returning `false` on validation failure.                            |
+| `errorMessage` | `(value?: unknown, reason?: string) => string` | Customize the thrown error message when `throws` is `true`.                          |
 
 ##### - Restrictions
 
-| constraint | details |
-| --- | --- |
-| Exclusive lengths | Provide either the `length` field or the `minLength`/`maxLength` pair (never both). |
-| Error customization | You can supply `errorMessage` only when `throws` is `true`. |
+| constraint          | details                                                                             |
+| ------------------- | ----------------------------------------------------------------------------------- |
+| Exclusive lengths   | Provide either the `length` field or the `minLength`/`maxLength` pair (never both). |
+| Error customization | You can supply `errorMessage` only when `throws` is `true`.                         |
 
 ##### - Generics
+
 You can supply a string generic if you want to narrow down the string type:
 
 ```ts
-  const typeValidator3 = isValidString<'foo'>({
-    regex: /^foo$/,
-    nullish: true,
-  });
-  // typeValidator3 => arg is 'foo' | null | undefined
+const typeValidator3 = isValidString<'foo'>({
+  regex: /^foo$/,
+  nullish: true,
+});
+// typeValidator3 => arg is 'foo' | null | undefined
 ```
 
 > Please see the test [isValidString](./test/complex.test.ts#L108) for a full example.
@@ -308,14 +319,14 @@ Checks whether a number (or numeric string) falls within a range.
 
 Rules:
 
-* `(min, max)` → exclusive
-* `[min], [max]` → inclusive
-* `[]` → no bound
-* Reverse bounds → “outside range”
+- `(min, max)` → exclusive
+- `[min], [max]` → inclusive
+- `[]` → no bound
+- Reverse bounds → “outside range”
 
 ```ts
 const between0and100 = isInRange([0], [100]);
-between0and100(50);   // true
+between0and100(50); // true
 between0and100('100'); // true
 ```
 
@@ -327,7 +338,7 @@ negative(-1); // true
 ```ts
 const outside = isInRange(100, 50);
 outside(101); // true
-outside(75);  // false
+outside(75); // false
 ```
 
 ---
@@ -360,7 +371,6 @@ isValue('bar'); // true
 
 Includes the `ValueOf<T>` utility type.
 <br/><br/>
-
 
 ## ⚙️ Utilities <a name="utilities"></a>
 
@@ -414,13 +424,13 @@ Supports callbacks for accessing transformed values.
 
 Converts common boolean representations to actual booleans:
 
-* `"true"`, `"false"` (case-insensitive)
-* `"1"`, `"0"`
-* `1`, `0`
+- `"true"`, `"false"` (case-insensitive)
+- `"1"`, `"0"`
+- `1`, `0`
 
 ```ts
 parseBoolean('TrUe'); // true
-parseBoolean(0);      // false
+parseBoolean(0); // false
 ```
 
 ---
@@ -435,7 +445,7 @@ const nums = parseJson<number[]>('[1,2,3]');
 
 Throws if input is not a string.
 
-<br/><b>***</b><br/>
+<br/><b>\*\*\*</b><br/>
 
 ## 📐 Object Schema Validation <a name="object-schema-validation"></a>
 
@@ -445,11 +455,11 @@ Extremely fast and lightweight schema validation for objects using validator fun
 
 ### `parseObject`
 
-* If valid, returns a full deep clone of the provided object; otherwise returns `false`.
-* Removes unknown keys (by default)
-* Can enforce strict type-safety on schemas with generics
-* Can infer types from non-generic schemas.
-* Optional error callback
+- If valid, returns a full deep clone of the provided object; otherwise returns `false`.
+- Removes unknown keys (by default)
+- Can enforce strict type-safety on schemas with generics
+- Can infer types from non-generic schemas.
+- Optional error callback
 
 ```ts
 const parseUser = parseObject<IUser>({
@@ -466,16 +476,17 @@ const parseUser = parseObject({
   name: isString,
 });
 
-parseUser // <-- Inferred type is: `(arg: unknown) => arg is { id: number; name: string }`
+parseUser; // <-- Inferred type is: `(arg: unknown) => arg is { id: number; name: string }`
 ```
+
 > No need to call `SomeUtilityType<typeof parseUser>`
 
 Supports:
 
-* optional / nullable
-* arrays
-* nested schemas
-* loose / strict modes
+- optional / nullable
+- arrays
+- nested schemas
+- loose / strict modes
 
 ---
 
@@ -492,41 +503,41 @@ if (testUser(user)) {
 #### Combining parse + test
 
 Nested schemas may use `testObject` inside `parseObject`. Supplying generics restores full type safety. Note you cannot use `parseObject` on a nested schema because it returns the object being tested not a type-predicate:
+
 ```ts
-
-  interface IUser {
-    id: number;
+interface IUser {
+  id: number;
+  name: string;
+  address: {
+    street: string;
+    city: string;
+  };
+  country?: {
     name: string;
-    address: {
-      street: string;
-      city: string;
-    };
-    country?: {
-      name: string;
-      code: number;
-    };
-  }
+    code: number;
+  };
+}
 
-  const parseUser = parseObject<IUser>({
-    id: isUnsignedInteger,
+const parseUser = parseObject<IUser>({
+  id: isUnsignedInteger,
+  name: isString,
+
+  // **testObject implied** address cannot be undefined
+  // and type safety will allow extra keys. Safety is
+  // inherited from root `parseUser` function
+  address: {
+    street: isString,
+    city: isString,
+  },
+
+  // **testObject explicit** undefined allowed with the
+  // optional option and strict type-safety is being
+  // enforced
+  country: testOptionalObject<IUser['country']>({
+    abbreviation: isString,
     name: isString,
-
-    // **testObject implied** address cannot be undefined
-    // and type safety will allow extra keys. Safety is
-    // inherited from root `parseUser` function
-    address: {
-      street: isString,
-      city: isString,
-    },
-
-    // **testObject explicit** undefined allowed with the
-    // optional option and strict type-safety is being
-    // enforced
-    country: testOptionalObject<IUser['country']>({
-      abbreviation: isString,
-      name: isString,
-    }),
-  });
+  }),
+});
 ```
 
 ---
@@ -537,14 +548,14 @@ Nested schemas may use `testObject` inside `parseObject`. Supplying generics res
 
 You can pass a callback as the second argument to the `parseObject` function or the function returned from it which will provide an array of errors if there are any. Each error object has the format:
 
-| Field           | Type        | Description |
-|-----------------|------------|-------------|
-| `info`          | `string`   | General information about the validation failure. |
-| `functionName`  | `string`   | Name of the validator function that failed. |
-| `value`         | `unknown`  | The value that caused the validation failure (optional). |
-| `caught`        | `string`   | Error message caught from an unsafe validator function, if any. |
-| `key`           | `string`   | The key at which the failure occurred but only when it happened at the root level.|
-| `keyPath`       | `string[]` | Full path to the failing value for anything other than a key at the rror level. If the failure occurs while inside an array variant (e.g. `parseObjectArray`), the first element represents the array index of the failing item. |
+| Field          | Type       | Description                                                                                                                                                                                                                      |
+| -------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `info`         | `string`   | General information about the validation failure.                                                                                                                                                                                |
+| `functionName` | `string`   | Name of the validator function that failed.                                                                                                                                                                                      |
+| `value`        | `unknown`  | The value that caused the validation failure (optional).                                                                                                                                                                         |
+| `caught`       | `string`   | Error message caught from an unsafe validator function, if any.                                                                                                                                                                  |
+| `key`          | `string`   | The key at which the failure occurred but only when it happened at the root level.                                                                                                                                               |
+| `keyPath`      | `string[]` | Full path to the failing value for anything other than a key at the rror level. If the failure occurs while inside an array variant (e.g. `parseObjectArray`), the first element represents the array index of the failing item. |
 
 #### Example
 
@@ -567,15 +578,15 @@ You may want to wrap a `parseObject` to let's say, make sure all parse functions
 
 > Please see the section [Wrapping with Custom Validators around schemas](./test/utils/parseObject.test.ts#L857) for a full example.
 
-*
+-
 
 #### Adding Custom Validators to schemas
 
-Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If your custom validator checks an object and has nested errors and you want those errors to bubble up to the highest level, you to need to make sure to provide a callback. Other wise parseObject will only see the custom validator itself as the failing function and any nested errors will be ignored. 
+Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If your custom validator checks an object and has nested errors and you want those errors to bubble up to the highest level, you to need to make sure to provide a callback. Other wise parseObject will only see the custom validator itself as the failing function and any nested errors will be ignored.
 
 > Please see the section [Adding Custom Validators to schemas](./test/utils/parseObject.test.ts#L798) for a full example.
 
-*
+-
 
 #### Manually creating error arrays
 
@@ -583,7 +594,7 @@ If you want to setup your own error array you need to use the `setIsParseErrorAr
 
 > Please see the section [Manually creating error arrays](./test/utils/parseObject.test.ts#L932) for a full example.
 
-*
+-
 
 #### Getting the type for a "parse/test"Object function
 
@@ -591,15 +602,15 @@ If you need the type for a parse function you created, simply use the utility ty
 
 > Please see the unit-test [Test setting a type for the parseObject](./test/utils/parseObject.test.ts#L693) for a full example.
 
-*
+-
 
 #### Safety Modes
 
 Control how extra object properties are handled. Nested schemas inherit the parent mode unless overridden:
 
-* **loose** – keep extra keys
-* **default** – remove extra keys (no error)
-* **strict** – remove extra keys and emit errors
+- **loose** – keep extra keys
+- **default** – remove extra keys (no error)
+- **strict** – remove extra keys and emit errors
 
 ```ts
 const strictUser = strictParseObject({
@@ -608,8 +619,8 @@ const strictUser = strictParseObject({
 });
 ```
 
-<br/><b>***</b><br/>
+<br/><b>\*\*\*</b><br/>
 
-## 📄 License 
+## 📄 License
 
 MIT © [seanpmaxwell1](LICENSE)

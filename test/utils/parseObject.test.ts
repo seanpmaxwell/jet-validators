@@ -983,3 +983,20 @@ test('more testing on the "parseObject()" function', () => {
     ]),
   );
 });
+
+test('fix bug 1/20/86', () => {
+  // **** Test cont **** //
+
+  interface IUser {
+    id: number;
+    name: string;
+  }
+
+  const parseSession = parseObject<{ id: number; data: IUser }>({
+    id: isNumber,
+    data: {
+      id: isNumber,
+      name: isString,
+    },
+  });
+});

@@ -63,6 +63,7 @@ import {
   isOptionalString,
   isOptionalStringArray,
   isOptionalSymbol,
+  isPlainObject,
   isString,
   isStringArray,
   isSymbol,
@@ -71,6 +72,8 @@ import {
   isValidBoolean,
   isValidDate,
   isValidNumber,
+  type PlainObject,
+  toPlainObject,
 } from '../src';
 
 /******************************************************************************
@@ -345,4 +348,42 @@ test('hasKey', () => {
     // const i = someObject.name; // type test, should be string | undefined
   }
   expect(t3).toStrictEqual(true);
+});
+
+test('plainObject', () => {
+  const a: PlainObject = { id: 1 };
+  a.name = 5;
+
+  const fn = (arg: PlainObject): boolean => {
+    return isPlainObject(arg);
+  };
+
+  interface IUser {
+    name: string;
+  }
+  const joe: IUser = { name: 'joe' };
+  // const jane: PlainObject = joe; // type error
+
+  // const bday: PlainObject = new Date(); // type error
+  // const bdayUTC: PlainObject = '1234'; // type error
+
+  expect(fn(toPlainObject(joe))).toStrictEqual(true);
+  expect(isPlainObject(new Date())).toStrictEqual(false);
+  expect(isPlainObject(12341234)).toStrictEqual(false);
+
+  const john: IUser = { name: 'john' };
+  const john2 = toPlainObject(john);
+  john2.id = 5;
+
+  // Test date fails
+  const error =
+    'Only objects which are a prototype of Object may be cast to the PlainObject type. Type was Date';
+  expect(() => toPlainObject(new Date() as unknown as object)).toThrowError(
+    error,
+  );
+
+  // Test primitive fails
+  const error2 =
+    'Only objects which are a prototype of Object may be cast to the PlainObject type. Type was Number';
+  expect(() => toPlainObject(5 as unknown as object)).toThrowError(error2);
 });

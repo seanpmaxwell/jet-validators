@@ -182,6 +182,7 @@ export const {
   isOptionalPlainObjectArray,
   isNullablePlainObjectArray,
   isNullishPlainObjectArray,
+  toPlainObject,
   // Function
   isFunction,
   isOptionalFunction,

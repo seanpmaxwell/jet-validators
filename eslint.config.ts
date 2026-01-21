@@ -1,74 +1,42 @@
 import js from '@eslint/js';
-import stylistic from '@stylistic/eslint-plugin';
-import prettier from 'eslint-plugin-prettier/recommended';
+import eslintConfigPrettier from 'eslint-config-prettier/flat';
 import { defineConfig, globalIgnores } from 'eslint/config';
-import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  // global ignores
+  globalIgnores(['**/dist/**']),
+  // linting rules (code quality only)
   {
     files: ['**/*.{ts,tsx}'],
-    extends: [js.configs.recommended, tseslint.configs.recommended],
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommendedTypeChecked,
+    ],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-    },
-    plugins: {
-      '@stylistic': stylistic,
+      parser: tseslint.parser,
+      parserOptions: {
+        project: './tsconfig.json',
+      },
     },
     rules: {
+      // code quality / correctness
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
-          args: 'all',
           argsIgnorePattern: '^_',
-          caughtErrors: 'all',
           caughtErrorsIgnorePattern: '^_',
           destructuredArrayIgnorePattern: '^_',
-          varsIgnorePattern: '^_',
           ignoreRestSiblings: true,
         },
       ],
-      '@stylistic/semi': ['warn', 'always'],
-      '@stylistic/member-delimiter-style': [
-        'warn',
-        {
-          multiline: {
-            delimiter: 'comma',
-            requireLast: true,
-          },
-          singleline: {
-            delimiter: 'comma',
-            requireLast: false,
-          },
-          overrides: {
-            interface: {
-              singleline: {
-                delimiter: 'semi',
-                requireLast: false,
-              },
-              multiline: {
-                delimiter: 'semi',
-                requireLast: true,
-              },
-            },
-          },
-        },
-      ],
-      'max-len': [
-        'warn',
-        {
-          code: 80,
-          ignorePattern: '^import\\s.+\\sfrom\\s.+;$',
-        },
-      ],
-      indent: ['warn', 2],
       'no-console': 'warn',
-      'no-extra-boolean-cast': 0,
-      'no-process-env': 1,
-      quotes: ['warn', 'single'],
+      'no-extra-boolean-cast': 'off',
+      'no-process-env': 'warn',
+      // node correctness
+      'n/no-extraneous-import': 'error',
     },
   },
-  prettier,
+  // MUST be last — disables ALL formatting rules
+  eslintConfigPrettier,
 ]);

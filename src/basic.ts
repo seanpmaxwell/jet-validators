@@ -1,11 +1,10 @@
 import { parseBoolean } from './utils/index.js';
+import type { ResolvePlainObject } from './utils/ResolvePlainObject.js';
 
 /******************************************************************************
-                            Types/Constants
+                                   Types
 ******************************************************************************/
 
-const objectProto = Object.prototype;
-export type PlainObject = Record<string, unknown>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AnyFunction = (...args: any[]) => any;
 
@@ -1778,6 +1777,14 @@ export function isNullishObjectArray(
 
 // ----------------------------- Plain Object ------------------------------ //
 
+const objectProto = Object.prototype;
+const CANNOT_CAST_TO_PLAIN_OBJECT_ERROR = (value: string) =>
+  'Only objects which are a prototype of Object may be cast to the ' +
+  'PlainObject type. Type was ' +
+  value;
+
+export type PlainObject = Record<string, unknown>;
+
 export function isPlainObject(arg: unknown): arg is PlainObject {
   if (arg === null || typeof arg !== 'object') {
     return false;
@@ -1904,6 +1911,21 @@ export function isNullishPlainObjectArray(
     }
   }
   return true;
+}
+
+/**
+ * Helper to set the type to a PlainObject.
+ */
+export function toPlainObject<T extends object>(
+  obj: ResolvePlainObject<T> extends true ? T : never,
+): PlainObject {
+  if (isPlainObject(obj)) {
+    return { ...obj } as PlainObject;
+  } else {
+    const type = Object.prototype.toString.call(obj).slice(8, -1),
+      err = CANNOT_CAST_TO_PLAIN_OBJECT_ERROR(type);
+    throw new Error(err);
+  }
 }
 
 // ------------------------------- Function -------------------------------- //
