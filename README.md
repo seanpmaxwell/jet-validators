@@ -196,18 +196,18 @@ Is non-nullable object
 
 #### `isPlainObject`
 
-- At compile time this checks that the value is of type `Record<string, unknown>`.
-- At runtime this will exclude all non-object types and all objects which inherit from anything other than the base `Object` class (i.e.`Date`, `Array`, `Map`, etc).
+A **PlainObject** is a `Record<string, unknown>` which is an instance of the base `Object` class. Other objects like `Array, Map, Set` will return false.
 
 - `isPlainObject` (+ variants)
+- `PlainObject` type is also exported
 
-Adding properties to objects is a common need especially when working with IO data so we often find ourselves doing `as Record<string, unknown>` which is not technically runtime safe.
 
-To help make thing easier _jet-validators_ ships with the helper function `toPlainObject` which:
+##### `toPlainObject`
 
-1. Does a runtime check with `isPlainObject`.
-2. Shallow-clones the original object.
-3. Returns the shallow-cloned object cast as `PlainObject` aka `Record<string, unknown>`.
+To avoid repeated casts to `Record<string, unknown>` there is the `toPlainObject` helper script which:
+  1. Does a runtime check with `isPlainObject`.
+  2. Shallow-clones the original object.
+  3. Returns the shallow-cloned object cast as `PlainObject`.
 
 ---
 
