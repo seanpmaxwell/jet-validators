@@ -198,6 +198,8 @@ Every function export exposed by the library is listed below. The first section 
 - `isOptionalPlainObjectArray`
 - `isNullablePlainObjectArray`
 - `isNullishPlainObjectArray`
+- type `PlainObject`
+- helper `toPlainObject`
 
 ### Function Validators
 - `isFunction`
