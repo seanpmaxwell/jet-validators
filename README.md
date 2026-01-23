@@ -576,7 +576,7 @@ const parseUsersArray([{name: 'sean'}, {name: 123 }], (errors) => ...);
 
 You may want to wrap a `parseObject` to let's say, make sure all parse functions throw the same custom Error object. When wrapping these utilities, ensure your generics extend `Schema<T>` to preserve type safety.
 
-> Please see the section [Wrapping with Custom Validators around schemas](./test/utils/parseObject.test.ts#L857) for a full example.
+> Please see the section [Wrapping with Custom Validators around schemas](./test/utils/parseObject.test.ts#L790) for a full example.
 
 -
 
@@ -584,7 +584,7 @@ You may want to wrap a `parseObject` to let's say, make sure all parse functions
 
 Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If your custom validator checks an object and has nested errors and you want those errors to bubble up to the highest level, you to need to make sure to provide a callback. Other wise parseObject will only see the custom validator itself as the failing function and any nested errors will be ignored.
 
-> Please see the section [Adding Custom Validators to schemas](./test/utils/parseObject.test.ts#L798) for a full example.
+> Please see the section [Adding Custom Validators to schemas](./test/utils/parseObject.test.ts#L731) for a full example.
 
 -
 
@@ -592,7 +592,7 @@ Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If
 
 If you want to setup your own error array you need to use the `setIsParseErrorArray` function to mark it as such because in the real world there could be validator functions with callbacks for reasons other than error handling.
 
-> Please see the section [Manually creating error arrays](./test/utils/parseObject.test.ts#L932) for a full example.
+> Please see the section [Manually creating error arrays](./test/utils/parseObject.test.ts#L863) for a full example.
 
 -
 
@@ -600,7 +600,7 @@ If you want to setup your own error array you need to use the `setIsParseErrorAr
 
 If you need the type for a parse function you created, simply use the utility type `ReturnType` and pass the `typeof "whichever parse function your using"` with a generic.
 
-> Please see the unit-test [Test setting a type for the parseObject](./test/utils/parseObject.test.ts#L693) for a full example.
+> Please see the unit-test [Test setting a type for the parseObject](./test/utils/parseObject.test.ts#L921) for a full example.
 
 -
 
