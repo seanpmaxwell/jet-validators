@@ -1,5 +1,6 @@
+import type { ResolvePlainObject } from './ResolvePlainObject.js';
+
 import { parseBoolean } from './utils/index.js';
-import type { ResolvePlainObject } from './utils/ResolvePlainObject.js';
 
 /******************************************************************************
                                    Types

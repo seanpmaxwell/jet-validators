@@ -1,5 +1,5 @@
 import { isPlainObject } from '../../basic.js';
-import { type ResolvePlainObject } from '../ResolvePlainObject.js';
+import { type ResolvePlainObject } from '../../ResolvePlainObject.js';
 import {
   isTransformFn,
   type ValidatorFnWithTransformCb,

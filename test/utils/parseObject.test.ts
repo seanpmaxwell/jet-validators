@@ -11,6 +11,7 @@ import {
   isString,
   isUndef,
   isUnsignedInteger,
+  type PlainObject,
 } from '../../src';
 import {
   looseParseObject,
@@ -689,73 +690,6 @@ test('Test for update which removed recursion', () => {
   });
 });
 
-test.skip('Test setting a type for the parseObject', () => {
-  interface IUser {
-    id: number;
-    name: string;
-  }
-
-  const parseUser = parseObject<IUser>({
-    id: isNumber,
-    name: isString,
-  });
-
-  // Test getting the object type
-  type ParseFn<T extends object> = ReturnType<typeof parseObject<T>>;
-  const customParse: ParseFn<IUser> = parseUser;
-
-  const testUser = testObject<IUser>({
-    id: isNumber,
-    name: isString,
-  });
-
-  // Test getting the object type
-  type TestFn<T extends object> = ReturnType<typeof testObject<T>>;
-  const customTest: TestFn<IUser> = testUser;
-});
-
-test('Run the benchmarks function', () => {
-  const roles = ['user', 'moderator', 'admin'] as const;
-  const index = 11;
-  const cities = ['Seattle', 'New York', 'Austin', 'Denver', 'Chicago'];
-
-  const user = {
-    id: index + 1,
-    name: `User ${index + 1}`,
-    email: `user${index + 1}@example.com`,
-    age: 18 + (index % 40),
-    active: index % 3 !== 0,
-    role: roles[index % roles.length],
-    score: Number(((index % 50) + Math.random()).toFixed(2)),
-    address: {
-      street: `${index + 10} Main St.`,
-      city: cities[index % cities.length],
-      postalCode: `${10000 + index}`,
-      lat: 40 + (index % 10) * 0.1,
-      lng: -74 + (index % 10) * 0.1,
-    },
-  };
-
-  const parseWithJet = strictParseObject({
-    id: isUnsignedInteger,
-    name: isNonEmptyString,
-    email: isNonEmptyString,
-    age: isUnsignedInteger,
-    active: isBoolean,
-    role: isInArray(roles),
-    score: isNumber,
-    address: testObject({
-      street: isNonEmptyString,
-      city: isNonEmptyString,
-      postalCode: isNonEmptyString,
-      lat: isNumber,
-      lng: isNumber,
-    }),
-  });
-
-  expect(parseWithJet(user)).toBeTruthy();
-});
-
 test('more testing on the "parseObject()" function', () => {
   interface IEventLog {
     content: string;
@@ -982,6 +916,51 @@ test('more testing on the "parseObject()" function', () => {
       },
     ]),
   );
+});
+
+test.skip('Test setting a type for the parseObject', () => {
+  interface IUser {
+    id: number;
+    name: string;
+  }
+
+  const parseUser = parseObject<IUser>({
+    id: isNumber,
+    name: isString,
+  });
+
+  // Test getting the object type from 'parse'
+  type ParseFn<T extends object> = ReturnType<typeof parseObject<T>>;
+  const customParse: ParseFn<IUser> = parseUser;
+
+  const testUser = testObject<IUser>({
+    id: isNumber,
+    name: isString,
+  });
+
+  // Test getting the object type from 'test'
+  type TestFn<T extends object> = ReturnType<typeof testObject<T>>;
+  const customTest: TestFn<IUser> = testUser;
+
+  // ** Testing multiple layers of Schema<T> ** //
+  interface SessionData<T extends object> {
+    data: T;
+    exp: number;
+  }
+
+  const UserSchema: Schema<IUser> = {
+    id: isNumber,
+    name: isString,
+  };
+
+  function parseSessionData<D extends object>(schema: Schema<D>) {
+    return parseObject<SessionData<D>>({
+      data: testObject<D>(schema),
+      exp: isNumber,
+    });
+  }
+
+  const parseSessionUser = parseSessionData(UserSchema);
 });
 
 test('fix bug 1/20/86', () => {

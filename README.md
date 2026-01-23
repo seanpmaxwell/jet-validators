@@ -201,13 +201,13 @@ A **PlainObject** is a `Record<string, unknown>` which is an instance of the bas
 - `isPlainObject` (+ variants)
 - `PlainObject` type is also exported
 
-
 ##### `toPlainObject`
 
 To avoid repeated casts to `Record<string, unknown>` there is the `toPlainObject` helper script which:
-  1. Does a runtime check with `isPlainObject`.
-  2. Shallow-clones the original object.
-  3. Returns the shallow-cloned object cast as `PlainObject`.
+
+1. Does a runtime check with `isPlainObject`.
+2. Shallow-clones the original object.
+3. Returns the shallow-cloned object cast as `PlainObject`.
 
 ---
 
@@ -601,6 +601,14 @@ If you want to setup your own error array you need to use the `setIsParseErrorAr
 If you need the type for a parse function you created, simply use the utility type `ReturnType` and pass the `typeof "whichever parse function your using"` with a generic.
 
 > Please see the unit-test [Test setting a type for the parseObject](./test/utils/parseObject.test.ts#L693) for a full example.
+
+-
+
+#### Testing multiple layers of Schema<T>
+
+Due to TypeScript limitations, you'll lose TypeSafety if trying to wrap `parseObject` and pass a `Schema` down to another `Schema`. Wrap the nested schema with `testObject` and a generic.
+
+> Please see the unit-test [Testing multiple layers of Schema<T>](./test/utils/parseObject.test.ts#L945) for a full example.
 
 -
 
