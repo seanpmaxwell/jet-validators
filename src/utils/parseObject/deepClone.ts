@@ -2,7 +2,7 @@
                                   Types
 ******************************************************************************/
 
-type PlainObject = Record<string, unknown>;
+type StringRecord = Record<string, unknown>;
 
 /******************************************************************************
                         DeepClone stuff from ChatGPT
@@ -17,7 +17,7 @@ function deepClone<T>(value: T): T {
   }
   const proto = Object.getPrototypeOf(value);
   if (proto === Object.prototype || proto === null) {
-    return clonePlainObject(value as PlainObject) as T;
+    return cloneRecord(value as StringRecord) as T;
   }
   return cloneExotic(value);
 }
@@ -30,8 +30,8 @@ function cloneArray(source: unknown[]): unknown[] {
   return out;
 }
 
-function clonePlainObject(source: PlainObject): PlainObject {
-  const out: PlainObject = {};
+function cloneRecord(source: StringRecord): StringRecord {
+  const out: StringRecord = {};
   const keys = Object.keys(source);
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
@@ -65,7 +65,7 @@ function cloneExotic<T>(value: T): T {
   }
   const out = Object.create(Object.getPrototypeOf(value));
   for (const key of Object.keys(value as object)) {
-    out[key] = deepClone((value as PlainObject)[key]);
+    out[key] = deepClone((value as StringRecord)[key]);
   }
   return out;
 }

@@ -194,23 +194,6 @@ Is non-nullable object
 
 ---
 
-#### `isPlainObject`
-
-A **PlainObject** is a `Record<string, unknown>` which is an instance of the base `Object` class. Other objects like `Array, Map, Set` will return false.
-
-- `isPlainObject` (+ variants)
-- `PlainObject` type is also exported
-
-##### `toPlainObject`
-
-To avoid repeated casts to `Record<string, unknown>` there is the `toPlainObject` helper script which:
-
-1. Does a runtime check with `isPlainObject`.
-2. Shallow-clones the original object.
-3. Returns the shallow-cloned object cast as `PlainObject`.
-
----
-
 #### `isFunction`
 
 - `isFunction` (+ variants)

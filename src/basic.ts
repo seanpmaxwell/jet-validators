@@ -1,5 +1,3 @@
-import type { ResolvePlainObject } from './ResolvePlainObject.js';
-
 import { parseBoolean } from './utils/index.js';
 
 /******************************************************************************
@@ -1776,159 +1774,6 @@ export function isNullishObjectArray(
   return true;
 }
 
-// ----------------------------- Plain Object ------------------------------ //
-
-const objectProto = Object.prototype;
-const CANNOT_CAST_TO_PLAIN_OBJECT_ERROR = (value: string) =>
-  'Only objects which are a prototype of Object may be cast to the ' +
-  'PlainObject type. Type was ' +
-  value;
-
-export type PlainObject = Record<string, unknown>;
-
-export function isPlainObject(arg: unknown): arg is PlainObject {
-  if (arg === null || typeof arg !== 'object') {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(arg);
-  return proto === objectProto || proto === null;
-}
-
-export function isOptionalPlainObject(
-  arg: unknown,
-): arg is PlainObject | undefined {
-  if (arg === undefined) {
-    return true;
-  }
-  if (arg === null || typeof arg !== 'object') {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(arg);
-  return proto === objectProto || proto === null;
-}
-
-export function isNullablePlainObject(arg: unknown): arg is PlainObject | null {
-  if (arg === null) {
-    return true;
-  }
-  if (arg === null || typeof arg !== 'object') {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(arg);
-  return proto === objectProto || proto === null;
-}
-
-export function isNullishPlainObject(
-  arg: unknown,
-): arg is PlainObject | null | undefined {
-  if (arg === null || arg === undefined) {
-    return true;
-  }
-  if (arg === null || typeof arg !== 'object') {
-    return false;
-  }
-  const proto = Object.getPrototypeOf(arg);
-  return proto === objectProto || proto === null;
-}
-
-export function isPlainObjectArray(arg: unknown): arg is PlainObject[] {
-  if (!Array.isArray(arg)) {
-    return false;
-  }
-  for (let i = 0; i < arg.length; i += 1) {
-    const value = arg[i];
-    if (value === null || typeof value !== 'object') {
-      return false;
-    }
-    const proto = Object.getPrototypeOf(value);
-    if (!(proto === objectProto || proto === null)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-export function isOptionalPlainObjectArray(
-  arg: unknown,
-): arg is PlainObject[] | undefined {
-  if (arg === undefined) {
-    return true;
-  }
-  if (!Array.isArray(arg)) {
-    return false;
-  }
-  for (let i = 0; i < arg.length; i += 1) {
-    const value = arg[i];
-    if (value === null || typeof value !== 'object') {
-      return false;
-    }
-    const proto = Object.getPrototypeOf(value);
-    if (!(proto === objectProto || proto === null)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-export function isNullablePlainObjectArray(
-  arg: unknown,
-): arg is PlainObject[] | null {
-  if (arg === null) {
-    return true;
-  }
-  if (!Array.isArray(arg)) {
-    return false;
-  }
-  for (let i = 0; i < arg.length; i += 1) {
-    const value = arg[i];
-    if (value === null || typeof value !== 'object') {
-      return false;
-    }
-    const proto = Object.getPrototypeOf(value);
-    if (!(proto === objectProto || proto === null)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-export function isNullishPlainObjectArray(
-  arg: unknown,
-): arg is PlainObject[] | null | undefined {
-  if (arg === null || arg === undefined) {
-    return true;
-  }
-  if (!Array.isArray(arg)) {
-    return false;
-  }
-  for (let i = 0; i < arg.length; i += 1) {
-    const value = arg[i];
-    if (value === null || typeof value !== 'object') {
-      return false;
-    }
-    const proto = Object.getPrototypeOf(value);
-    if (!(proto === objectProto || proto === null)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-/**
- * Helper to set the type to a PlainObject.
- */
-export function toPlainObject<T extends object>(
-  obj: ResolvePlainObject<T> extends true ? T : never,
-): PlainObject {
-  if (isPlainObject(obj)) {
-    return { ...obj } as PlainObject;
-  } else {
-    const type = Object.prototype.toString.call(obj).slice(8, -1),
-      err = CANNOT_CAST_TO_PLAIN_OBJECT_ERROR(type);
-    throw new Error(err);
-  }
-}
-
 // ------------------------------- Function -------------------------------- //
 
 export function isFunction(arg: unknown): arg is AnyFunction {
@@ -2037,7 +1882,7 @@ export function hasKey<
     return false;
   }
   if (!!validatorFn) {
-    return validatorFn((arg as PlainObject)[key]);
+    return validatorFn((arg as Record<string, unknown>)[key]);
   }
   return true;
 }
