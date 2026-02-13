@@ -5,11 +5,13 @@ Every function export exposed by the library is listed below. The first section 
 ## jet-validators
 
 ### Nullables
+
 - `isUndef`
 - `isNull`
 - `isNullish`
 
 ### Boolean Validators
+
 - `isBoolean`
 - `isOptionalBoolean`
 - `isNullableBoolean`
@@ -20,6 +22,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishBooleanArray`
 
 ### Valid Boolean Validators
+
 - `isValidBoolean`
 - `isOptionalValidBoolean`
 - `isNullableValidBoolean`
@@ -30,6 +33,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishValidBooleanArray`
 
 ### Number Validators
+
 - `isNumber`
 - `isOptionalNumber`
 - `isNullableNumber`
@@ -40,6 +44,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishNumberArray`
 
 ### Positive Number Validators
+
 - `isPositiveNumber`
 - `isOptionalPositiveNumber`
 - `isNullablePositiveNumber`
@@ -50,6 +55,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishPositiveNumberArray`
 
 ### Negative Number Validators
+
 - `isNegativeNumber`
 - `isOptionalNegativeNumber`
 - `isNullableNegativeNumber`
@@ -60,6 +66,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishNegativeNumberArray`
 
 ### Unsigned Number Validators
+
 - `isUnsignedNumber`
 - `isOptionalUnsignedNumber`
 - `isNullableUnsignedNumber`
@@ -70,6 +77,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishUnsignedNumberArray`
 
 ### Integer Validators
+
 - `isInteger`
 - `isOptionalInteger`
 - `isNullableInteger`
@@ -80,6 +88,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishIntegerArray`
 
 ### Positive Integer Validators
+
 - `isPositiveInteger`
 - `isOptionalPositiveInteger`
 - `isNullablePositiveInteger`
@@ -90,6 +99,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishPositiveIntegerArray`
 
 ### Negative Integer Validators
+
 - `isNegativeInteger`
 - `isOptionalNegativeInteger`
 - `isNullableNegativeInteger`
@@ -100,6 +110,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishNegativeIntegerArray`
 
 ### Unsigned Integer Validators
+
 - `isUnsignedInteger`
 - `isOptionalUnsignedInteger`
 - `isNullableUnsignedInteger`
@@ -110,6 +121,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishUnsignedIntegerArray`
 
 ### BigInt Validators
+
 - `isBigInt`
 - `isOptionalBigInt`
 - `isNullableBigInt`
@@ -120,6 +132,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishBigIntArr`
 
 ### Valid Number Validators
+
 - `isValidNumber`
 - `isOptionalValidNumber`
 - `isNullableValidNumber`
@@ -130,6 +143,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNishValidNumArr`
 
 ### String Validators
+
 - `isString`
 - `isOptionalString`
 - `isNullableString`
@@ -140,6 +154,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishStringArray`
 
 ### Non-Empty String Validators
+
 - `isNonEmptyString`
 - `isOptionalNonEmptyString`
 - `isNullableNonEmptyString`
@@ -150,6 +165,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishNonEmptyStringArray`
 
 ### Symbol Validators
+
 - `isSymbol`
 - `isOptionalSymbol`
 - `isNullableSymbol`
@@ -160,6 +176,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishSymbolArray`
 
 ### Date Validators
+
 - `isDate`
 - `isOptionalDate`
 - `isNullableDate`
@@ -170,6 +187,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishDateArray`
 
 ### Valid Date Validators
+
 - `isValidDate`
 - `isOptionalValidDate`
 - `isNullableValidDate`
@@ -180,6 +198,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishValidDateArray`
 
 ### Object Validators
+
 - `isObject`
 - `isOptionalObject`
 - `isNullableObject`
@@ -189,19 +208,8 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullableObjectArray`
 - `isNullishObjectArray`
 
-### Plain Object Validators
-- `isPlainObject`
-- `isOptionalPlainObject`
-- `isNullablePlainObject`
-- `isNullishPlainObject`
-- `isPlainObjectArray`
-- `isOptionalPlainObjectArray`
-- `isNullablePlainObjectArray`
-- `isNullishPlainObjectArray`
-- type `PlainObject`
-- helper `toPlainObject`
-
 ### Function Validators
+
 - `isFunction`
 - `isOptionalFunction`
 - `isNullableFunction`
@@ -212,29 +220,34 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishFunctionArray`
 
 ### hasKey
+
 - `hasKey`
 
 ### Complex Validators
 
 #### String Validation
+
 - `isValidString`
 - `isOptionalValidString`
 - `isNullableValidString`
 - `isNullishValidString`
 
 #### Array Membership
+
 - `isInArray`
 - `isOptionalInArray`
 - `isNullableInArray`
 - `isNullishInArray`
 
 #### Array Validation
+
 - `isValidArray`
 - `isOptionalValidArray`
 - `isNullableValidArray`
 - `isNullishValidArray`
 
 #### Range Validation
+
 - `isInRange`
 - `isOptionalInRange`
 - `isNullableInRange`
@@ -245,6 +258,7 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullishInRangeArray`
 
 #### Object Lookup Helpers
+
 - `isKeyOf`
 - `isOptionalKeyOf`
 - `isNullableKeyOf`
@@ -257,6 +271,7 @@ Every function export exposed by the library is listed below. The first section 
 ## jet-validators/utils
 
 ### Simple Utilities
+
 - `nonNullable`
 - `makeOptional`
 - `makeNullable`
@@ -272,6 +287,7 @@ Every function export exposed by the library is listed below. The first section 
 - `parseNullishJson`
 
 ### Object Parsing Helpers
+
 - `parseObject`
 - `parseOptionalObject`
 - `parseNullableObject`
@@ -298,6 +314,7 @@ Every function export exposed by the library is listed below. The first section 
 - `strictParseNullishObjectArray`
 
 ### Object Testing Helpers
+
 - `testObject`
 - `testOptionalObject`
 - `testNullableObject`
@@ -324,4 +341,5 @@ Every function export exposed by the library is listed below. The first section 
 - `strictTestNullishObjectArray`
 
 ### Parse Error Configuration
+
 - `setIsParseErrorArray`

@@ -1,5 +1,4 @@
-import { isPlainObject } from '../../basic.js';
-import { type ResolvePlainObject } from '../../ResolvePlainObject.js';
+import { isObject } from '../../basic';
 import {
   isTransformFn,
   type ValidatorFnWithTransformCb,
@@ -46,7 +45,8 @@ export const ERRORS = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyObject = Record<string, any>;
-type PlainObject = Record<string, unknown>;
+type PlainObject = NonNullable<object>;
+type StringRecord = Record<string, unknown>;
 
 export type Safety = (typeof SAFETY)[keyof typeof SAFETY];
 
@@ -58,7 +58,7 @@ type CompiledParser = (
 // **** Validation Schema **** //
 
 export type Schema<T = unknown> = {
-  [K in keyof T]: ResolvePlainObject<T[K]> extends true
+  [K in keyof T]: T[K] extends NonNullable<object>
     ? Schema<T[K]> | ValidatorFn<T[K]>
     : ValidatorFn<T[K]>;
 };
@@ -298,12 +298,12 @@ function parseObjectCoreHelper(
     return isValid ? paramClone : false;
   }
   // Default
-  if (isPlainObject(param)) {
+  if (isObject(param)) {
     return parser(param, errors);
   } else {
     errors?.push({
       info: ERRORS.NotObject,
-      functionName: '<isPlainObject>',
+      functionName: '<isObject>',
       value: param,
       key: ROOT_TYPE_INVALID,
     });
@@ -530,8 +530,8 @@ function appendNestedErrors(
     if (error.key === ROOT_TYPE_INVALID) {
       error.key = String(prepend);
     } else if (!!error.key) {
-      (error as PlainObject).keyPath = [String(prepend), error.key];
-      delete (error as PlainObject).key;
+      (error as StringRecord).keyPath = [String(prepend), error.key];
+      delete (error as StringRecord).key;
     } else {
       error.keyPath = [String(prepend), ...(error.keyPath ?? [])];
     }

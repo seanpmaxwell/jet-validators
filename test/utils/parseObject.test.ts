@@ -5,13 +5,12 @@ import {
   isInArray,
   isNonEmptyString,
   isNumber,
+  isObject,
   isOptionalString,
   isOptionalValidDate,
-  isPlainObject,
   isString,
   isUndef,
   isUnsignedInteger,
-  type PlainObject,
 } from '../../src';
 import {
   looseParseObject,
@@ -881,7 +880,7 @@ test('more testing on the "parseObject()" function', () => {
     let isValid = true;
     for (let i = 0; i < arg.length; i++) {
       const item = arg[i];
-      if (!isPlainObject(item)) {
+      if (!isObject(item)) {
         errorArray.push({
           info: 'log was not an object.',
           functionName: 'isEventLog',
@@ -889,7 +888,7 @@ test('more testing on the "parseObject()" function', () => {
           key: i.toString(),
         });
         isValid = false;
-      } else if (!isNonEmptyString(item.content)) {
+      } else if ('content' in item && !isNonEmptyString(item.content)) {
         errorArray.push({
           info: 'log content cannot be empty.',
           functionName: 'isEventLog -> checkContent',

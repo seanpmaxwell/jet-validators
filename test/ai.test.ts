@@ -220,12 +220,6 @@ const validatorGroups: StandardValidatorSpec[] = [
     invalid: [null, 'a', 1],
   },
   {
-    label: 'Plain object validators',
-    baseName: 'PlainObject',
-    valid: [{ foo: 'bar' }, Object.create(null)],
-    invalid: [[], null, 1],
-  },
-  {
     label: 'Function validators',
     baseName: 'Function',
     valid: [() => null, function named() {}],
@@ -341,44 +335,6 @@ validatorGroups.forEach((group) => {
         arrayInvalidSansNullish,
       );
     });
-  });
-});
-
-describe('toPlainObject', () => {
-  test('returns a shallow copy for plain objects', () => {
-    const toPlainObject = expectFunctionExport(
-      validatorExports,
-      'toPlainObject',
-    ) as (obj: object) => Record<string, unknown>;
-    const nested = { ok: true };
-    const input = { id: 1, nested };
-    const result = toPlainObject(input);
-    expect(result).toStrictEqual(input);
-    expect(result).not.toBe(input);
-    expect(result.nested).toBe(nested);
-  });
-
-  test('accepts null-prototype objects', () => {
-    const toPlainObject = expectFunctionExport(
-      validatorExports,
-      'toPlainObject',
-    ) as (obj: object) => Record<string, unknown>;
-    const input = Object.create(null) as Record<string, unknown>;
-    input.id = 7;
-    const result = toPlainObject(input);
-    expect(result).toStrictEqual({ id: 7 });
-  });
-
-  test('throws for non-plain objects', () => {
-    const toPlainObject = expectFunctionExport(
-      validatorExports,
-      'toPlainObject',
-    ) as (obj: object) => Record<string, unknown>;
-    expect(() =>
-      toPlainObject(new Date() as unknown as object),
-    ).toThrowError(
-      'Only objects which are a prototype of Object may be cast to the PlainObject type. Type was Date',
-    );
   });
 });
 
@@ -571,10 +527,9 @@ describe('complex validators', () => {
 
   describe('isValidString family', () => {
     test('isValidString enforces length and regex constraints', () => {
-      const fn = expectFunctionExport(
-        validatorExports,
-        'isValidString',
-      ) as (options: unknown) => ValidatorFn;
+      const fn = expectFunctionExport(validatorExports, 'isValidString') as (
+        options: unknown,
+      ) => ValidatorFn;
       const validator = fn({
         minLength: 2,
         maxLength: 4,
@@ -589,10 +544,9 @@ describe('complex validators', () => {
     });
 
     test('isValidString respects explicit length and empty string allowance', () => {
-      const fn = expectFunctionExport(
-        validatorExports,
-        'isValidString',
-      ) as (options: unknown) => ValidatorFn;
+      const fn = expectFunctionExport(validatorExports, 'isValidString') as (
+        options: unknown,
+      ) => ValidatorFn;
       const exactLength = fn({ length: 3 });
       expect(exactLength('abc')).toBe(true);
       expect(exactLength('ab')).toBe(false);
@@ -636,10 +590,9 @@ describe('complex validators', () => {
     });
 
     test('isValidString can throw with custom errors', () => {
-      const fn = expectFunctionExport(
-        validatorExports,
-        'isValidString',
-      ) as (options: unknown) => ValidatorFn;
+      const fn = expectFunctionExport(validatorExports, 'isValidString') as (
+        options: unknown,
+      ) => ValidatorFn;
       const validator = fn({
         regex: /^foo$/,
         throws: true,
