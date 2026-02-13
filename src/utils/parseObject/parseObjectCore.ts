@@ -1,4 +1,4 @@
-import { isObject } from '../../basic';
+import { isObject } from '../../basic.js';
 import {
   isTransformFn,
   type ValidatorFnWithTransformCb,
