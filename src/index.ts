@@ -182,8 +182,6 @@ export const {
   isOptionalFunctionArray,
   isNullableFunctionArray,
   isNullishFunctionArray,
-  // hasKey
-  hasKey,
 } = markSafeIterative(basicValidatorsRaw);
 
 export {
@@ -211,15 +209,4 @@ export {
   isOptionalInRangeArray,
   isNullableInRangeArray,
   isNullishInRangeArray,
-  // Is Key Of
-  isKeyOf,
-  isOptionalKeyOf,
-  isNullableKeyOf,
-  isNullishKeyOf,
-  // Is Value Of
-  isValueOf,
-  isOptionalValueOf,
-  isNullableValueOf,
-  isNullishValueOf,
-  type ValueOf,
 } from './complex/index.js';

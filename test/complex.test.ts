@@ -3,22 +3,17 @@ import { expect, test } from 'vitest';
 import {
   isInArray,
   isInRange,
-  isKeyOf,
-  isNullableKeyOf,
   isNullableValidString,
   isNullishInArray,
   isNullishInRange,
   isNullishInRangeArray,
   isNullishValidString,
-  isNullishValueOf,
   isOptionalInArray,
   isOptionalInRange,
   isOptionalValidArray,
   isOptionalValidString,
   isValidArray,
   isValidString,
-  isValueOf,
-  type ValueOf,
 } from '../src';
 
 /******************************************************************************
@@ -61,32 +56,6 @@ test('test complex validators', () => {
   expect(isValidNums(2)).toStrictEqual(false);
   expect(isValidNums(null)).toStrictEqual(true);
 
-  // Check is key of Object
-  const someObject = {
-    foo: 'bar',
-    bada: 'bing',
-  } as const;
-  const isKeyOfSomeObject = isKeyOf(someObject);
-  expect(isKeyOfSomeObject('foo')).toStrictEqual(true);
-  expect(isKeyOfSomeObject('bada')).toStrictEqual(true);
-  expect(isKeyOfSomeObject('bing')).toStrictEqual(false);
-  const isNullableKeyOfSomeObject = isNullableKeyOf(someObject);
-  expect(isNullableKeyOfSomeObject(null)).toStrictEqual(true);
-
-  // Check is value in an Object
-  const someOtherObject = {
-    foo: 'bar',
-    bada: 'bing',
-  } as const;
-  const blah: ValueOf<typeof someOtherObject> = 'bing';
-  const isValueOfSomeObject = isValueOf(someOtherObject);
-  expect(isValueOfSomeObject('bar')).toStrictEqual(true);
-  expect(isValueOfSomeObject('bing')).toStrictEqual(true);
-  expect(isValueOfSomeObject('foo')).toStrictEqual(false);
-  expect(isValueOfSomeObject(blah)).toStrictEqual(true);
-  const isNullishValueOfSomeObject = isNullishValueOf(someOtherObject);
-  expect(isNullishValueOfSomeObject(null)).toStrictEqual(true);
-  expect(isNullishValueOfSomeObject(undefined)).toStrictEqual(true);
 });
 
 test('Test isValidArray', () => {

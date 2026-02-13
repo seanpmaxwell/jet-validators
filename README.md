@@ -198,35 +198,6 @@ Is non-nullable object
 
 - `isFunction` (+ variants)
 
----
-
-#### `hasKey`
-
-Check if a string `K` is a key on an object `T`. If `K` is optional key of type `T`, it will change to required. If `K` is not a key of type `T` it will become an `unknown` property of type `T`. You can pass an optional validator-function as the third argument if you want to refine the value of `K`.
-
-> Unlike all the other validators, hasKey has no nullish variants. Use the validator-function if you want to create nullish variants.
-
-```ts
-interface IUser {
-  id: number;
-  name?: string;
-}
-const someObject: IUser = { id: 1, name: undefined };
-
-if (hasKey(someObject, 'id')) {
-  someObject.id; // number
-}
-
-if (hasKey(someObject, 'name', isOptionalString)) {
-  someObject.name; // string | undefined
-}
-
-if (hasKey(someObject, 'address')) {
-  // <-- Runtime will fail
-  someObject.address; // unknown
-}
-```
-
 <br/><b>\*\*\*</b><br/>
 
 ## 🧠 Complex Validators <a name="complex-validators"></a>
@@ -324,35 +295,6 @@ outside(101); // true
 outside(75); // false
 ```
 
----
-
-#### `isKeyOf`
-
-Checks whether a value is a key of an object.
-
-```ts
-const obj = { foo: 'bar', baz: 'qux' } as const;
-const isKey = isKeyOf(obj);
-
-isKey('foo'); // true
-```
-
-> Note: Does not support symbol keys.
-
----
-
-#### `isValueOf`
-
-Checks whether a value exists in an object.
-
-```ts
-const obj = { foo: 'bar', baz: 'qux' } as const;
-const isValue = isValueOf(obj);
-
-isValue('bar'); // true
-```
-
-Includes the `ValueOf<T>` utility type.
 <br/><br/>
 
 ## ⚙️ Utilities <a name="utilities"></a>

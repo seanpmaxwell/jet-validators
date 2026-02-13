@@ -4,17 +4,6 @@ export {
   isOptionalInArray,
   isNullableInArray,
   isNullishInArray,
-  // Is Key Of
-  isKeyOf,
-  isOptionalKeyOf,
-  isNullableKeyOf,
-  isNullishKeyOf,
-  // Is Value Of
-  isValueOf,
-  isOptionalValueOf,
-  isNullableValueOf,
-  isNullishValueOf,
-  type ValueOf,
 } from './misc.js';
 
 export {

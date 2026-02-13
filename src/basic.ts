@@ -1862,27 +1862,3 @@ export function isNullishFunctionArray(
   }
   return true;
 }
-
-// ------------------------------- hasKey ---------------------------------- //
-
-type Validator = (value: unknown) => value is unknown;
-
-/**
- * Runtime + type-safe key existence + validation check
- */
-export function hasKey<
-  K extends string,
-  V extends Validator | undefined = undefined,
->(
-  arg: unknown,
-  key: K,
-  validatorFn?: V,
-): arg is Record<K, V extends (v: unknown) => v is infer R ? R : unknown> {
-  if (typeof arg !== 'object' || arg === null || !(key in arg)) {
-    return false;
-  }
-  if (!!validatorFn) {
-    return validatorFn((arg as Record<string, unknown>)[key]);
-  }
-  return true;
-}

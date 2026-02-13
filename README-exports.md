@@ -219,10 +219,6 @@ Every function export exposed by the library is listed below. The first section 
 - `isNullableFunctionArray`
 - `isNullishFunctionArray`
 
-### hasKey
-
-- `hasKey`
-
 ### Complex Validators
 
 #### String Validation
@@ -256,17 +252,6 @@ Every function export exposed by the library is listed below. The first section 
 - `isOptionalInRangeArray`
 - `isNullableInRangeArray`
 - `isNullishInRangeArray`
-
-#### Object Lookup Helpers
-
-- `isKeyOf`
-- `isOptionalKeyOf`
-- `isNullableKeyOf`
-- `isNullishKeyOf`
-- `isValueOf`
-- `isOptionalValueOf`
-- `isNullableValueOf`
-- `isNullishValueOf`
 
 ## jet-validators/utils
 
