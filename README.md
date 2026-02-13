@@ -6,13 +6,13 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/jet-validators?label=bundle&color=0f172a)](https://bundlephobia.com/package/jet-validators)
 [![license](https://img.shields.io/npm/l/jet-validators?label=license&color=334155)](LICENSE)
 
-> A comprehensive collection of TypeScript validator functions and utilities for common compile and runtime checks.
+> A comprehensive collection of TypeScript validator functions and utilities for common compile-time and runtime checks.
 
 <p align="center">
   <img src="ide-snippet-baked.png" alt="IDE snippet" width="600" />
 </p>
 
-jet-validator's `parseObject` function is "JIT optimized" and one of the fastest schema validation tools out there not requiring a compilation step. Check out these benchmarks <a href="https://moltar.github.io/typescript-runtime-type-benchmarks">here</a>.
+jet-validators' `parseObject` function is "JIT-optimized" and one of the fastest schema validation tools available without requiring a compilation step. Check out these benchmarks <a href="https://moltar.github.io/typescript-runtime-type-benchmarks">here</a>.
 <br/><br/>
 
 ## 📚 Table of Contents
@@ -188,7 +188,7 @@ Accepts `Date`, `string`, or `number` and validates via `new Date(...)`.
 
 #### `isObject`
 
-Is non-nullable object
+Checks for a non-null object.
 
 - `isObject` (+ variants)
 
@@ -210,7 +210,7 @@ These require an initialization step and return a validator function.
 
 ##### - Options
 
-This accepts an options argument and returns a string validator.
+This takes an options object and returns a string validator.
 
 | option         | type                                           | description                                                                          |
 | -------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------ |
@@ -257,9 +257,9 @@ Supports optional / nullable variants.
 
 #### `isValidArray`
 
-Makes sure that every value in an array, is contained in the validator array. Accepts optional `minLength`/`maxLength` arguments as well.
+Ensures every value in an array is contained in the validator array. Accepts optional `minLength`/`maxLength` arguments as well.
 
-**NOTE:** this does not validate anything in regards to duplicates. Just that the argument is an array and every value present is allowed.
+**Note:** This does not validate duplicates. It only checks that the argument is an array and every value present is allowed.
 
 > Please see the test [isValidArray](./test/complex.test.ts#L88) for a full example.
 
@@ -427,7 +427,7 @@ if (testUser(user)) {
 
 #### Combining parse + test
 
-Nested schemas may use `testObject` inside `parseObject`. Supplying generics restores full type safety. Note you cannot use `parseObject` on a nested schema because it returns the object being tested not a type-predicate:
+Nested schemas may use `testObject` inside `parseObject`. Supplying generics restores full type safety. Note that you cannot use `parseObject` on a nested schema because it returns the tested object, not a type predicate:
 
 ```ts
 interface IUser {
@@ -471,7 +471,7 @@ const parseUser = parseObject<IUser>({
 
 #### Error handling
 
-You can pass a callback as the second argument to the `parseObject` function or the function returned from it which will provide an array of errors if there are any. Each error object has the format:
+You can pass a callback as the second argument to the `parseObject` function, or as the second argument to the function returned from it, to receive an array of errors when any occur. Each error object has the format:
 
 | Field          | Type       | Description                                                                                                                                                                                                                      |
 | -------------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -480,13 +480,13 @@ You can pass a callback as the second argument to the `parseObject` function or 
 | `value`        | `unknown`  | The value that caused the validation failure (optional).                                                                                                                                                                         |
 | `caught`       | `string`   | Error message caught from an unsafe validator function, if any.                                                                                                                                                                  |
 | `key`          | `string`   | The key at which the failure occurred but only when it happened at the root level.                                                                                                                                               |
-| `keyPath`      | `string[]` | Full path to the failing value for anything other than a key at the rror level. If the failure occurs while inside an array variant (e.g. `parseObjectArray`), the first element represents the array index of the failing item. |
+| `keyPath`      | `string[]` | Full path to the failing value for anything other than a key at the root level. If the failure occurs while inside an array variant (e.g. `parseObjectArray`), the first element represents the array index of the failing item. |
 
 #### Example
 
 ```ts
 const parseUsersArray = parseObjectArray({ name: isString });
-const parseUsersArray([{name: 'sean'}, {name: 123 }], (errors) => ...);
+parseUsersArray([{ name: 'sean' }, { name: 123 }], (errors) => ...);
 
 // Errors callback param above will be:
 [{
@@ -499,43 +499,43 @@ const parseUsersArray([{name: 'sean'}, {name: 123 }], (errors) => ...);
 
 #### Wrapping parse/test
 
-You may want to wrap a `parseObject` to let's say, make sure all parse functions throw the same custom Error object. When wrapping these utilities, ensure your generics extend `Schema<T>` to preserve type safety.
+You may want to wrap `parseObject` to ensure all parse functions throw the same custom `Error` object. When wrapping these utilities, ensure your generics extend `Schema<T>` to preserve type safety.
 
 > Please see the section [Wrapping with Custom Validators around schemas](./test/utils/parseObject.test.ts#L790) for a full example.
 
--
+---
 
 #### Adding Custom Validators to schemas
 
-Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If your custom validator checks an object and has nested errors and you want those errors to bubble up to the highest level, you to need to make sure to provide a callback. Other wise parseObject will only see the custom validator itself as the failing function and any nested errors will be ignored.
+Any function of the form `(arg: unknown) => arg is T` can be used in schemas. If your custom validator checks an object and has nested errors, and you want those errors to bubble up to the highest level, you need to provide a callback. Otherwise, `parseObject` will only see the custom validator itself as the failing function, and nested errors will be ignored.
 
 > Please see the section [Adding Custom Validators to schemas](./test/utils/parseObject.test.ts#L731) for a full example.
 
--
+---
 
 #### Manually creating error arrays
 
-If you want to setup your own error array you need to use the `setIsParseErrorArray` function to mark it as such because in the real world there could be validator functions with callbacks for reasons other than error handling.
+If you want to set up your own error array, you need to use the `setIsParseErrorArray` function to mark it as such because, in the real world, there could be validator functions with callbacks for reasons other than error handling.
 
 > Please see the section [Manually creating error arrays](./test/utils/parseObject.test.ts#L863) for a full example.
 
--
+---
 
-#### Getting the type for a "parse/test"Object function
+#### Getting the type for a `parse/testObject` function
 
-If you need the type for a parse function you created, simply use the utility type `ReturnType` and pass the `typeof "whichever parse function your using"` with a generic.
+If you need the type for a parse function you created, use the utility type `ReturnType` with `typeof <yourParseFunction>` as its generic argument.
 
 > Please see the unit-test [Test setting a type for the parseObject](./test/utils/parseObject.test.ts#L921) for a full example.
 
--
+---
 
 #### Testing multiple layers of Schema<T>
 
-Due to TypeScript limitations, you'll lose TypeSafety if trying to wrap `parseObject` and pass a `Schema` down to another `Schema`. Wrap the nested schema with `testObject` and a generic.
+Due to TypeScript limitations, you'll lose type safety when trying to wrap `parseObject` and pass a `Schema` down to another `Schema`. Wrap the nested schema with `testObject` and a generic.
 
 > Please see the unit-test [Testing multiple layers of Schema<T>](./test/utils/parseObject.test.ts#L945) for a full example.
 
--
+---
 
 #### Safety Modes
 
@@ -548,7 +548,7 @@ Control how extra object properties are handled. Nested schemas inherit the pare
 ```ts
 const strictUser = strictParseObject({
   address: { street: isString }, // Will inherit strict from parent
-  country: looseTestObject(...), // is being overridden
+  country: looseTestObject(...), // override parent mode for this nested schema
 });
 ```
 
